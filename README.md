@@ -1,92 +1,112 @@
 # ChessCake
 
+*Università di Bologna, Ingegneria del Software AA 2023-2024*
 
 
-## Getting started
+## Team
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Il nostro team è composto da:
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+<table>
+    <tr>
+        <td><b>Nome</b></td>
+        <td><b>Matricola</b></td>
+        <td><b>Ruolo Scrum</b></td>
+    </tr>
+    <tr>
+        <td>Petru Marcel Marincas</td>
+        <td>0001021679</td>
+        <td>Product Owner</td>
+    </tr>
+    <tr>
+        <td>Davide Donati</td>
+        <td>0001019464</td>
+        <td>Scrum Master</td>
+    </tr>
+    <tr>
+        <td>Giuseppe Forciniti</td>
+        <td>0001019487</td>
+        <td>Developer</td>
+    </tr>
+    <tr>
+        <td>Saad Farqad Medhat</td>
+        <td>0001027683</td>
+        <td>Developer</td>
+    </tr>
+    <tr>
+        <td>Rafid Fardeen Hoque</td>
+        <td>0001027503</td>
+        <td>Developer</td>
+    </tr>
+    <tr>
+        <td>Vlad Alexandru Stefanuca</td>
+        <td>0001027092</td>
+        <td>Developer</td>
+    </tr>
+</table>
 
-## Add your files
+## Sistema da realizzare
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+<!--- Dobbiamo descrivere il sistema che dobbiamo realizzare in poche parole, in modo da far capire che abbiamo capito -->
 
-```
-cd existing_repo
-git remote add origin https://aminsep.disi.unibo.it/gitlab/Saad2001/chesscake.git
-git branch -M main
-git push -uf origin main
-```
+Dobbiamo creare una web application con la quale poter giocare ad una o più varianti di scacchi non ortodossi. Le varianti implementabili sono:
+- Really Bad Chess
+- Dark Chess
+- Scacchi Reconnaisance Blind
+- Scacchi invisibili (Kriegspiel)
 
-## Integrate with your tools
+All'interno di questa applicazione deve essere possibile giocare online, in modalità umano contro computer oppure  umano contro umano (in locale).
 
-- [ ] [Set up project integrations](https://aminsep.disi.unibo.it/gitlab/Saad2001/chesscake/-/settings/integrations)
+I giocatori si possono trovare e sfidarsi, possono concordare la modalità (la variante di scacchi) e i tempi di gioco, giocare la partita e salvarla.
 
-## Collaborate with your team
+Infine, possono scegliere di vedere i propri risultati in una classifica generale.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+---
 
-## Test and Deploy
+Questo prodotto dovrà essere collegato, in un modo a scelta, ad un qualche social network (X, Facebook, ...) e ciò deve dare l'accesso a diverse possibilità:
+- Commentare le partite (in tempo reale oppure commentare una partita salvata)
+- Cercare persone con cui giocare (magari con un post che include un link di invito, oppure che promuove il proprio nome utente o altro ancora)
+- Giocare in modalità "mob" (far sì che il voto di più persone all'interno di un social decida la mossa successiva da fare)
 
-Use the built-in continuous integration in GitLab.
+---
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Un'ultima feature che si può / deve implementare è l'integrazione o l'uso, in un qualche modo, di un LLM (es. ChatGPT).
 
-***
+Il LLM può essere usato per diversi scopi, ovvero:
+- Supporto allo sviluppo (aiutare a scrivere User Stories o parte del codice)
+- Supporto a funzionalità (commentare una partita)
 
-# Editing this README
+L'uso di ChatGPT va documentato nel report finale con almeno i prompt utilizzati.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Note
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Per la *modalità di comunicazione* abbiamo in primis fatto dal vivo e con l'uso di WhatsApp e, dopo esserci organizzati, siamo passati a **Mattermost**.
 
-## Name
-Choose a self-explaining name for your project.
+Per le *daily scrum* ci veniva molto scomodo realizzarle dal vivo per incompatibilità sul trovarci tutti nello stesso luogo allo stesso tempo (in quanto abitiamo  tutti piuttosto distanti), quindi le abbiamo fatte prevalentemente in call, cercando di seguire il protocollo proposto da Scrum, usando **Discord**. Questo non esclude meeting dal vivo, ma ci aiuta a rimanere quanto più costanti e produttivi possibile.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+La scelta della tecnologia da usare è stata fatta in modo democratico, in quanto tutti i membri del team hanno espresso la propria opinione e abbiamo deciso di usare:
+- *React* per il frontend
+  - In quanto lo stile di **Material-UI** è molto piacevole e facile da usare e ci velocizza il lavoro di creare un frontend
+- *NodeJS* e *ExpressJS* per il backend
+  - Motivato sia da una maggior familiarità con il linguaggio e il framework, sia dal fatto che ci permette di avere un backend molto leggero e veloce da sviluppare
+- *MySQL* come DBMS
+  - Anch'esso molto popolare e con cui diversi di noi hanno esperienza. Sicuramente richiede più attenzioni di *MongoDB* in quanto è relazionale, ma ci permette di avere una struttura più rigida e coerente dei dati.
+  - Pianifichiamo anche di usare *phpMyAdmin* per aiutarci nella gestione del database.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Usiamo tutti **Visual Studio Code**, in quanto è flessibile, grazie alle estensioni, e ci permette di lavorare con facilità in gruppo. Non abbiamo quindi scelto un IDE specifico, ma abbiamo deciso di usare questo editor di testo.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Cerchiamo di integrare l'uso di ChatGPT con il nostro development per migliorare sopratutto la nostra velocità nella scrittura di cose semplici o che sono talmente chiare che l'unica cosa che manca è trascriverle in modo formale (che questo sia codice o testo). In ogni caso viene tutti *controllato e revisionato* prima di essere inserito nel progetto.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Analisi dei rischi
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+I rischi che abbiamo identificato sono:
+- **Nessuna dipendenza da Terze Parti**
+  - Poiché il progetto non può avere dipendenze da servizi esterni, ci potrebbero essere limitazioni nelle funzionalità o nelle integrazioni.
+- **Uso di API di social network oppure LLM**
+  - L'uso delle API spesso è accompagnato da un prezzo, quindi potrebbe essere necessario un budget per il progetto.
+  - In caso siano gratis, spesso vengono messi limiti, anch'essi da considerare.
+  - Bisogna basarsi su un servizio che sia affidabile e che non vada offline o che non cambi le proprie API.
+- **Adesione al vincolo di avere tutto sui server DISI**
+  - Assicurarsi che tutti i dati e servizi risiedano sui server DISI potrebbe richiedere ulteriori risorse e attenzione, oppure una scelta delle tecnologie usata in base a ciò che è presente e ciò che possiamo installare.
+- **Feedback e Iterazioni con il Requirement Owner**
+  - La necessità di concordare regolarmente il backlog e le specifiche con il Requirement Owner potrebbe comportare ritardi o cambiamenti nel ciclo di sviluppo.
