@@ -1,13 +1,12 @@
 import './App.css'
 import React from 'react'
+import LoginUI from './pages/login/LoginUI.jsx'
 
 function App() {
 
-  return (
-    <>
-      <h1> Ciao mondo </h1>
-    </>
-  )
+  return <>
+      <LoginUI />
+  </>
 }
 
 export default App
