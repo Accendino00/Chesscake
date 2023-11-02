@@ -4,9 +4,9 @@ import LoginUI from './pages/login/LoginUI.jsx'
 
 function App() {
 
-  return <>
-      <LoginUI />
-  </>
+  return (
+        <LoginUI />
+  )
 }
 
 export default App
