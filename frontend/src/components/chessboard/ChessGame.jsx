@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import Chessboard from 'chessboardjsx';
-import { Chess } from 'chess.js';
-import { SQUARES } from 'chess.js';
+import { Chess, SQUARES } from 'chess.js';
 
-const ChessGame = () => {
+const ChessGame = ({ mode, duration }) => {
   const [fen, setFen] = useState();
 
   const [chess] = useState(() => {
@@ -14,15 +13,15 @@ const ChessGame = () => {
     const whiteSquares = SQUARES.slice(0, 16);
     const blackSquares = SQUARES.slice(48, 64);
 
-    for (let i = 0; i < pieces.length; i++) {
+    for (const element of pieces) {
       const randomIndex = Math.floor(Math.random() * whiteSquares.length);
-      newChess.put({ type: pieces[i], color: 'b' }, whiteSquares[randomIndex]);
+      newChess.put({ type: element, color: 'b' }, whiteSquares[randomIndex]);
       whiteSquares.splice(randomIndex, 1);
     }
 
-    for (let i = 0; i < pieces.length; i++) {
+    for (const element of pieces) {
       const randomIndex = Math.floor(Math.random() * blackSquares.length);
-      newChess.put({ type: pieces[i], color: 'w' }, blackSquares[randomIndex]);
+      newChess.put({ type: element, color: 'w' }, blackSquares[randomIndex]);
       blackSquares.splice(randomIndex, 1);
     }
 
@@ -37,8 +36,8 @@ const ChessGame = () => {
         if (chess.isCheck()) {
           console.log('P1 - Gcacco!');
         }
-        
-        /*setTimeout(() => {
+        if (mode === 'playerVsComputer'){     
+        setTimeout(() => {
           const moves = chess.moves();
           if (moves.length > 0) {
             const randomIndex = Math.floor(Math.random() * moves.length);
@@ -54,8 +53,8 @@ const ChessGame = () => {
           else {
             console.log('P1 - Scacco Matto!');
           }
-        }, 1000);*/
-
+        }, duration * 1000);
+      }
         setFen(chess.fen());
 
         
@@ -66,12 +65,25 @@ const ChessGame = () => {
   };
 
   return (
-    <Chessboard
-      position={fen}
-      onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
-      orientation="white"
-      width={400}
-    />
+    <div>
+    {mode === 'dailyChallenge' || mode === 'playerVsPlayerOnline' ? 
+      <p>Ancora in fase di implementazione!</p> 
+      : 
+      <div>
+      {mode === 'playerVsComputer' ?
+      <h1>PLAYER VS COMPUTER</h1>
+      :
+      <h1>PLAYER VS PLAYER (LOCAL)</h1>
+      }
+      <Chessboard
+        position={fen}
+        onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
+        orientation="white"
+        width={400}
+      />
+      </div>
+    }
+    </div>
   );
 };
 

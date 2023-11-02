@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ChessGame from './ChessGame';
-import './ChessGame.css';
+import './chessStart.css';
 
 
 const StartInterface = () => {
@@ -21,7 +21,7 @@ const StartInterface = () => {
   };
 
   return (
-    <div>
+    <div className='gameDiv'>
       {!gameStarted &&
       <>
       <h1>Chess Game</h1>
@@ -84,7 +84,7 @@ const StartInterface = () => {
       </div>
       </>
       }
-      {gameStarted && <ChessGame/> }
+      {gameStarted && <ChessGame mode={mode} duration={duration}/> }
     </div>
   );
 };
