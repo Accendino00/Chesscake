@@ -16,21 +16,23 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
     const newChess = new Chess();
     newChess.clear();
 
-    const pieces = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'];
-    const whiteSquares = SQUARES.slice(0, 16);
-    const blackSquares = SQUARES.slice(48, 64);
+    const pieces = ['r', 'b', 'q', 'n', 'p'];
+    const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
+    const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
 
-    for (const element of pieces) {
-      const randomIndex = Math.floor(Math.random() * whiteSquares.length);
-      newChess.put({ type: element, color: 'b' }, whiteSquares[randomIndex]);
-      whiteSquares.splice(randomIndex, 1);
-    }
+  while (whiteSquares.length>0) {
+    const randomIndex = Math.floor(Math.random() * whiteSquares.length);
+    (newChess.put({ type: pieces[Math.floor(Math.random() * pieces.length)], color: 'w' }, whiteSquares[randomIndex]))
+    whiteSquares.splice(randomIndex, 1);
+  }
+  newChess.put({ type: 'k', color: 'w' }, 'e1');
 
-    for (const element of pieces) {
-      const randomIndex = Math.floor(Math.random() * blackSquares.length);
-      newChess.put({ type: element, color: 'w' }, blackSquares[randomIndex]);
-      blackSquares.splice(randomIndex, 1);
-    }
+  while (blackSquares.length>0) {
+    const randomIndex = Math.floor(Math.random() * blackSquares.length);
+    (newChess.put({ type: pieces[Math.floor(Math.random() * pieces.length)], color: 'b' }, blackSquares[randomIndex]))
+    blackSquares.splice(randomIndex, 1);
+  }
+  newChess.put({ type: 'k', color: 'b' }, 'e8');
 
     setFen(newChess.fen());
     return newChess;
@@ -38,14 +40,8 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
 
   const handleMove = (move) => {
     try {
-      if (selectedSquare) {
-        const moves = chess.moves({ square: selectedSquare });
-        moves.forEach(move => {
-          chessboardRef.current.highlightSquare(move.to);
-        });
-      }
-
       if (chess.move(move)) {
+
         if (chess.isCheck()) {
           console.log('P1 - Gcacco!');
         }
@@ -69,26 +65,12 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
         }, duration * 1000);
       }
         setFen(chess.fen());
+
+        
       }
     } catch (err) {
       setFen(chess.fen());
     }
-  };
-
-  const handleSquareClick = (square) => {
-    if (selectedSquare) {
-      const moves = chess.moves({ square: selectedSquare });
-      moves.forEach(move => {
-        chessboardRef.current.unhighlightSquare(move.to);
-      });
-    }
-
-    setSelectedSquare(square);
-
-    const moves = chess.moves({ square });
-    moves.forEach(move => {
-      chessboardRef.current.highlightSquare(move.to);
-    });
   };
 
   return (
@@ -108,10 +90,8 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
         onMouseOutSquare={handleMouseOutSquare}
         squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'yellow' } }), {})}
         onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
-      onSquareClick={handleSquareClick}
         orientation="white"
         width={400}
-      ref={chessboardRef}
       />
       </div>
     }
