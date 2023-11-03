@@ -4,7 +4,14 @@ import { Chess, SQUARES } from 'chess.js';
 
 const ChessGame = ({ mode, duration }) => {
   const [fen, setFen] = useState();
+  const [possibleMoves, setPossibleMoves] = useState([]);
 
+  const handleMouseOverSquare = (square) => {
+    const moves = chess.moves({ square, verbose: true });
+    setPossibleMoves(moves.map(move => move.to));
+  };
+
+const handleMouseOutSquare = () => setPossibleMoves([]);
   const [chess] = useState(() => {
     const newChess = new Chess();
     newChess.clear();
@@ -77,6 +84,9 @@ const ChessGame = ({ mode, duration }) => {
       }
       <Chessboard
         position={fen}
+        onMouseOverSquare={handleMouseOverSquare}
+        onMouseOutSquare={handleMouseOutSquare}
+        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'yellow' } }), {})}
         onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
         orientation="white"
         width={400}
