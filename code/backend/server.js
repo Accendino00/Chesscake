@@ -41,9 +41,26 @@ const PORT = config.PORT || 3000;
 
 /* ROUTES */
 
+
+app.get("/prova", function (req, res) {
+  res.send("Ciao");
+});
+
+app.use(express.json()) // for parsing application/json
+
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+      console.error(err);
+      return res.status(400).send({ status: 400, message: err.message }); // Bad request
+  }
+  next();
+});
+
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.use("/", express.static(config.FRONTEND_DIST_PATH));
 //app.use("/ciao", require(config.ROUTESERVIZI + "\\webpages"));
+
+app.use("/register", require(config.ROUTESERVIZI + "\\registration"))
 
 
 /* SERVER START */
