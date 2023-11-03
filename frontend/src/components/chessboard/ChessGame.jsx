@@ -38,8 +38,14 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
 
   const handleMove = (move) => {
     try {
-      if (chess.move(move)) {
+      if (selectedSquare) {
+        const moves = chess.moves({ square: selectedSquare });
+        moves.forEach(move => {
+          chessboardRef.current.highlightSquare(move.to);
+        });
+      }
 
+      if (chess.move(move)) {
         if (chess.isCheck()) {
           console.log('P1 - Gcacco!');
         }
@@ -63,12 +69,26 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
         }, duration * 1000);
       }
         setFen(chess.fen());
-
-        
       }
     } catch (err) {
       setFen(chess.fen());
     }
+  };
+
+  const handleSquareClick = (square) => {
+    if (selectedSquare) {
+      const moves = chess.moves({ square: selectedSquare });
+      moves.forEach(move => {
+        chessboardRef.current.unhighlightSquare(move.to);
+      });
+    }
+
+    setSelectedSquare(square);
+
+    const moves = chess.moves({ square });
+    moves.forEach(move => {
+      chessboardRef.current.highlightSquare(move.to);
+    });
   };
 
   return (
@@ -88,8 +108,10 @@ const handleMouseOutSquare = () => setPossibleMoves([]);
         onMouseOutSquare={handleMouseOutSquare}
         squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'yellow' } }), {})}
         onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
+      onSquareClick={handleSquareClick}
         orientation="white"
         width={400}
+      ref={chessboardRef}
       />
       </div>
     }
