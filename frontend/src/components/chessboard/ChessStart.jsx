@@ -20,7 +20,9 @@ const StartInterface = () => {
   };
 
   return (
+    
     <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+    {!gameStarted &&
     <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" border={gameStarted ? 0 : 1} p={2} m={2}
       style={{
         backgroundImage: `url('/img/sfondo_interfaccia.png')`,
@@ -30,7 +32,7 @@ const StartInterface = () => {
         backdropFilter: 'blur(10px)'
       }}
     >
-    {!gameStarted &&
+    
     <>
       <Typography variant="h1" component="div" gutterBottom align="center" style={{ color: 'yellow', fontFamily: 'Arial', margin: '20px 0' }}>
         CHESS GAME
@@ -62,10 +64,14 @@ const StartInterface = () => {
       </Button>
       </Box>
     </>
-    }
-    {gameStarted && <ChessGame mode={mode} duration={duration} />}
+    
+    
   </Box>
+  }
+  {gameStarted && <ChessGame mode={mode} duration={duration} />}
 </Box>
+
+
   );
 };
 
