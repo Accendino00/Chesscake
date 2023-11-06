@@ -12,15 +12,17 @@ const ChessGame = ({ mode, duration, rank }) => {
     setPossibleMoves(moves.map(move => move.to));
   };
 
-const handleMouseOutSquare = () => setPossibleMoves([]);
-const [chess] = useState(() => {
+  const handleMouseOutSquare = () => setPossibleMoves([]);
+  const [chess] = useState(() => {
 
   //Inizializzazione della scacchiera
   const newChess = new Chess();
   newChess.clear();
   //Caricamento pezzi
-  const whitePieces = findChessPiecesWithRank(rank+5);
-  const blackPieces = findChessPiecesWithRank(rank-5);
+  const [playerRank, opponentRank] = calculateRanks(rank);
+  console.log(playerRank, opponentRank);
+  const whitePieces = findChessPiecesWithRank(playerRank);
+  const blackPieces = findChessPiecesWithRank(opponentRank);
   //const pieces = ['r', 'b', 'q', 'n', 'p'];  Da implementare per custom partite
   const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
   const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
@@ -111,61 +113,60 @@ export default ChessGame;
 
 
 function findChessPiecesWithRank(rank) {
-  //Valori di calcolo della board
-  let median = rank / 15;
-  let overallValue = 0;
-  let pieces = [
+
+  //Pezzi disponibili da scegliere
+  const pieces = [
     { name: "p", value: 1 },
     { name: "n", value: 3 },
     { name: "b", value: 3 },
     { name: "r", value: 5 },
     { name: "q", value: 9 }
   ];
-
-  let selectedPieces = [];
-
-  //Selezioniamo un pezzo iniziale
-  overallValue = pieces[Math.floor(Math.random() * 5)].value;
+  const selectedPieces = [];
+  let overallValue = pieces[Math.floor(Math.random() * pieces.length)].value;
+  const median = (rank - 14) / 15;  //Valore per shiftare la scelta dei pezzi
   for (let i = 0; i < 15; i++) {
-    let filteredPieces;
-    let selected = pieces[0];
-    //Decidiamo se selezionare un pezzo con valore maggiore o minore della mediana
-    if ((overallValue / (i + 1)) < median) {
-      filteredPieces = pieces.filter(piece => piece.value > median);
-    } 
-    else {
-      filteredPieces = pieces.filter(piece => piece.value <= median);
+    let filteredPieces = pieces.filter(piece => (overallValue / (i + 1)) < median ? piece.value >= median : piece.value <= median);
+    if (filteredPieces.length === 0) {
+      filteredPieces = (overallValue / (i + 1)) < median ? [pieces[pieces.length - 1]] : [pieces[0]];
     }
-    //Calcoliamo il peso di ogni pezzo
-    const pieceWeights = filteredPieces.map(piece => weightFunction(piece.value, overallValue/(i+1), median));
+    //Scelta del peso dei valori disponibili
+    const pieceWeights = filteredPieces.map(piece => weightFunction(piece.value, overallValue / (i + 1), median));
     const totalWeight = pieceWeights.reduce((acc, weight) => acc + weight, 0);
     const randomValue = Math.random() * totalWeight;
     let cumulativeWeight = 0;
-    //Selezioniamo un pezzo in base al peso
+    let selected;
+
+    //Scelta del pezzo determinante da quanto pesa
     for (let j = 0; j < filteredPieces.length; j++) {
       cumulativeWeight += pieceWeights[j];
-      //Se il peso è maggiore del valore random, selezioniamo il pezzo
       if (randomValue <= cumulativeWeight) {
         selected = filteredPieces[j];
         break;
       }
     }
-    if ((overallValue / (i + 1)) < median) {
-      overallValue += selected.value;
-    } 
-    else {
-      overallValue -= selected.value;
-    }
-    //Aggiungiamo il pezzo selezionato alla lista
+    overallValue += (overallValue / (i + 1)) < median ? selected.value : -selected.value;
     selectedPieces.push(selected.name);
   }
   return selectedPieces;
 }
 
-//Calcolo del peso
+//Funzione del calcolo del peso
 function weightFunction(value, overallValue, median) {
   const diffToMedian = Math.abs(value - median);
   const diffToOverall = Math.abs(value - overallValue);
-  const weight = 1 - (diffToMedian / (diffToOverall + 1));
-  return weight;
+  let weight = 1 - (diffToMedian / (diffToOverall + 1));
+  return weight <= 0 ? 0 : weight;
+}
+
+function calculateRanks(rank) {
+  if (rank < 0) {
+    throw new Error("Invalid value");
+  }
+  const value = -0.5 * rank + 25;  //Funzione lineare per determinare il valore
+  let playerRank = Math.random() * 100;
+  let opponentRank = playerRank + value;
+  playerRank = Math.min(Math.max(playerRank, 0), 100);
+  opponentRank = Math.min(Math.max(opponentRank, 0), 100);
+  return [playerRank, opponentRank];
 }

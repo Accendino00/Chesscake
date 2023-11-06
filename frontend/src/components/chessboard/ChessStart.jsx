@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChessGame from './ChessGame';
 import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography } from '@mui/material';
 
+
 const StartInterface = () => {
   const [mode, setMode] = useState('playerVsComputer');
   const [duration, setDuration] = useState(5);
@@ -68,7 +69,7 @@ const StartInterface = () => {
     
   </Box>
   }
-  {gameStarted && <ChessGame mode={mode} duration={duration} />}
+  {gameStarted && <ChessGame mode={mode} duration={duration} rank={50}/>}
 </Box>
 
 
