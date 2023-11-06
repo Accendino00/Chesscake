@@ -17,10 +17,10 @@ import ThemeProvider from '@mui/material/styles/ThemeProvider';
 import Link from '@mui/material/Link';
 import styled from '@mui/material/styles/styled';
 import Stack from '@mui/material/Stack';
-import { ColorAnonimoButton } from './colors';
-import { ColorLoginButton } from './colors';
-import { ColorUsernameTextField } from './colors';
-import { ColorPasswordTextField } from './colors';
+import { ColorAnonimoButton } from './loginUIUtils';
+import { ColorLoginButton } from './loginUIUtils';
+import { ColorUsernameTextField } from './loginUIUtils';
+import { ColorPasswordTextField } from './loginUIUtils';
 import FilledInput from '@mui/material/FilledInput';
 import InputLabel from '@mui/material/InputLabel';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -31,6 +31,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import IconButton from '@mui/material/IconButton';
 import Input from '@mui/material/Input';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import RegisterPopup from '../register/RegisterPopup';
 
 export default function LoginUI() {
 
@@ -42,6 +43,9 @@ export default function LoginUI() {
         event.preventDefault();
     };
 
+    const [buttonPopup, setButtonPopup] = React.useState(false);
+
+    
 
     return (
             <Grid container
@@ -113,7 +117,8 @@ export default function LoginUI() {
                                     spacing={2}
                                 >
                                     <Grid item>
-                                        <Link href="#" variant ="body2" component="button" color="#FFD700">Registrati</Link>
+                                        <Link href="#" variant ="body2" component="button" color="#FFD700" onClick={(()=> setButtonPopup(true))}>Registrati</Link>
+                                        <RegisterPopup trigger={buttonPopup} setTrigger={setButtonPopup}></RegisterPopup>
                                     </Grid>  
                                     <Grid item>
                                         <ColorLoginButton size="medium" variant="contained" endIcon={<LoginIcon />}>Login</ColorLoginButton>
