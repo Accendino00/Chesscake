@@ -17,7 +17,7 @@ class User {
     POST /register/newUser HTTP/1.1
     User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)
     Host: www.chesscake.com
-    Content-Type: json
+    Content-Type: application/json
     Content-Length: <lenght calcolata>
     
     {
@@ -26,6 +26,7 @@ class User {
     }
  * 
  */
+
 router.post("/newUser", function (req, res) {
     // Cerchiamo nel req body se vi sono tutti i parametri non nulli, ovvero username e password
     if (req.body.username && req.body.password) {

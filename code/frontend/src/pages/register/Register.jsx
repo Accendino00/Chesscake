@@ -14,7 +14,37 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import createTheme from '@mui/material/styles/createTheme';	
 import ThemeProvider from '@mui/material/styles/ThemeProvider';
-  
+
+function registerButtonCallback () {
+    //  richiesta http a /api/register
+    //  se la risposta è positiva, reindirizza a /login
+
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
+    let email = document.getElementById("email").value;
+
+    let data = {
+        username: username,
+        password: password,
+        email: email
+    }
+
+    fetch('/register/newuser', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+    }).then(function (data, err) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(data);
+            // passa a login
+            window.location.href = '/login';
+        }
+    })
+}
 
 export default function Register() {
     return (
