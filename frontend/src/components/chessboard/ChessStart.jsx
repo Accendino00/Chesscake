@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import ChessGame from './ChessGame';
-import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography } from '@mui/material';
+import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography, Slider } from '@mui/material';
 
 
 const StartInterface = () => {
   const [mode, setMode] = useState('playerVsComputer');
   const [duration, setDuration] = useState(5);
+  const [rank, setRank] = useState(50);
   const [gameStarted, setGameStarted] = useState(false);
 
   const handleModeChange = (event) => {
@@ -20,13 +21,15 @@ const StartInterface = () => {
     setGameStarted(true);
   };
 
+  const handleSliderChange = (event, newValue) => {
+    setRank(newValue); // Update rank state when slider changes
+  };
   return (
     
     <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
     {!gameStarted &&
     <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" border={gameStarted ? 0 : 1} p={2} m={2}
       style={{
-        backgroundImage: `url('/img/sfondo_interfaccia.png')`,
         backgroundPosition: 'center',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
@@ -35,7 +38,7 @@ const StartInterface = () => {
     >
     
     <>
-      <Typography variant="h1" component="div" gutterBottom align="center" style={{ color: 'yellow', fontFamily: 'Arial', margin: '20px 0' }}>
+      <Typography variant="h1" component="div" gutterBottom align="center" style={{ color: 'black', fontFamily: 'Arial', margin: '20px 0' }}>
         CHESS GAME
       </Typography>
       <Box m={2} width={1/2}>
@@ -59,6 +62,20 @@ const StartInterface = () => {
           </Select>
         </FormControl>
       </Box>
+      <Typography id="rank-slider" gutterBottom>
+        Rank
+      </Typography>
+      <Slider
+        defaultValue={50}
+        getAriaValueText={value => `Rank ${value}`}
+        aria-labelledby="rank-slider"
+        valueLabelDisplay="auto"
+        step={1}
+        marks
+        min={1}
+        max={100}
+        onChange={handleSliderChange}
+      />
       <Box m={2}>
       <Button variant="contained" color="primary" onClick={handleStartGame} style={{ color: 'yellow' }}>
         Start Game
@@ -69,7 +86,7 @@ const StartInterface = () => {
     
   </Box>
   }
-  {gameStarted && <ChessGame mode={mode} duration={duration} rank={50}/>}
+  {gameStarted && <ChessGame mode={mode} duration={duration} rank={rank}/>}
 </Box>
 
 
