@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import Chessboard from 'chessboardjsx';
 import { Chess} from 'chess.js';
+import SavedGames from './SavedGames';
+import GameReplayer from './GameReplayer';
 
 const ChessGame = ({ mode, duration, rank }) => {
   const [fen, setFen] = useState();
   const [possibleMoves, setPossibleMoves] = useState([]);
-
+  const [selectedGameId, setSelectedGameId] = useState(null);
+  const [moves, setMoves] = useState([]);
+  
   //Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
     setPossibleMoves(moves.map(move => move.to));
+    
   };
 
-  const handleMouseOutSquare = () => setPossibleMoves([]);
+  const handleMouseOutSquare = () => {
+    setPossibleMoves([]);
 
+  };
   const [chess] = useState(() => {
   //Inizializzazione della scacchiera
   const newChess = new Chess();
@@ -54,10 +61,17 @@ const ChessGame = ({ mode, duration, rank }) => {
     
   });
 
-  const handleMove = (move) => {
+  const handleSelectGame = (gameId) => {
+    setSelectedGameId(gameId);
+  };
+
+  const handleMove = ({ sourceSquare, targetSquare }) => {
+    if (chess.turn() === 'b' && mode === 'playerVsComputer') {
+      return;
+    }
     try {
       if (chess.turn() === 'w' && mode === 'playerVsComputer') {
-        if (chess.move(move)) {
+        if (chess.move({ from: sourceSquare, to: targetSquare })) {
           setFen(chess.fen());
           if (chess.isCheck()) {
             console.log('P1 - Scacco!');
@@ -89,8 +103,15 @@ const ChessGame = ({ mode, duration, rank }) => {
     } catch (err) {
       setFen(chess.fen());
     }
+    handleMouseOutSquare();
   };
 
+  const handleGameOver = () => {
+    const savedGames = JSON.parse(localStorage.getItem('games')) || [];
+    const newGame = { id: savedGames.length + 1, moves };
+    savedGames.push(newGame);
+    localStorage.setItem('games', JSON.stringify(savedGames));
+  };
   return (
     <div>
     {/*mode === 'dailyChallenge' ||*/ mode === 'playerVsPlayerOnline' ? 
@@ -104,15 +125,26 @@ const ChessGame = ({ mode, duration, rank }) => {
       }
       <Chessboard
         position={fen}
-        onMouseOverSquare={handleMouseOverSquare}
+        onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
+        || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
         onMouseOutSquare={handleMouseOutSquare}
-        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'rgba(255, 255, 0, 0.5)' } }), {})}
-        onDrop={(move) => handleMove({ from: move.sourceSquare, to: move.targetSquare })}
+        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'yellow' } }), {})}
+        onDrop={handleMove}
         orientation="white"
         width={400}
       />
       </div>
     }
+      <div>
+        <button onClick={handleGameOver}>End Game</button>
+      </div>
+      <div>
+        {selectedGameId ? (
+          <GameReplayer gameId={selectedGameId} />
+        ) : (
+          <SavedGames onSelectGame={handleSelectGame} />
+        )}
+      </div>
     </div>
   );
 };
