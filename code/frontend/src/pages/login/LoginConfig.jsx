@@ -31,8 +31,20 @@ export const formFields = {
       autoComplete: "current-password",
       placeholder: "Password",
     },
+    confirmpassword: {
+      margin: "normal",
+      required: true,
+      fullWidth: true,
+      name: "confirmpassword",
+      type: "confirmpassword",
+      id: "confirmpassword",
+      autoComplete: "current-password",
+      placeholder: "Confirm Password",
+    },
   };
-  
-  export const buttonText = "Sign In";
-  export const formTitle = "Sign in";
+
+  export const formTitle = {
+    login: "Login",
+    register: "Register",
+  }
   

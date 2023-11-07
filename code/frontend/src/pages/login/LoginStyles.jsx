@@ -1,13 +1,19 @@
+import InputAdornment from "@mui/material/InputAdornment";
+import AccountCircle from '@mui/icons-material/AccountCircle';
 
 const styles = {
-    container: {
-      marginTop: 8,
+    grid: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      height: '100vh',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      direction: 'column',
     },
-    form: {
-      marginTop: 1,
+    gridButtons:{
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     loginButton:{
         boxShadow: 'none',
@@ -31,6 +37,9 @@ const styles = {
             borderColor: '#000000',
             borderBlockColor: '#000000',
         },
+        
+
+
     },
     anonimoButton:{
         boxShadow: 'none',
@@ -74,8 +83,18 @@ const styles = {
           '& .MuiFilledInput-underline:before': {
             borderBottomColor: '#FFD700',
           },
+
     },
 
+    registerButton:{
+      color:"#FFD700",
+      textDecoration: 'underline',
+      textDecorationColor: '#FFD700',
+      '&:hover': {
+        textDecoration: 'underline',
+        textDecorationColor: '#FFD700',
+      },
+    },
   };
   
   export default styles;
