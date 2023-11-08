@@ -77,7 +77,7 @@ const StartInterface = () => {
         onChange={handleSliderChange}
       />
       <Box m={2}>
-      <Button variant="contained" color="primary" onClick={handleStartGame} style={{ color: 'yellow' }}>
+      <Button variant="contained" color="primary" onClick={handleStartGame} style={{ color: 'darkblack' }}>
         Start Game
       </Button>
       </Box>
