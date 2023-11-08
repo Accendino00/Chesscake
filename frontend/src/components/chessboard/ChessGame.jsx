@@ -66,18 +66,18 @@ const ChessGame = ({ mode, duration, rank }) => {
   };
 
   const handleMove = ({ sourceSquare, targetSquare }) => {
-    if (chess.turn() === 'b' && mode === 'playerVsComputer') {
+    if (chess.turn() === 'b' && mode != 'playerVsPlayer') {
       return;
     }
     try {
-      if (chess.turn() === 'w' && mode === 'playerVsComputer') {
+      if (chess.turn() === 'w' || mode == 'playerVsPlayer') {
         if (chess.move({ from: sourceSquare, to: targetSquare })) {
           setFen(chess.fen());
           if (chess.isCheck()) {
             console.log('P1 - Scacco!');
           }
           //Se è in modalità giocatore vs computer, il computer effettua la mossa
-          if (mode === 'playerVsComputer'){     
+          if (mode != 'playerVsPlayer'){     
           setTimeout(() => {
             const moves = chess.moves();
             if (moves.length > 0) {
@@ -128,7 +128,7 @@ const ChessGame = ({ mode, duration, rank }) => {
         onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
         || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
         onMouseOutSquare={handleMouseOutSquare}
-        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'yellow' } }), {})}
+        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'rgba(255, 255, 0, 0.5)' } }), {})}
         onDrop={handleMove}
         orientation="white"
         width={400}
