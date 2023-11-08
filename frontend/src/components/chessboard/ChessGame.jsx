@@ -3,6 +3,7 @@ import Chessboard from 'chessboardjsx';
 import { Chess} from 'chess.js';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
+import { Button, Box } from '@mui/material';
 
 const ChessGame = ({ mode, duration, rank }) => {
   const [fen, setFen] = useState();
@@ -135,9 +136,16 @@ const ChessGame = ({ mode, duration, rank }) => {
       />
       </div>
     }
-      <div>
-        <button onClick={handleGameOver}>End Game</button>
-      </div>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-end"
+        height="10vh"
+      >
+      <Button variant="contained" color="primary" onClick={handleGameOver}>
+        End Game
+      </Button>
+      </Box>
       <div>
         {selectedGameId ? (
           <GameReplayer gameId={selectedGameId} />
