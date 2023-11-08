@@ -26,7 +26,7 @@ class User {
     }
  * 
  */
-router.post("/register", function (req, res) {
+router.post("/login", function (req, res) {
     // Cerchiamo nel req body se vi sono tutti i parametri non nulli, ovvero username e password
     if (req.body.username && req.body.password) {
         // Se sono presenti, li salviamo in due variabili

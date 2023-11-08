@@ -60,7 +60,8 @@ app.use((err, req, res, next) => {
 app.use("/", express.static(config.FRONTEND_DIST_PATH));
 //app.use("/ciao", require(config.ROUTESERVIZI + "\\webpages"));
 
-app.use("/register", require(config.ROUTESERVIZI + "\\registration"))
+app.use("/api", require(config.ROUTESERVIZI + "\\registration"))
+app.use("/api", require(config.ROUTESERVIZI + "\\login"))
 
 
 /* SERVER START */
