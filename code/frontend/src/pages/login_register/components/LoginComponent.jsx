@@ -58,8 +58,8 @@ function LoginComponent(props) {
 
       // Se i dati sono un json del tipo {"successo" : true},
       // allora passa a "/"
-      if (data.successo) {
-        window.location.pathname = "/";
+      if (data.success) {
+        window.location.pathname = "/reallybadchess";
       }
     } catch (error) {
       // Handle errors

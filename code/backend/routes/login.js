@@ -20,6 +20,9 @@ function logUser(username, password) {
 
             bcrypt.compare(password, user.password).then (
                 (result) => {
+                    if (!result) {
+                        reject({ message: "Password errata", status: 403, returnObject: { success: false } });
+                    }
                     const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '2h' });
                     resolve(token);
                 },
