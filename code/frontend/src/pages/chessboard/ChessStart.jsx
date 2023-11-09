@@ -10,11 +10,23 @@ import Slider from '@mui/material/Slider';
 import ChessGame from './ChessGame';
 import Navbar from '../navbar/Navbar';
 
+import Cookies from 'js-cookie';
+import { useEffect } from 'react';
+
 const StartInterface = () => {
   const [mode, setMode] = useState('playerVsComputer');
   const [duration, setDuration] = useState(5);
   const [rank, setRank] = useState(50);
   const [gameStarted, setGameStarted] = useState(false);
+
+  const [loginStatus, setLoginStatus] = React.useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      setLoginStatus(true);
+    }
+  }, []);
 
   const handleModeChange = (event) => {
     setMode(event.target.value);
@@ -35,7 +47,7 @@ const StartInterface = () => {
     
     <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
       {/* Navbar */}
-      <Navbar loginStatus={false} />
+      <Navbar loginStatus={loginStatus} />
     {!gameStarted &&
     <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" border={gameStarted ? 0 : 1} p={2} m={2}
       style={{
