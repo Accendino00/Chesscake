@@ -4,7 +4,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import styles from '../LoginStyles';
 
-export default function PasswordField({handleChangeData})  {
+export default function PasswordField({password, setPassword, error})  {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -15,9 +15,11 @@ export default function PasswordField({handleChangeData})  {
       <TextField
         sx = {styles.passwordTextField}
         variant="filled"
+        error={error}
+        value={password}
         label="Password"
         name="password"
-        onChange={handleChangeData}
+        onChange={(e) => setPassword(e.target.value)}
         type={showPassword ? 'text' : 'password'}
         InputProps={{
           endAdornment: (

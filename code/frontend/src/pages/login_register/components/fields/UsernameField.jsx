@@ -3,15 +3,17 @@ import { TextField, InputAdornment } from '@mui/material';
 import styles from '../LoginStyles';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
-export default function UsernameField({handleChangeData})  {
+export default function UsernameField({username, setUsername, error})  {
     return (
         <TextField
             sx = {styles.usernameTextField}
             variant="filled"
             label="Username"
+            error={error}
+            value={username}
             type="text"
             name="username"
-            onChange={handleChangeData}
+            onChange={(e) => setUsername(e.target.value)}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">

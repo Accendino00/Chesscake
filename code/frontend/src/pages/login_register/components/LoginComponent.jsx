@@ -8,37 +8,41 @@ import UsernameField from './fields/UsernameField'; // Import username field
 import RegisterComponent from './registerpopup/RegisterComponent';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+// Per il popup che indica una registrazione avvenuta con successo
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function LoginComponent(props) {
+  const [username, setUsername] = useState(''); // Username state
+  const [password, setPassword] = useState(''); // Password state
   const [buttonPopup, setButtonPopup] = React.useState(false);
 
-  // States for each form input
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
+  const [openRegisterSuccess, setOpenRegisterSuccess] = React.useState(false);
 
-  // Handle form field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    console.log("name: " + name + " value: " + value + "");
-    // log the e
-    console.log(e.target);
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenRegisterSuccess(false);
   };
 
   // Handle form submission
   const handleSubmitLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
-    
-    console.log(formData)
 
+    let formData = {
+      username: username,
+      password: password,
+    }
+    
     try {
       // Send HTTP request
-      const response = await fetch('http://localhost:3001/api/login', {
+      const response = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,8 +53,14 @@ function LoginComponent(props) {
       // Parse JSON response
       const data = await response.json();
 
-      // Handle data
+      // Log data
       console.log(data);
+
+      // Se i dati sono un json del tipo {"successo" : true},
+      // allora passa a "/"
+      if (data.successo) {
+        window.location.pathname = "/";
+      }
     } catch (error) {
       // Handle errors
       console.error('There was an error!', error);
@@ -60,6 +70,13 @@ function LoginComponent(props) {
 
   return (props.trigger) ? (
     <Grid container sx={styles.grid} spacing={2}>
+      
+      <Snackbar open={openRegisterSuccess} autoHideDuration={6000} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '200px' }}>
+          Registrazione ha avuto successo
+        </Alert>
+      </Snackbar>
+
       <Grid item>
         <img src='https://i.imgur.com/9is4Ypk.png'></img>
       </Grid>
@@ -67,13 +84,15 @@ function LoginComponent(props) {
       <Grid item>
         <UsernameField
           {...formFields.username}
-          handleChangeData={handleChange}
+          username={username}
+          setUsername={setUsername}
         />
       </Grid>
       <Grid item>
         <PasswordField
           {...formFields.password}
-          handleChangeData={handleChange}
+          password={password}
+          setPassword={setPassword}
         />
       </Grid>
       <Grid item>
@@ -93,7 +112,9 @@ function LoginComponent(props) {
             </Link>
             <RegisterComponent
               trigger={buttonPopup}
-              setTrigger={setButtonPopup}>
+              setTrigger={setButtonPopup}
+              setOpenRegisterSuccess={setOpenRegisterSuccess}
+              >
             </RegisterComponent>
           </Grid>
           <Grid item>

@@ -19,16 +19,14 @@
 /* IMPORT VARI */
 
 const express = require('express');
-// Per impostare "process.env" usando il file ".env"
-const config = require('./config');
-const path = require("path");
+const config = require('./config'); // Per impostare "process.env" usando il file ".env"
 
 
 
 /* SETUP SERVER */
 
 const app = express();
-const PORT = config.PORT || 3000;
+const PORT = config.PORT || 8000;
 
 
 
@@ -36,18 +34,19 @@ const PORT = config.PORT || 3000;
 
 /* MIDDLEWARE */
 
-
+// Middleware per autenticare JWT
+const { authenticateJWT } = require('./middleware/authorization'); 
 
 
 /* ROUTES */
-
 
 app.get("/prova", function (req, res) {
   res.send("Ciao");
 });
 
-app.use(express.json()) // for parsing application/json
+app.use(express.json()) // Per parsing di application/json
 
+// Per gestire gli errori in modo personalizzato, per esempio se il body non è JSON
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
       console.error(err);
@@ -57,12 +56,13 @@ app.use((err, req, res, next) => {
 });
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package
-app.use("/", express.static(config.FRONTEND_DIST_PATH));
-//app.use("/ciao", require(config.ROUTESERVIZI + "\\webpages"));
+app.use("/", require(config.ROUTESERVIZI + "\\webpages"));
 
 app.use("/api", require(config.ROUTESERVIZI + "\\registration"))
 app.use("/api", require(config.ROUTESERVIZI + "\\login"))
-
+app.get("/protected", authenticateJWT, (req, res) => {
+  res.send("Sei entrato in una route protetta");
+});
 
 /* SERVER START */
 
