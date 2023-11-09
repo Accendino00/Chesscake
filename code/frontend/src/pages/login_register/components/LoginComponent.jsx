@@ -10,6 +10,9 @@ import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Cookies from 'js-cookie';
+
 
 // Per il popup che indica una registrazione avvenuta con successo
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -22,8 +25,18 @@ function LoginComponent(props) {
   const [buttonPopup, setButtonPopup] = React.useState(false);
 
   const [openRegisterSuccess, setOpenRegisterSuccess] = React.useState(false);
+  const [openLoginError, setOpenLoginError] = React.useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const handleClose = (event, reason) => {
+  const handleCloseLogin = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenLoginError(false);
+  };
+
+  const handleCloseRegister = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -35,11 +48,14 @@ function LoginComponent(props) {
   const handleSubmitLogin = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
+    setLoading(true);
+    setOpenLoginError(false);
+
     let formData = {
       username: username,
       password: password,
     }
-    
+
     try {
       // Send HTTP request
       const response = await fetch('http://localhost:8000/api/login', {
@@ -59,21 +75,37 @@ function LoginComponent(props) {
       // Se i dati sono un json del tipo {"successo" : true},
       // allora passa a "/"
       if (data.success) {
+        var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+        Cookies.set('token', data.token, { expires: inFifteenMinutes }); // Expires in 7 days
+
+        setLoading(false);
         window.location.pathname = "/reallybadchess";
+      } else {
+        setOpenLoginError(true);
+        setLoading(false);
       }
     } catch (error) {
       // Handle errors
       console.error('There was an error!', error);
       console.log(error.status);
+
+      setOpenLoginError(true);
+      setLoading(false);
     }
   };
 
   return (props.trigger) ? (
     <Grid container sx={styles.grid} spacing={2}>
-      
-      <Snackbar open={openRegisterSuccess} autoHideDuration={6000} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert onClose={handleClose} severity="success" sx={{ width: '200px' }}>
+
+      <Snackbar open={openRegisterSuccess} autoHideDuration={4000} onClose={handleCloseRegister} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleCloseRegister} severity="success" sx={{ width: '300px' }}>
           Registrazione ha avuto successo
+        </Alert>
+      </Snackbar>
+
+      <Snackbar open={openLoginError} autoHideDuration={4000} onClose={handleCloseLogin} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleCloseLogin} severity="error" sx={{ width: '300px' }}>
+          Credenziali errate o problemi con il server
         </Alert>
       </Snackbar>
 
@@ -86,6 +118,7 @@ function LoginComponent(props) {
           {...formFields.username}
           username={username}
           setUsername={setUsername}
+          error={openLoginError}
         />
       </Grid>
       <Grid item>
@@ -93,6 +126,7 @@ function LoginComponent(props) {
           {...formFields.password}
           password={password}
           setPassword={setPassword}
+          error={openLoginError}
         />
       </Grid>
       <Grid item>
@@ -114,21 +148,29 @@ function LoginComponent(props) {
               trigger={buttonPopup}
               setTrigger={setButtonPopup}
               setOpenRegisterSuccess={setOpenRegisterSuccess}
-              >
+            >
             </RegisterComponent>
           </Grid>
-          <Grid item>
-            <Button
-              type="submit"
-              fullWidth
-              onClick={handleSubmitLogin}
-              variant="contained"
-              endIcon={<LoginIcon />}
-              sx={styles.loginButton}
-            >
-              Login
-            </Button>
-          </Grid>
+          {
+            loading ? (
+              <Grid item>
+                <CircularProgress />
+              </Grid>
+            ) : (
+              <Grid item>
+                <Button
+                  type="submit"
+                  fullWidth
+                  onClick={handleSubmitLogin}
+                  variant="contained"
+                  endIcon={<LoginIcon />}
+                  sx={styles.loginButton}
+                >
+                  Login
+                </Button>
+              </Grid>
+            )
+          }
         </Grid>
       </Grid>
       <Grid item>
@@ -136,6 +178,7 @@ function LoginComponent(props) {
           type="submit"
           variant="outlined"
           sx={styles.anonimoButton}
+          onClick={() => window.location.pathname = "/reallybadchess"}
         >
           Continua come anonimo
         </Button>

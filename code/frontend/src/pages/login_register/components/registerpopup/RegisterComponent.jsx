@@ -8,7 +8,13 @@ import UsernameField from '../fields/UsernameField'; // Username field
 import ConfirmPasswordField from '../fields/ConfirmPasswordField'; // Confirm password field
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
+// Per il popup che indica una registrazione avvenuta con successo
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function RegisterComponent(props) {
   const [username, setUsername] = useState(''); // Username state
@@ -17,6 +23,14 @@ function RegisterComponent(props) {
   const [loading, setLoading] = useState(false); // Loading state
 
   const [errorRegistration, setErrorRegistration] = useState(false); // Error registration state
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setErrorRegistration(false);
+  };
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -71,6 +85,12 @@ function RegisterComponent(props) {
 
   return (props.trigger) ? (
     <Container maxWidth='false' sx={styles.background} >
+      <Snackbar open={errorRegistration} autoHideDuration={4000} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert onClose={handleClose} severity="error" sx={{ width: '300px' }}>
+          Credenziali errate o problemi con il server
+        </Alert>
+      </Snackbar>
+
       <Paper elevation={10} sx={styles.paper} >
         <Grid container sx={styles.grid} spacing={2}>
           {/* Many Grid items which have the various field components in them */}

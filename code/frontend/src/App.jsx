@@ -5,21 +5,31 @@ import Navbar from './pages/navbar/Navbar.jsx'
 import {
   BrowserRouter as Router,
   Routes,
-  Route,
-  Link,
-  useNavigate
+  Route
 } from "react-router-dom";
+import Cookies from 'js-cookie';
+import { useEffect } from 'react';
+
 
 function App() {
+  const [loginStatus, setLoginStatus] = React.useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      setLoginStatus(true);
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navbar loginStatus={false} />} />
+        <Route path="/" element={<Navbar loginStatus={loginStatus} />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/reallybadchess" element={<Navbar loginStatus={false} />} />
-        <Route path="/account" element={<Navbar loginStatus={true} />} />
-        <Route path="/leaderboard" element={<Navbar loginStatus={true} />} />
-        <Route path="/tournaments" element={<Navbar loginStatus={false} />} />
+        <Route path="/reallybadchess" element={<Navbar loginStatus={loginStatus} />} />
+        <Route path="/account" element={<Navbar loginStatus={loginStatus} />} />
+        <Route path="/leaderboard" element={<Navbar loginStatus={loginStatus} />} />
+        <Route path="/tournaments" element={<Navbar loginStatus={loginStatus} />} />
       </Routes>
     </Router>
   )
