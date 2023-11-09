@@ -35,7 +35,7 @@ function registerUser(username, password) {
     POST /api/register HTTP/1.1
     User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)
     Host: www.chesscake.com
-    Content-Type: json
+    Content-Type: application/json
     Content-Length: <lenght calcolata>
     
     {
