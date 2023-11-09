@@ -1,0 +1,59 @@
+.App {
+  width:100vw;
+  height:100vw;
+  background-color:rgb(48,46,43);
+  text-align:center;
+}
+
+body{
+  margin:0;
+  padding:0;
+  background-color:#302e2b;
+}
+
+.SideBar{
+  width:240px;
+  height:100%;
+  background-color: #1c1d1a;
+  font-size: x-large;
+  color: rgb(255, 255, 255);
+  text-shadow: 1px 1px 1px black;
+}
+.SideBar ul {
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+}
+.SideBar ul li:not(:first-child) {
+  margin: 15px 0;
+}
+.SideBarList li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  padding: 5px;
+}
+
+.SideBarList li:hover {
+  background-color: #353131 ;
+  cursor: pointer;
+}
+.li #icon{
+  flex: 30%;
+  margin-left: 5px;
+  margin-right: 25px;
+  display: flex;
+}
+.li #text{
+  flex: 70%;
+}
+.flex-container {
+  display: flex;
+  align-items: center;
+}
+.SideBarList #active{
+  background-color: #353131;
+}
+

@@ -1,13 +1,11 @@
 import './App.css'
 import React from 'react'
-import LoginUI from './pages/login/LoginUI.jsx'
-import LoginComponent from './pages/login/LoginComponent.jsx'
-import StartingPage from './pages/StartingPage.jsx'
+import LoginPage from './pages/login_register/LoginPage.jsx'
 
 function App() {
 
   return (
-        <StartingPage />
+        <LoginPage />
   )
 }
 

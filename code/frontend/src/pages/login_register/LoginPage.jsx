@@ -1,9 +1,9 @@
 import React from 'react';
 import { Container, Grid } from '@mui/material';
-import styles from './StartingPageStyles';
-import LoginComponent from './login/LoginComponent';
+import styles from './LoginPageStyles';
+import LoginComponent from './components/LoginComponent';
 
-export default function StartingPage() {
+export default function LoginPage() {
 
     return (
         <Container 

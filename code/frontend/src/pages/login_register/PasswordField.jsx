@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TextField, InputAdornment, IconButton } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import styles from './LoginStyles';
+import styles from './components/LoginStyles';
 
 export default function PasswordField()  {
   const [showPassword, setShowPassword] = useState(false);
