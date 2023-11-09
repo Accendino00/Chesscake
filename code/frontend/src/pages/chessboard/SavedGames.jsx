@@ -1,5 +1,8 @@
 import React from 'react';
-import { Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 
 const SavedGames = ({ onSelectGame }) => {
   const savedGames = JSON.parse(localStorage.getItem('games')) || [];

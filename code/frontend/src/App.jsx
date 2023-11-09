@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import Cookies from 'js-cookie';
 import { useEffect } from 'react';
+import StartInterface from './pages/chessboard/ChessStart.jsx';
 
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navbar loginStatus={loginStatus} />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/reallybadchess" element={<Navbar loginStatus={loginStatus} />} />
+        <Route path="/reallybadchess" element={<StartInterface loginStatus={loginStatus} />} />
         <Route path="/account" element={<Navbar loginStatus={loginStatus} />} />
         <Route path="/leaderboard" element={<Navbar loginStatus={loginStatus} />} />
         <Route path="/tournaments" element={<Navbar loginStatus={loginStatus} />} />

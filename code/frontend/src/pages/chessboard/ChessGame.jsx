@@ -3,7 +3,8 @@ import Chessboard from 'chessboardjsx';
 import { Chess} from 'chess.js';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box } from '@mui/material';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 const ChessGame = ({ mode, duration, rank }) => {
   const [fen, setFen] = useState();
