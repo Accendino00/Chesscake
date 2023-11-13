@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ChessGame from './ChessGame';
-import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography, Slider } from '@mui/material';
+import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography, Slider, Modal } from '@mui/material';
 
 
 const StartInterface = () => {

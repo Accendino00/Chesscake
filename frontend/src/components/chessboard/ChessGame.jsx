@@ -1,28 +1,53 @@
-import React, { useState } from 'react';
-import Chessboard from 'chessboardjsx';
+import React, { useState, useEffect } from 'react';
+import {Chessboard} from 'react-chessboard';
 import { Chess} from 'chess.js';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box } from '@mui/material';
+import { Button, Box, Modal } from '@mui/material';
 
 const ChessGame = ({ mode, duration, rank }) => {
-  const [fen, setFen] = useState();
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
+  const [pieceSelected, setPieceSelected] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
+  const [winner, setWinner] = useState(null);
+  
+  const handleOpenModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalIsOpen(false);
+  };
+
+  const handleRestart = () => {
+    // Ricomincia la partita
+    setWinner(null);
+    setMoves([]);
+    setPieceSelected([]);
+    setPossibleMoves([]);
+    setChess(generateBoard());
+    handleCloseModal();
+  };
   
   //Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
     setPossibleMoves(moves.map(move => move.to));
-    
   };
 
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
-
   };
-  const [chess] = useState(() => {
+  
+  const [chess,setChess] = useState(generateBoard());
+
+  const handleSelectGame = (gameId) => {
+    setSelectedGameId(gameId);
+  };
+
+function generateBoard(){
   //Inizializzazione della scacchiera
   const newChess = new Chess();
   newChess.clear();
@@ -57,82 +82,127 @@ const ChessGame = ({ mode, duration, rank }) => {
   newChess.put({ type: 'k', color: 'b' }, 'e8');
 
   //Inizializzazione
-  setFen(newChess.fen());
-  return newChess;
-    
-  });
-
-  const handleSelectGame = (gameId) => {
-    setSelectedGameId(gameId);
-  };
-
-  const handleMove = ({ sourceSquare, targetSquare }) => {
-    if (chess.turn() === 'b' && mode != 'playerVsPlayer') {
-      return;
-    }
-    try {
-      if (chess.turn() === 'w' || mode == 'playerVsPlayer') {
-        if (chess.move({ from: sourceSquare, to: targetSquare })) {
-          setFen(chess.fen());
-          if (chess.isCheck()) {
-            console.log('P1 - Scacco!');
+  return newChess; 
+  }
+  
+  const handleMove = ( sourceSquare, targetSquare ) => {
+    console.log(sourceSquare, targetSquare);
+    try
+    {
+      if(chess.turn() === 'w'){
+        if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q'})) {
+          checkCheck();
+          if (move.flags.includes('e')) {
+            // La mossa è una mossa di en passant
+            const capturedSquare = move.to.slice(0, 1) + move.from.slice(1, 2);
+            chess.remove(capturedSquare);
           }
-          //Se è in modalità giocatore vs computer, il computer effettua la mossa
+          chess.fen();
           if (mode != 'playerVsPlayer'){     
-          setTimeout(() => {
-            const moves = chess.moves();
-            if (moves.length > 0) {
-              //Mossa casuale
-              const randomIndex = Math.floor(Math.random() * moves.length);
-              chess.move(moves[randomIndex]);
-              setFen(chess.fen());
-
-              if (chess.isCheckmate()) {
-                console.log('P2 - Scacco Matto!');
-              } else if (chess.isCheck()) {
-                console.log('P2 - Scacco!');
+            setTimeout(() => {
+              const moves = chess.moves();
+              if (moves.length > 0) {
+                //Mossa casuale
+                const randomIndex = Math.floor(Math.random() * moves.length);
+                chess.move(moves[randomIndex]);
+                checkCheck();
+                if (move.flags.includes('e')) {
+                  // La mossa è una mossa di en passant
+                  const capturedSquare = move.to.slice(0, 1) + move.from.slice(1, 2);
+                  chess.remove(capturedSquare);
+                }
               }
-            }
-            else {
-              console.log('P1 - Scacco Matto!');
-            }
-          }, 1000);
-        }
-        setFen(chess.fen());
+            }, 100);
+            chess.fen();
+          }
         }
       }
-    } catch (err) {
-      setFen(chess.fen());
+      else if(chess.turn() === 'b'){
+        if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q'})) {
+          checkCheck();
+          if (move.flags.includes('e')) {
+            // La mossa è una mossa di en passant
+            const capturedSquare = move.to.slice(0, 1) + move.from.slice(1, 2);
+            chess.remove(capturedSquare);
+          }
+          chess.fen();
+        }
+      }
+      if (chess.isCheckmate()) {
+        // Scacco matto: segnala il vincitore
+        const winner = chess.turn() === 'w' ? 'Nero' : 'Bianco';
+        setWinner(winner);
+        setModalIsOpen(true);
+      } else if (chess.isDraw()) {
+        // Patta: segnala il pareggio
+        setWinner('Patta');
+        setModalIsOpen(true);
+      }
     }
-    handleMouseOutSquare();
-  };
+    catch (error) {
+      console.log(error);
+    }
+  handleMouseOutSquare();
+};
+
+
+function checkCheck(){
+  if (chess.isCheck()) {
+    setPieceSelected(get_piece_positions(chess, { type: 'k', color: chess.turn()=='b' ? 'b' : 'w' }));
+  } else {
+    setPieceSelected([]);
+  }
+};
+
 
   const handleGameOver = () => {
     const savedGames = JSON.parse(localStorage.getItem('games')) || [];
     const newGame = { id: savedGames.length + 1, moves };
     savedGames.push(newGame);
     localStorage.setItem('games', JSON.stringify(savedGames));
+    setWinner('Nessuno');
+    setModalIsOpen(true);
   };
   return (
     <div>
-    {/*mode === 'dailyChallenge' ||*/ mode === 'playerVsPlayerOnline' ? 
+      <Modal open={modalIsOpen} onClose={handleCloseModal}>
+      <Box sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20%', height: '30%', bgcolor: 'background.paper', p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <h2>{winner ? `${winner} ha vinto!` : 'Partita finita.'}</h2>
+          </Box>
+          <Button onClick={() => window.location.href = '/'}>Esci</Button>
+          <Button onClick={handleRestart}>Ricomincia</Button>
+          <Button>Condividi su Facebook</Button>
+        </Box>
+      </Modal>
+
+
+    {mode === 'playerVsPlayerOnline' ? 
       <p>Ancora in fase di implementazione!</p> 
       : 
       <div>
       {mode === 'playerVsComputer' ?
       <h1>PLAYER VS COMPUTER</h1>
       :
-      <h1>PLAYER VS PLAYER (LOCAL)</h1>
+      <h1>PLAYER VS PLAYER</h1>
       }
+      
       <Chessboard
-        position={fen}
+        position={chess.fen()}
         onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
-        || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
+          || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
         onMouseOutSquare={handleMouseOutSquare}
-        squareStyles={possibleMoves.reduce((a, c) => ({ ...a, [c]: { backgroundColor: 'rgba(255, 255, 0, 0.5)' } }), {})}
-        onDrop={handleMove}
-        orientation="white"
-        width={400}
+        customSquareStyles={{
+          ...possibleMoves.reduce((a, c) => ({ ...a, [c]: {
+            background: "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)",
+          } }), {}),
+          ...pieceSelected.reduce((a, c) => ({ ...a, [c]: {
+            background: "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)",
+          } }), {})
+        }}
+        onPieceDrop={handleMove}
+        boardOrientation="white"
+        width={'50vh'}
       />
       </div>
     }
@@ -162,6 +232,7 @@ export default ChessGame;
 
 
 function findChessPiecesWithRank(rank, seed) {
+  console.log(rank);
   //Pezzi disponibili da scegliere
   const pieces = [
     { name: "p", value: 1 },
@@ -218,8 +289,9 @@ function weightFunction(value, overallValue, median) {
 // Funzione per calcolare il rank
 function calculateRanks(rank, seed) {
   const value = -0.5 * rank + 25;  //Funzione lineare per determinare il valore
-  let playerRank = (seed===0 ? Math.random() : seededRandom(seed)) * 65 + 25;
-  let opponentRank = playerRank - value;
+  //onst value = 25 - (19*rank)/40 - (3*rank*rank*rank)/4000 + rank*rank*rank/200000;
+  let playerRank = ((seed===0 ? Math.random() : seededRandom(seed)) * 20 + 45) + (Math.min(0, 100-rank))/2;
+  let opponentRank = playerRank - Math.min(value, 75);
   playerRank = Math.max(playerRank, 0);
   opponentRank = Math.max(opponentRank, 0);
   return [playerRank, opponentRank];
@@ -230,3 +302,17 @@ function seededRandom(seed) {
   let x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
+
+const get_piece_positions = (game, piece) => {
+  return [].concat(...game.board()).map((p, index) => {
+    if (p !== null && p.type === piece.type && p.color === piece.color) {
+      return index
+    }
+  }).filter(Number.isInteger).map((piece_index) => {
+    const row = 'abcdefgh'[piece_index % 8]
+    const column = Math.ceil((64 - piece_index) / 8)
+    return row + column
+  })
+}
+
+                
