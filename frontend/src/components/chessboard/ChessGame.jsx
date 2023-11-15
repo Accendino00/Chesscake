@@ -86,33 +86,23 @@ function generateBoard(){
   }
   
   const handleMove = ( sourceSquare, targetSquare ) => {
-    console.log(sourceSquare, targetSquare);
     try
     {
       if(chess.turn() === 'w'){
         if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q'})) {
           checkCheck();
-          if (move.flags.includes('e')) {
-            // La mossa è una mossa di en passant
-            const capturedSquare = move.to.slice(0, 1) + move.from.slice(1, 2);
-            chess.remove(capturedSquare);
-          }
           chess.fen();
           if (mode != 'playerVsPlayer'){     
             setTimeout(() => {
               const moves = chess.moves();
+              console.log(moves);
               if (moves.length > 0) {
                 //Mossa casuale
                 const randomIndex = Math.floor(Math.random() * moves.length);
                 chess.move(moves[randomIndex]);
                 checkCheck();
-                if (move.flags.includes('e')) {
-                  // La mossa è una mossa di en passant
-                  const capturedSquare = move.to.slice(0, 1) + move.from.slice(1, 2);
-                  chess.remove(capturedSquare);
-                }
               }
-            }, 100);
+            }, 1000);
             chess.fen();
           }
         }
@@ -232,7 +222,6 @@ export default ChessGame;
 
 
 function findChessPiecesWithRank(rank, seed) {
-  console.log(rank);
   //Pezzi disponibili da scegliere
   const pieces = [
     { name: "p", value: 1 },
