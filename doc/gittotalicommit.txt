@@ -1,0 +1,11 @@
+    12	Tucano <donatidavide5@gmail.com>
+    10	SaadMedhat <saad2001f@gmail.com>
+     9	AlecsHere <alessandrostefanuca02@gmail.com>
+     8	Rinma Trupe <petrumarcel.marincas@studio.unibo.it>
+     5	Accendino <other2180@gmail.com>
+     2	Rinma Trupe <mariusmrs.mm@gmail.com>
+     1	DaviLK <Rafidfardeenhoque@gmail.com>
+     1	Petru Marcel Marincas <petrumarcel.marincas@studio.unibo.it>
+     1	Saad Farqad Medhat <saadfarqad.medhat@studio.unibo.it>
+co-authored commits:50
+Co-author list:
