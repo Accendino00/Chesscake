@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ChessGame from './ChessGame';
-import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography, Slider, Modal } from '@mui/material';
+import { Button, Select, MenuItem, FormControl, InputLabel, Box, Typography, Slider, TextField } from '@mui/material';
 
 
 const StartInterface = () => {
@@ -8,6 +8,8 @@ const StartInterface = () => {
   const [duration, setDuration] = useState(5);
   const [rank, setRank] = useState(50);
   const [gameStarted, setGameStarted] = useState(false);
+  const [player1, setPlayer1] = useState('');
+  const [player2, setPlayer2] = useState('');
 
   const handleModeChange = (event) => {
     setMode(event.target.value);
@@ -62,6 +64,18 @@ const StartInterface = () => {
           </Select>
         </FormControl>
       </Box>
+      <form>
+        <TextField
+          label="Player 1"
+          value={player1}
+          onChange={e => setPlayer1(e.target.value)}
+        />
+        <TextField
+          label="Player 2"
+          value={player2}
+          onChange={e => setPlayer2(e.target.value)}
+        />    
+      </form>
       <Typography id="rank-slider" gutterBottom>
         Rank
       </Typography>
@@ -81,12 +95,13 @@ const StartInterface = () => {
         Start Game
       </Button>
       </Box>
+      
     </>
     
     
   </Box>
   }
-  {gameStarted && <ChessGame mode={mode} duration={duration} rank={rank}/>}
+  {gameStarted && <ChessGame mode={mode} duration={duration} rank={rank} player1={player1 || 'Player 1'} player2={player2 || 'Player 2'}/>}
 </Box>
 
 

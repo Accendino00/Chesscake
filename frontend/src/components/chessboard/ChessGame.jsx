@@ -3,16 +3,22 @@ import {Chessboard} from 'react-chessboard';
 import { Chess} from 'chess.js';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box, Modal } from '@mui/material';
+import { Button, Box, Modal, Typography, TextField } from '@mui/material';
+import { useMemo } from 'react';
+import Engine from './Engine.ts';
 
-const ChessGame = ({ mode, duration, rank }) => {
+const ChessGame = ({ mode, duration, rank, player1, player2}) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [pieceSelected, setPieceSelected] = useState([]);
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
+  const stockfish = new Worker('/stockfish.js');
+
+  const engine = useMemo(() => new Engine(), []);
   
+
   const handleOpenModal = () => {
     setModalIsOpen(true);
   };
@@ -98,8 +104,10 @@ function generateBoard(){
               console.log(moves);
               if (moves.length > 0) {
                 //Mossa casuale
-                const randomIndex = Math.floor(Math.random() * moves.length);
-                chess.move(moves[randomIndex]);
+                // console.log("MOSSA:" + useStockfish(chess.fen()));
+                // const randomIndex = Math.floor(Math.random() * moves.length);
+                // chess.move(moves[randomIndex]);
+                findBestMove();
                 checkCheck();
               }
             }, 1000);
@@ -144,6 +152,49 @@ function checkCheck(){
   }
 };
 
+function handleWhiteMove(sourceSquare, targetSquare) {
+  if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q'})) {
+    checkCheck();
+    chess.fen();
+    if (mode !== 'playerVsPlayer') {     
+      setTimeout(() => {
+        // Send the current board state to the engine
+        engine.postMessage('position fen ' + chess.fen());
+
+        // Ask the engine for the best move
+        engine.postMessage('go depth 15');
+      }, 1000);
+    }
+  }
+}
+
+function useStockfish (chessBoard){
+    const stockfish = new Worker("./stockfish.js");
+    const DEPTH = 8; // number of halfmoves the engine looks ahead
+    const FEN_POSITION = // chess position in FEN format
+      chessBoard;
+
+      stockfish.postMessage("uci");
+      stockfish.postMessage(`position fen ${FEN_POSITION}`);
+      stockfish.postMessage(`go depth ${DEPTH}`);
+
+      stockfish.onmessage = (e) => {
+        console.log("LA MOSSA" + e.data); // in the console output you will see `bestmove e2e4` message
+      };
+};
+
+function findBestMove() {
+  engine.evaluatePosition(chess.fen(), 10);
+  engine.onMessage(({ bestMove }) => {
+    if (bestMove) {
+      chess.move({
+        from: bestMove.substring(0, 2),
+        to: bestMove.substring(2, 4),
+        promotion: "q",
+      });
+    }
+  });
+}
 
   const handleGameOver = () => {
     const savedGames = JSON.parse(localStorage.getItem('games')) || [];
@@ -154,7 +205,11 @@ function checkCheck(){
     setModalIsOpen(true);
   };
   return (
+    
     <div>
+      <div>
+        <Typography variant="h4">{chess.turn() === 'w' ? player1 : player2}'s turn</Typography>
+      </div>
       <Modal open={modalIsOpen} onClose={handleCloseModal}>
       <Box sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20%', height: '30%', bgcolor: 'background.paper', p: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -193,6 +248,7 @@ function checkCheck(){
         onPieceDrop={handleMove}
         boardOrientation="white"
         width={'50vh'}
+        onDrop={({ sourceSquare, targetSquare }) => handleWhiteMove(sourceSquare, targetSquare)}
       />
       </div>
     }

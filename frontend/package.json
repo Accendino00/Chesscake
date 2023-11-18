@@ -18,7 +18,8 @@
     "react": "^18.2.0",
     "react-chessboard": "^4.3.2",
     "react-chessboardjs": "^0.5.3",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "stockfish": "^16.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
