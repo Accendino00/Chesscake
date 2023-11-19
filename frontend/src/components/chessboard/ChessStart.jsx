@@ -64,18 +64,26 @@ const StartInterface = () => {
           </Select>
         </FormControl>
       </Box>
-      <form>
-        <TextField
-          label="Player 1"
-          value={player1}
-          onChange={e => setPlayer1(e.target.value)}
-        />
-        <TextField
-          label="Player 2"
-          value={player2}
-          onChange={e => setPlayer2(e.target.value)}
-        />    
-      </form>
+      {mode === 'playerVsPlayer' && (
+      <>
+        <Box m={2} width={1/2}>
+          <TextField
+            fullWidth
+            label="Player 1"
+            value={player1}
+            onChange={e => setPlayer1(e.target.value)}
+          />
+        </Box>
+        <Box m={2} width={1/2}>
+          <TextField
+            fullWidth
+            label="Player 2"
+            value={player2}
+            onChange={e => setPlayer2(e.target.value)}
+          />
+        </Box>
+      </>
+      )}
       <Typography id="rank-slider" gutterBottom>
         Rank
       </Typography>

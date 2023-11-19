@@ -14,6 +14,8 @@ const ChessGame = ({ mode, duration, rank, player1, player2}) => {
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [fen, setFen] = useState('start');
   const stockfish = new Worker('/stockfish.js');
 
   const engine = useMemo(() => new Engine(), []);
@@ -23,8 +25,23 @@ const ChessGame = ({ mode, duration, rank, player1, player2}) => {
     setModalIsOpen(true);
   };
 
+  function handleUndo() {
+    chess.undo();
+    setFen(chess.fen());
+  }
+  
   const handleCloseModal = () => {
     setModalIsOpen(false);
+  };
+
+  const replayGame = (savedMoves) => {
+    let replayChess = new Chess();
+  
+    for (let move of savedMoves) {
+      replayChess.move(move);
+    }
+  
+    setFen(replayChess.fen());
   };
 
   const handleRestart = () => {
@@ -92,6 +109,13 @@ function generateBoard(){
   }
   
   const handleMove = ( sourceSquare, targetSquare ) => {
+    // Make the move
+    let result = chess.move({ from: sourceSquare, to: targetSquare });
+
+    // If the move was legal, update the board
+    if (result) {
+      setFen(chess.fen());
+    }
     try
     {
       if(chess.turn() === 'w'){
@@ -207,9 +231,7 @@ function findBestMove() {
   return (
     
     <div>
-      <div>
-        <Typography variant="h4">{chess.turn() === 'w' ? player1 : player2}'s turn</Typography>
-      </div>
+      
       <Modal open={modalIsOpen} onClose={handleCloseModal}>
       <Box sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20%', height: '30%', bgcolor: 'background.paper', p: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -221,17 +243,21 @@ function findBestMove() {
         </Box>
       </Modal>
 
-
-    {mode === 'playerVsPlayerOnline' ? 
-      <p>Ancora in fase di implementazione!</p> 
-      : 
-      <div>
-      {mode === 'playerVsComputer' ?
-      <h1>PLAYER VS COMPUTER</h1>
-      :
-      <h1>PLAYER VS PLAYER</h1>
+    
+      {mode === 'playerVsPlayerOnline' ? 
+        <p>Ancora in fase di implementazione!</p> 
+        : 
+        <div>
+        {mode === 'playerVsComputer' ?
+        <h1>PLAYER VS COMPUTER</h1>
+        :
+        <h1>PLAYER VS PLAYER</h1>
       }
-      
+      {mode === 'playerVsPlayer' &&
+      <div>
+        <Typography variant="h4">{chess.turn() === 'w' ? player1 : player2}'s turn</Typography>
+      </div>
+      }
       <Chessboard
         position={chess.fen()}
         onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
@@ -261,6 +287,9 @@ function findBestMove() {
       <Button variant="contained" color="primary" onClick={handleGameOver}>
         End Game
       </Button>
+      {mode === 'playerVsPlayer' && 
+        <Button variant="contained" color="primary" onClick={handleUndo} style={{ marginLeft: '20px' }}>Undo</Button>
+      }
       </Box>
       <div>
         {selectedGameId ? (
