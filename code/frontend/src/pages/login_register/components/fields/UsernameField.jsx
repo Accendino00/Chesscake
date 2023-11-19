@@ -12,6 +12,7 @@ export default function UsernameField({username, setUsername, error})  {
             error={error}
             value={username}
             type="text"
+            autoComplete='username'
             name="username"
             onChange={(e) => setUsername(e.target.value)}
             InputProps={{

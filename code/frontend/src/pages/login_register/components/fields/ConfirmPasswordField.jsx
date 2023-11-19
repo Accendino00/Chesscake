@@ -6,9 +6,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import styles from '../LoginStyles';
 
-export default function ConfirmPasswordField({error, password, confirmPassword, setConfirmPassword})  {
+export default function ConfirmPasswordField({error, password, confirmPassword, setConfirmPassword, passwordsMatch, setPasswordsMatch})  {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordsMatch, setPasswordsMatch] = useState(0); // 0 no password, 1 passwords match, -1 passwords don't match
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword((prevShowConfirmPassword) => !prevShowConfirmPassword);

@@ -3,6 +3,10 @@ import { Container, Grid } from '@mui/material';
 import styles from './LoginPageStyles';
 import LoginComponent from './components/LoginComponent';
 
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
+
 export default function LoginPage() {
 
     return (

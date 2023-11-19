@@ -4,37 +4,43 @@ var router = express.Router();
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+var { clientMDB }  = require('../utils/dbmanagement');
 
 function logUser(username, password) {
     return new Promise((resolve, reject) => {
         try {
-            // Prima controlliamo che ci sia stato almeno un utente
-            if (config.users === undefined || config.users.length == 0) {
-                reject({ message: "Non ci sono utenti registrati", status: 403, returnObject: { success: false } });
-            }
+            const usersCollection = clientMDB.db("ChessCake").collection("Users");
 
-            let user = config.users.find(u => u.username === username);
-            if (!user) {
-                reject({ message: "Utente non trovato", status: 403, returnObject: { success: false } });
-            } 
-
-            bcrypt.compare(password, user.password).then (
-                (result) => {
-                    if (!result) {
-                        reject({ message: "Password errata", status: 403, returnObject: { success: false } });
-                    }
-                    const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '2h' });
-                    resolve(token);
-                },
-                (error) => {
-                    reject({ message: "Password errata", status: 403, returnObject: { success: false } });
+            // Find the user with the given username
+            usersCollection.findOne({ username: username })
+            .then((user) => {
+                if (!user) {
+                    reject({ message: "Utente non trovato", status: 403, returnBody: { success: false } });
+                } else {
+                    // Compare the provided password with the hashed password
+                    bcrypt.compare(password, user.password).then(
+                        (result) => {
+                            if (!result) {
+                                reject({ message: "Password errata", status: 403, returnBody: { success: false } });
+                            } else {
+                                const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '2h' });
+                                resolve({ message: "Login completato", status: 200, returnBody: { success: true, token: token } });
+                            }
+                        },
+                        (error) => {
+                            reject({ message: "Errore nella verifica della password", status: 500, returnBody: { success: false } });
+                        }
+                    );
                 }
-            );
+            }).catch((error) => {
+                reject({ message: "Errore interno 1", status: 500, returnBody: { success: false }});
+            });
         } catch (error) {
-            reject({ message: "Errore interno", status: 500, returnObject: { success: false }});
+            reject({ message: "Errore interno 2", status: 500, returnBody: { success: false }});
         }
     });
 }
+
 
 /**
  * Gestione della richiesta "/api/login"
@@ -62,24 +68,21 @@ router.post("/login", function (req, res) {
         // Eseguiamo il login
         logUser(username, password).then((result) => {
             // Se non ci sono stati errori, ritorniamo un 200
-            res.status(200);
+            res.status(result.status);
 
             // Ritorniamo un json con il token e un flag di successo
             // e impostiamo gli header in modo corretto
-            res.body = {
-                "success": true,
-                "token" : result
-            }
+            let resBody = result.returnBody;
 
             res.header("Content-Type", "application/json");
-            res.header("Content-Length", res.body.length);
+            res.header("Content-Length", resBody.length);
 
-            res.send(res.body);
+            res.send(resBody);
         }).catch((error) => {
             // Se si è verificato un errore, lo stampiamo in console
             console.log(error.message);
             // e ritorniamo un errore 500
-            res.status(error.status).send(error.returnObject);
+            res.status(error.status).send(error.returnBody);
         });;
 
     } else {

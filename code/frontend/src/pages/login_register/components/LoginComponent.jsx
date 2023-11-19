@@ -1,18 +1,24 @@
+// React
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Box, Grid } from '@mui/material';
+
+// Componenti nostre
 import styles from './LoginStyles'; // Import styles
-import LoginIcon from '@mui/icons-material/Login'; // Import login icon
 import { formFields, formTitle } from './LoginConfig'; // Import configurations
 import PasswordField from './fields/PasswordField'; // Import password field
 import UsernameField from './fields/UsernameField'; // Import username field
 import RegisterComponent from './registerpopup/RegisterComponent';
+
+// Material
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import Cookies from 'js-cookie';
+import LoginIcon from '@mui/icons-material/Login'; // Import login icon
+import { TextField, Button, Container, Typography, Box, Grid } from '@mui/material';
 
+// Gestione cookie
+import Cookies from 'js-cookie';
 
 // Per il popup che indica una registrazione avvenuta con successo
 const Alert = React.forwardRef(function Alert(props, ref) {
@@ -27,6 +33,7 @@ function LoginComponent(props) {
   const [openRegisterSuccess, setOpenRegisterSuccess] = React.useState(false);
   const [openLoginError, setOpenLoginError] = React.useState(false);
   const [loading, setLoading] = useState(false); // Loading state
+  const [errorMessageLogin, setErrorMessageLogin] = useState("Credenziali sbagliate"); // Error message state
 
   const handleCloseLogin = (event, reason) => {
     if (reason === 'clickaway') {
@@ -76,19 +83,19 @@ function LoginComponent(props) {
       // allora passa a "/"
       if (data.success) {
         var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
-        Cookies.set('token', data.token, { expires: inFifteenMinutes }); // Expires in 7 days
+        await Cookies.set('token', data.token, { expires: inFifteenMinutes }); // Expires in 7 days
 
         setLoading(false);
-        window.location.pathname = "/reallybadchess";
+        window.location.pathname = "/play";
       } else {
+        // Gestione errori con quello che ha fatto l'utente
+        setErrorMessageLogin("Credenziali errate");
         setOpenLoginError(true);
         setLoading(false);
       }
     } catch (error) {
-      // Handle errors
-      console.error('There was an error!', error);
-      console.log(error.status);
-
+      // Gestione errori del server, quindi per colpa della comunicazione
+      setErrorMessageLogin("Problemi con il server, riprova più tardi");
       setOpenLoginError(true);
       setLoading(false);
     }
@@ -105,12 +112,17 @@ function LoginComponent(props) {
 
       <Snackbar open={openLoginError} autoHideDuration={4000} onClose={handleCloseLogin} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleCloseLogin} severity="error" sx={{ width: '300px' }}>
-          Credenziali errate o problemi con il server
+          {errorMessageLogin}
         </Alert>
       </Snackbar>
 
       <Grid item>
-        <img src='https://i.imgur.com/9is4Ypk.png'></img>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <img src="/iconQueen@1x.png" alt="Chess Cake" style={{ maxWidth: '160px', height: 'auto' }} />
+          <Typography variant="h4" sx={styles.titleStyle}>
+            Chess Cake
+          </Typography>
+        </Box>
       </Grid>
 
       <Grid item>
@@ -178,12 +190,12 @@ function LoginComponent(props) {
           type="submit"
           variant="outlined"
           sx={styles.anonimoButton}
-          onClick={() => window.location.pathname = "/reallybadchess"}
+          onClick={() => window.location.pathname = "/play"}
         >
           Continua come anonimo
         </Button>
       </Grid>
-    </Grid>
+    </Grid >
 
   ) : "";
 };

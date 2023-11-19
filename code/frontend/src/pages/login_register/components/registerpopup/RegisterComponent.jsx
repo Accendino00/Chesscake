@@ -20,7 +20,9 @@ function RegisterComponent(props) {
   const [username, setUsername] = useState(''); // Username state
   const [password, setPassword] = useState(''); // Password state
   const [confirmedPassword, setConfirmedPassword] = useState(''); // Confirmed password state
+  const [passwordsMatch, setPasswordsMatch] = useState(0); // 0 no password, 1 passwords match, -1 passwords don't match
   const [loading, setLoading] = useState(false); // Loading state
+  const [errorMessage, setErrorMessage] = useState("Credenziali sbagliate"); // Error message state
 
   const [errorRegistration, setErrorRegistration] = useState(false); // Error registration state
 
@@ -44,8 +46,6 @@ function RegisterComponent(props) {
       password: password,
     }
 
-    console.log(formData);
-
     try {
       // Send HTTP request
       const response = await fetch('http://localhost:8000/api/register', {
@@ -59,9 +59,6 @@ function RegisterComponent(props) {
       // Parse JSON response
       const data = await response.json();
 
-      // Log data
-      console.log(data);
-
 
       // Se i dati sono un json del tipo {"successo" : true},
       // allora chiudo il popup della registrazione
@@ -70,14 +67,13 @@ function RegisterComponent(props) {
         props.setOpenRegisterSuccess(true);
         setLoading(false);
       } else {
+        setErrorMessage("L'utente esiste già o le credenziali contengono caratteri non validi")
         setErrorRegistration(true);
         setLoading(false);
       }
     } catch (error) {
       // Handle errors
-      console.error('There was an error!', error);
-      console.log(error.status);
-
+      setErrorMessage("Problemi con il server, riprova più tardi")
       setErrorRegistration(true);
       setLoading(false);
     }
@@ -87,7 +83,7 @@ function RegisterComponent(props) {
     <Container maxWidth='false' sx={styles.background} >
       <Snackbar open={errorRegistration} autoHideDuration={4000} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
         <Alert onClose={handleClose} severity="error" sx={{ width: '300px' }}>
-          Credenziali errate o problemi con il server
+          {errorMessage}
         </Alert>
       </Snackbar>
 
@@ -117,6 +113,8 @@ function RegisterComponent(props) {
               {...formFields.password}
               password={password}
               setPassword={setPassword}
+              confirmPassword={confirmedPassword}
+              setPasswordsMatch={setPasswordsMatch}
               error={errorRegistration}
             />
           </Grid>
@@ -125,6 +123,8 @@ function RegisterComponent(props) {
               {...formFields.confirmPassword}
               confirmPassword={confirmedPassword}
               setConfirmPassword={setConfirmedPassword}
+              setPasswordsMatch={setPasswordsMatch}
+              passwordsMatch={passwordsMatch}
               password={password}
               error={errorRegistration}
             />

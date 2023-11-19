@@ -95,6 +95,14 @@ const styles = {
         textDecorationColor: '#FFD700',
       },
     },
+
+    titleStyle: {
+      margin: "0px 35px 0px -35px",
+      color: "rgb(0 0 0)",
+      fontWeight: "700",
+      textShadow: "rgba(0, 0, 0, 0.5) 2px 2px 3px",
+      fontFamily: "Lato, sans-serif",
+    },
   };
   
   export default styles;

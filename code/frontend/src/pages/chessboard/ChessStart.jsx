@@ -46,8 +46,6 @@ const StartInterface = () => {
   return (
     
     <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-      {/* Navbar */}
-      <Navbar loginStatus={loginStatus} />
     {!gameStarted &&
     <Box display="flex" justifyContent="center" alignItems="center" flexDirection="column" border={gameStarted ? 0 : 1} p={2} m={2}
       style={{

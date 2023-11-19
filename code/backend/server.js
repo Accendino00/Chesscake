@@ -19,8 +19,8 @@
 /* IMPORT VARI */
 
 const express = require('express');
-const config = require('./config'); // Per impostare "process.env" usando il file ".env"
-
+const config = require('./config'); // Contiene variabili utili per il server
+const { clientMDB, connectToDatabase, disconnectFromDatabase }  = require('./utils/dbmanagement'); 
 
 
 /* SETUP SERVER */
@@ -31,11 +31,13 @@ const PORT = config.PORT || 8000;
 
 
 
-
 /* MIDDLEWARE */
 
 // Middleware per autenticare JWT
 const { authenticateJWT } = require('./middleware/authorization'); 
+
+
+
 
 
 /* ROUTES */
@@ -55,17 +57,38 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Setup per mandare le richieste di "/" a "routes/webpages" package
-app.use("/", require(config.ROUTESERVIZI + "\\webpages"));
 
-app.use("/api", require(config.ROUTESERVIZI + "\\registration"))
-app.use("/api", require(config.ROUTESERVIZI + "\\login"))
-app.get("/protected", authenticateJWT, (req, res) => {
-  res.send("Sei entrato in una route protetta");
-});
+app.use("/api", require(config.ROUTESERVIZI + "/registration"))
+app.use("/api", require(config.ROUTESERVIZI + "/login"))
+app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
+
+
+// Setup per mandare le richieste di "/" a "routes/webpages" package
+app.get("*", require(config.ROUTESERVIZI + "/webpages"));
+
+
 
 /* SERVER START */
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server acceso su http://localhost:${PORT}`);
+
+  // Ci colleghiamo al database
+  connectToDatabase();
 });
+
+
+
+
+/* SERVER END */
+
+// Capture termination and interrupt signals
+process.on('SIGTERM', handleShutdown);
+process.on('SIGINT', handleShutdown);
+
+// Funzione che gestisce la chiusura del server
+async function handleShutdown() {
+  console.log("Spegnendo server...");
+  await disconnectFromDatabase();
+  process.exit(0);
+}

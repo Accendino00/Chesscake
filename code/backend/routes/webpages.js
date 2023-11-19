@@ -3,20 +3,14 @@ var router = express.Router();
 var path = require('path')
 var config = require("../config")
 
-let pagePaths = [
-    "/",
-    "/login",
-    "/reallybadchess",
-    "/account",
-    "/leaderboard",
-    "/tournaments"
-];
+// Serve i file statici dalla directory dist di React
+router.use(express.static(config.FRONTEND_DIST_PATH));
 
-// Imposto il router a reindirizzare le richieste a "/" a "../../frontend/dist"
-for (let i = 0; i < pagePaths.length; i++) {
-    router.use(pagePaths[i], express.static(config.FRONTEND_DIST_PATH));
-}
+// Serve l'index.html per tutte le altre richieste
+router.get("*", function (req, res) {
+    res.sendFile(path.join(config.FRONTEND_DIST_PATH, "index.html"));
+});
 
-console.log("Serving static files from " + config.FRONTEND_DIST_PATH);
+console.log("Restituendo le pagine web da: " + config.FRONTEND_DIST_PATH);
 
 module.exports = router;
