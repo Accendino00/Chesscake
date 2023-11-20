@@ -89,4 +89,21 @@ export default class Engine {
     this.isReady = false;
     this.stockfish.postMessage("quit"); // Run this before chessboard unmounting.
   }
+
+  searchBestMoveWithTimeLimit(fen, timeLimitInSeconds) {
+    // Assicurati che il motore sia pronto
+    if (!this.isReady) {
+      console.error("Il motore non è pronto.");
+      return;
+    }
+  
+    // Invia la posizione corrente al motore
+    this.stockfish.postMessage(`position fen ${fen}`);
+  
+    // Calcola il tempo da inviare in millisecondi
+    const timeLimitInMillis = timeLimitInSeconds * 1000;
+  
+    // Invia il comando di ricerca con limite di tempo
+    this.stockfish.postMessage(`go movetime ${timeLimitInMillis}`);
+  }
 }
