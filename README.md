@@ -20,12 +20,12 @@ Il nostro team è composto da:
     </tr>
     <tr>
         <td>Davide Donati</td>
-        <td>0001019464</td>
+        <td>0001019487</td>
         <td>Scrum Master</td>
     </tr>
     <tr>
         <td>Giuseppe Forciniti</td>
-        <td>0001019487</td>
+        <td>0001019464</td>
         <td>Developer</td>
     </tr>
     <tr>

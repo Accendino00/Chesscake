@@ -1,0 +1,1 @@
+Il video all'interno del quale vengono mostrate le user stories e cosa è stato fatto è disponibile a questo [link](https://www.youtube.com/watch?v=7x3iO-WZsS8) 
