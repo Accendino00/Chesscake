@@ -24,6 +24,11 @@ import {
 
 
 function App() {
+  /**
+   * Gestione della sessione di login, controllando il cookie
+   */
+  const { loginStatus, isLoading } = useTokenChecker();
+
   const router = createBrowserRouter([
     // Landing page
     {
@@ -33,16 +38,20 @@ function App() {
     // Routes without a navbar on the side
     {
       path: "/login",
-      element: <LoginPage/>,
+      element: isLoading ? 
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box> : 
+      loginStatus ? <LandingPage /> : <LoginPage />,
     },
     // Routes with a navbar on the side
     {
       path: "/play",
-      element: <NavPage />,
+      element: <NavPage loginStatus={loginStatus} />,
       children: [
         {
           path: "reallybadchess/",
-          element: <StartInterface />,
+          element: <StartInterface loginStatus={loginStatus} />,
         },
         {
           path: "account/",
