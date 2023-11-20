@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {Chessboard} from 'react-chessboard';
 import { Chess} from 'chess.js';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box, Modal, Typography, TextField } from '@mui/material';
+import { Button, Box, Modal, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import Engine from './Engine.ts';
 
@@ -14,7 +14,6 @@ const ChessGame = ({ mode, duration, rank, player1, player2}) => {
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
-  const [history, setHistory] = useState([]);
   const [fen, setFen] = useState('start');
   const stockfish = new Worker('/stockfish.js');
 
@@ -109,13 +108,6 @@ function generateBoard(){
   }
   
   const handleMove = ( sourceSquare, targetSquare ) => {
-    // Make the move
-    let result = chess.move({ from: sourceSquare, to: targetSquare });
-
-    // If the move was legal, update the board
-    if (result) {
-      setFen(chess.fen());
-    }
     try
     {
       if(chess.turn() === 'w'){
