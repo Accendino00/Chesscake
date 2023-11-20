@@ -36,7 +36,12 @@ const PORT = config.PORT || 8000;
 // Middleware per autenticare JWT
 const { authenticateJWT } = require('./middleware/authorization'); 
 
-
+// Gestione di CORS per poter usare Vite dev per sviluppare il frontend
+// #TODO Rimuovere in produzione
+const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:3000' // Allow only the Vite dev server to access
+}));
 
 
 
@@ -65,6 +70,8 @@ app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.get("*", require(config.ROUTESERVIZI + "/webpages"));
+
+
 
 
 
