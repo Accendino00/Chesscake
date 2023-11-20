@@ -13,7 +13,8 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
-
+  const [chess, setChess] = useState(generateBoard(mode, rank));
+  const [fen, setFen] = useState(chess.fen());
   const handleOpenModal = () => {
     setModalIsOpen(true);
   };
@@ -33,7 +34,6 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     for (let move of savedMoves) {
       replayChess.move(move);
     }
-  
     setFen(replayChess.fen());
   };
 
@@ -44,6 +44,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     setPieceSelected([]);
     setPossibleMoves([]);
     setChess(generateBoard(mode, rank));
+    setFen(chess.fen());
     handleCloseModal();
   };
 
@@ -57,7 +58,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     setPossibleMoves([]);
   };
 
-  const [chess, setChess] = useState(generateBoard(mode, rank));
+  
 
   const handleSelectGame = (gameId) => {
     setSelectedGameId(gameId);
@@ -80,6 +81,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
 
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+      setFen(chess.fen());
       checkCheck();
       if (mode !== 'playerVsPlayer') {
         chess.fen();
@@ -90,6 +92,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
             chosenMove = bestMove;
           }
           chess.move(chosenMove);
+          setFen(chess.fen());
           checkCheck();
         }
       }
@@ -98,6 +101,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
 
   const handleBlackTurn = (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+      setFen(chess.fen());
       checkCheck();
     }
   };
@@ -159,7 +163,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
           }
 
           <Chessboard
-            position={chess.fen()}
+            position={fen}
             onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w')
               || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
             onMouseOutSquare={handleMouseOutSquare}
