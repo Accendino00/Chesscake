@@ -98,7 +98,7 @@ function Navbar({ loginStatus }) {
       <List>
         <StyledListItem
           key= {indexOfList++}
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/play')}
           className="navbarListItem"
         >
           <ListItemIcon>

@@ -1,16 +1,25 @@
 # Sprint 1
 
-### Sprint Goals
-Assieme al PO, il primo gioro, abbiamo stilato gli obiettivi per lo sprint.
-Come priorità abbiamo identificato l'impostazione di una pagina di login ed un interfaccia che permetta un primo approccio al gioco di Really Bad Chess.
-Partendo dalla creazione di un ambiente di sviluppo, ci siamo imposti di realizzare una struttura di login funzionante, comprendente di interfaccia, anche per la registrazione, e del salvataggio in un database di un nome utente, una password ed un token di sessione. Con la possibilità, inoltre, di accedere come anonimo privandosi di funzionalità quali, per esempio, il salvataggio delle proprie partite.
-La navigazione attraverso l'applicazione web abbiamo deciso dovesse avvenire tramite una navbar verticale.
-Abbiamo definito come mandatorie l'implementazione di tutte le caratteristiche fondamentali di Really Bad Chess, tra cui un sistema di ranking, che avrebbe determinato lo squilibrio delle board di gioco, e un sistema per il corretto svolgimento di una partita.
-Come team abbiamo deciso, per questo sprint, di suddividere i lavori con una prospettiva improntata all'investimento di tempo da parte dei membri più esperti nell'insegnamento delle nozioni necessarie per conseguire una buona riuscita del prodotto.
+## Sprint Goals
+
+I nostri obbiettivi per il primo sprint sono:
+1. Implementazione di Really Bad Chess:
+   1. Gestione della scacchiera.
+   2. Generazione casuale delle partite basata sul ranking dei giocatori.
+   3. Creazione di una "daily challenge" con generazione casuale.
+   4. Sistema di Accesso e Registrazione:
+2. Pagina di login e registrazione.
+   1. Opzione per accedere come utente anonimo, con limitazioni funzionali (es. impossibilità di salvare partite).
+   2. Salvataggio di username, password e token di sessione nel database.
+3. Gestione della Sessione di Login:
+   1. Mantenimento e gestione della sessione utente durante la navigazione nell'app.
+4. Interfaccia Utente e Navigazione:
+   1. Implementazione di una barra di navigazione verticale per spostarsi tra le diverse sezioni dell'applicazione.
+
+## Definitions
 
 ### Definition of Ready
-Abbiamo deciso di denotare come Ready le User Stories Ready For Test. 
-Queste sono implementate dagli sviluppatori, ma con necessità di Testing, ove possibile in conformità con gli ambienti di sviluppo.
+Una User Story è definita come Ready, o pronta allo sviluppo, se è stata definita nella sua interezza, ovvero sono stati preprati i task che la riguardano, e non ha alcuna dipendenza da altre User Stories. 
 
 ### Definition of Done
-Una User Story sarà definita come Done o completata, unicamente se riflette le stime nei casi favorevoli, non le riflette in quelli sfavoreli e nei casi limite mantiene un comportamento coerente. In questa tipologia risiedono le User Stories non aventi bisogno di ulteriore lavoro, quindi rispecchianti le necessità iniziali.
+Una User Story sarà definita come Done, o completata, se tutti i task che la riguardano sono stati completati, supera i test relativi nei vari casi ed è stata approvata dal PO.
