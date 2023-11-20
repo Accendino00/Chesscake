@@ -17,8 +17,23 @@ const ChessGame = ({ mode, duration, rank }) => {
     setModalIsOpen(true);
   };
 
+  function handleUndo() {
+    chess.undo();
+    setFen(chess.fen());
+  }
+  
   const handleCloseModal = () => {
     setModalIsOpen(false);
+  };
+
+  const replayGame = (savedMoves) => {
+    let replayChess = new Chess();
+  
+    for (let move of savedMoves) {
+      replayChess.move(move);
+    }
+  
+    setFen(replayChess.fen());
   };
 
   const handleRestart = () => {
@@ -155,6 +170,7 @@ const ChessGame = ({ mode, duration, rank }) => {
   
   return (
     <div>
+      
       <Modal open={modalIsOpen} onClose={handleCloseModal}>
         <Box sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20%', height: '30%', bgcolor: 'background.paper', p: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -166,49 +182,53 @@ const ChessGame = ({ mode, duration, rank }) => {
         </Box>
       </Modal>
 
-
-      {mode === 'playerVsPlayerOnline' ?
-        <p>Ancora in fase di implementazione!</p>
-        :
+    
+      {mode === 'playerVsPlayerOnline' ? 
+        <p>Ancora in fase di implementazione!</p> 
+        : 
         <div>
-          {mode === 'playerVsComputer' ?
-            <h1>PLAYER VS COMPUTER</h1>
-            :
-            <h1>PLAYER VS PLAYER</h1>
-          }
-
-          <Chessboard
-            position={chess.fen()}
-            onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w')
-              || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
-            onMouseOutSquare={handleMouseOutSquare}
-            customSquareStyles={{
-              ...possibleMoves.reduce((a, c) => ({
-                ...a, [c]: {
-                  background: "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)",
-                }
-              }), {}),
-              ...pieceSelected.reduce((a, c) => ({
-                ...a, [c]: {
-                  background: "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)",
-                }
-              }), {})
-            }}
-            onPieceDrop={handleMove}
-            boardOrientation="white"
-            width={'50vh'}
-          />
-        </div>
+        {mode === 'playerVsComputer' ?
+        <h1>PLAYER VS COMPUTER</h1>
+        :
+        <h1>PLAYER VS PLAYER</h1>
       }
+      {mode === 'playerVsPlayer' &&
+      <div>
+        <Typography variant="h4">{chess.turn() === 'w' ? player1 : player2}'s turn</Typography>
+      </div>
+      }
+      <Chessboard
+        position={chess.fen()}
+        onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
+          || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
+        onMouseOutSquare={handleMouseOutSquare}
+        customSquareStyles={{
+          ...possibleMoves.reduce((a, c) => ({ ...a, [c]: {
+            background: "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)",
+          } }), {}),
+          ...pieceSelected.reduce((a, c) => ({ ...a, [c]: {
+            background: "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)",
+          } }), {})
+        }}
+        onPieceDrop={handleMove}
+        boardOrientation="white"
+        width={'50vh'}
+        onDrop={({ sourceSquare, targetSquare }) => handleWhiteMove(sourceSquare, targetSquare)}
+      />
+      </div>
+    }
       <Box
         display="flex"
         justifyContent="center"
         alignItems="flex-end"
         height="10vh"
       >
-        <Button variant="contained" color="primary" onClick={handleGameOver}>
-          End Game
-        </Button>
+      <Button variant="contained" color="primary" onClick={handleGameOver}>
+        End Game
+      </Button>
+      {mode === 'playerVsPlayer' && 
+        <Button variant="contained" color="primary" onClick={handleUndo} style={{ marginLeft: '20px' }}>Undo</Button>
+      }
       </Box>
       <div>
         {selectedGameId ? (
