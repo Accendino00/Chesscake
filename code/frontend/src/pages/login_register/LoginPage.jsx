@@ -2,12 +2,29 @@ import React from 'react';
 import { Container, Grid } from '@mui/material';
 import styles from './LoginPageStyles';
 import LoginComponent from './components/LoginComponent';
+import useTokenChecker from '../../utils/useTokenChecker.jsx';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useNavigate } from 'react-router-dom';
 
 
-export default function LoginPage() {
+export default function LoginPage() {  
+    const { loginStatus, isLoading } = useTokenChecker();
+    const navigate = useNavigate();
+
+    if (isLoading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (loginStatus) {
+        navigate("/play");
+    }
 
     return (
         <Container 
