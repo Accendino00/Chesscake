@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box, Modal, Typography } from '@mui/material';
+import { Button, Box, Modal, Typography ,TextField } from '@mui/material';
+
 import { generateBoard, getPiecePosition } from './boardFunctions';
 import { findBestMove } from './movesFunctions';
 
@@ -13,6 +14,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const [selectedGameId, setSelectedGameId] = useState(null);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
+  const [history, setHistory] = useState([]);
   const [chess, setChess] = useState(generateBoard(mode, rank));
   const [fen, setFen] = useState(chess.fen());
   const handleOpenModal = () => {
