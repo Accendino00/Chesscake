@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box, Modal, Typography } from '@mui/material';
+import { Button, Box, Modal, Typography ,TextField } from '@mui/material';
+
 import { generateBoard, getPiecePosition } from './boardFunctions';
 import { findBestMove } from './movesFunctions';
 import Timer from './timer/Timer';
@@ -30,6 +31,8 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     }
   }, [timerHasEnded]);
 
+  const [history, setHistory] = useState([]);
+  const [fen, setFen] = useState(chess.fen());
 
   const handleOpenModal = () => {
     setModalIsOpen(true);
@@ -61,6 +64,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     setPieceSelected([]);
     setPossibleMoves([]);
     setChess(generateBoard(mode, rank));
+    setFen(chess.fen());
     handleCloseModal();
 
     // Ricomincia il timer
@@ -114,6 +118,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
 
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+      setFen(chess.fen());
       checkCheck();
       if (mode !== 'playerVsPlayer') {
         chess.fen();
@@ -124,6 +129,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
             chosenMove = bestMove;
           }
           chess.move(chosenMove);
+          setFen(chess.fen());
           checkCheck();
         }
       }
@@ -132,6 +138,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
 
   const handleBlackTurn = (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+      setFen(chess.fen());
       checkCheck();
     }
   };
@@ -172,7 +179,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
       winner = 'Nessuno';
     }
     setWinner(winner);
-    setModalIsOpen(true);
+    handleOpenModal(true);
   };
 
   return (
@@ -228,7 +235,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
           }
 
           <Chessboard
-            position={chess.fen()}
+            position={fen}
             onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w')
               || mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
             onMouseOutSquare={handleMouseOutSquare}
