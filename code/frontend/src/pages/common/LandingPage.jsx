@@ -28,7 +28,6 @@ function LandingPage() {
         );
     }
 
-    console.log("io sono qui: (path)" + window.location.pathname);
     // Renderizza nulla, perché il redirect viene fatto in useEffect
     return null;
 }
