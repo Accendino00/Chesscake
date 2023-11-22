@@ -76,26 +76,29 @@ app.get("*", require(config.ROUTESERVIZI + "/webpages"));
 
 
 /* SERVER START */
-
-app.listen(PORT, () => {
-  console.log(`Server acceso su http://localhost:${PORT}`);
-
-  // Ci colleghiamo al database
-  connectToDatabase();
-});
-
+function startServer() {
+  app.listen(PORT, () => {
+    console.log(`Server acceso su http://localhost:${PORT}`);
+    // Ci colleghiamo al database
+    
+    connectToDatabase();
+  });
+}
+startServer();
 
 
 
 /* SERVER END */
 
 // Capture termination and interrupt signals
+function handleShutdown() {
+  console.log("Spegnendo server...");
+  disconnectFromDatabase().then(() => {
+    process.exit(0);
+  });
+}
+
 process.on('SIGTERM', handleShutdown);
 process.on('SIGINT', handleShutdown);
 
-// Funzione che gestisce la chiusura del server
-async function handleShutdown() {
-  console.log("Spegnendo server...");
-  await disconnectFromDatabase();
-  process.exit(0);
-}
+module.exports = { startServer, handleShutdown};

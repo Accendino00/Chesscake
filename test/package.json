@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@testing-library/react": "^14.1.2",
+    "chess": "^1.2.1",
+    "chess.js": "^1.0.0-beta.6",
+    "react": "^18.2.0"
+  },
+  "name": "test",
+  "version": "1.0.0",
+  "main": "chessgame.test.js",
+  "scripts": {
+    "test": "jest "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "devDependencies": {
+    "@babel/preset-env": "^7.23.3",
+    "@babel/preset-react": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2"
+  }
+}

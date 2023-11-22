@@ -8,44 +8,6 @@ const pieces = [
   { name: "q", value: 9 }
 ];
 
-function generateBoard(mode, rank) {
-  const newChess = new Chess();
-
-  newChess.clear();
-
-  // Caricamento pezzi
-  let seed = 0;
-  if (mode === 'dailyChallenge') {
-    const today = new Date();
-    seed = ((((((today.getFullYear() * 100 + today.getMonth() * 10 + today.getDate()) * 214013 + 2531011) >> 16) & 0x7fff) * 214013 + 2531011) >> 16) & 0x7fff; // Generazione seed giornaliero attraverso funzione di hashing
-  }
-
-  const [playerRank, opponentRank] = calculateRanks(rank, seed);
-  const whitePieces = findChessPiecesWithRank(playerRank, seed);
-  const blackPieces = findChessPiecesWithRank(opponentRank, seed);
-
-  const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
-  const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
-
-  // Generazione pezzi nella scacchiera
-  while (whiteSquares.length > 0) {
-    const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
-    newChess.put({ type: whitePieces.pop(), color: 'w' }, whiteSquares[randomIndex]);
-    whiteSquares.splice(randomIndex, 1);
-  }
-  newChess.put({ type: 'k', color: 'w' }, 'e1');
-
-  while (blackSquares.length > 0) {
-    const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
-    newChess.put({ type: blackPieces.pop(), color: 'b' }, blackSquares[randomIndex]);
-    blackSquares.splice(randomIndex, 1);
-  }
-  newChess.put({ type: 'k', color: 'b' }, 'e8');
-
-  // Inizializzazione
-  return newChess;
-}
-
 function findChessPiecesWithRank(rank, seed) {
   const selectedPieces = [];
   let overallValue = getRandomPieceValue(seed);
@@ -66,7 +28,7 @@ function findChessPiecesWithRank(rank, seed) {
     const selected = selectPiece(filteredPieces, pieceWeights, randomValue);
 
     overallValue += (overallValue / (i + 1)) < median ? selected.value : -selected.value;
-    selectedPieces.push(selected.name);
+    selectedPieces.push(selected);
   }
   return selectedPieces;
 }
@@ -80,7 +42,7 @@ function calculateMedian(rank) {
 }
 
 function filterPieces(pieces, overallValue, median, i) {
-  return pieces.filter(piece => (overallValue / (i + 1)) < median ? piece.value >= median : piece.value <= median);
+  return pieces.filter(piece => Math.floor((overallValue / (i + 1))) < median ? piece.value >= median : piece.value <= median);
 }
 
 function getDefaultFilteredPieces(overallValue, median,i) {
@@ -91,7 +53,7 @@ function handleSpecialCase(filteredPieces, seed, i) {
   if (filteredPieces.some(piece => piece.value === 3)) {
     filteredPieces = filteredPieces.filter(piece => piece.value !== 3);
     const randomDecimal = seed === 0 ? Math.random() : seededRandom(seed);
-    const randomPiece = parseInt(randomDecimal.toString().split('.')[1])[i] < 5 ? 'b' : 'n';
+    const randomPiece = parseInt(randomDecimal.toString().split('.')[1].charAt(i)) < 5 ? 'b' : 'n';
     filteredPieces.push({ name: randomPiece, value: 3 });
   }
   return filteredPieces;
@@ -131,6 +93,46 @@ function weightFunction(value, overallValue, median) {
   return weight <= 0 ? 0 : weight;
 }
 
+function generateBoard(mode, rank) {
+  const newChess = new Chess();
+
+  newChess.clear();
+
+  // Caricamento pezzi
+  let seed = 0;
+  if (mode === 'dailyChallenge') {
+    const today = new Date();
+    seed = ((((((today.getFullYear() * 100 + today.getMonth() * 10 + today.getDate()) * 214013 + 2531011) >> 16) & 0x7fff) * 214013 + 2531011) >> 16) & 0x7fff; // Generazione seed giornaliero attraverso funzione di hashing
+  }
+
+  const [playerRank, opponentRank] = calculateRanks(rank, seed);
+  const whitePieces = findChessPiecesWithRank(playerRank, seed);
+  const blackPieces = findChessPiecesWithRank(opponentRank, seed);
+
+  const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
+  const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
+
+  // Generazione pezzi nella scacchiera
+  while (whiteSquares.length > 0) {
+    const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
+    newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
+    whiteSquares.splice(randomIndex, 1);
+  }
+  newChess.put({ type: 'k', color: 'w' }, 'e1');
+
+  while (blackSquares.length > 0) {
+    const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
+    newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
+    blackSquares.splice(randomIndex, 1);
+  }
+  newChess.put({ type: 'k', color: 'b' }, 'e8');
+
+  // Inizializzazione
+  return newChess;
+}
+
+
+
 // Funzione per calcolare il rank
 function calculateRanks(rank, seed) {
   const value = -0.5 * rank + 25;  // Funzione lineare per determinare il valore
@@ -165,5 +167,18 @@ const getPiecePosition = (game, piece) => {
 
 export {
   generateBoard,
-  getPiecePosition
+  getPiecePosition,
+  calculateRanks,
+  seededRandom,
+  weightFunction,
+  selectPiece,
+  getRandomValue,
+  calculateTotalWeight,
+  calculatePieceWeights,
+  handleSpecialCase,
+  getDefaultFilteredPieces,
+  filterPieces,
+  calculateMedian,
+  getRandomPieceValue,
+  findChessPiecesWithRank,
 };
