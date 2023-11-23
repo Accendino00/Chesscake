@@ -45,6 +45,8 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const handleOpenModal = () => {
     setUndoEnabled(false);
     setEndGameButtonEnabled(false);
+    setShouldRunBlack(false);
+    setShouldRunWhite(false);
 
 
     setModalIsOpen(true);
