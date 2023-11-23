@@ -101,4 +101,4 @@ function handleShutdown() {
 process.on('SIGTERM', handleShutdown);
 process.on('SIGINT', handleShutdown);
 
-module.exports = { startServer, handleShutdown};
+module.exports = app;

@@ -21,7 +21,7 @@ function registerUser(username, password) {
                         reject({ 
                             message: "User already exists", 
                             status: 400, 
-                            returnBody: { success: false, reson: "Username already exists" }
+                            returnBody: { success: false, reason: "Username already exists" }
                         });
                     } else {
                         // Create a new user
