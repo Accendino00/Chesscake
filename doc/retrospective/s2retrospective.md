@@ -81,7 +81,10 @@ Way of Working:
 
 > CONSENSO FINALE: 4
 
-In seguito invece vi è il risultato di **Chase the state** e di **Mad, Sad, Glad**:
+Quindi le corrispondeti carte di progress poker sono:
+![Progress Poker](image.png)
+
+In seguito invece vi è il risultato di **Chase the state**, che ci è uscito identico a **Progress Poker** in quanto rappresentano gli stessi dati, e di **Mad, Sad, Glad**:
 
 ![Chase the state](risultatoEssence.png)
 
