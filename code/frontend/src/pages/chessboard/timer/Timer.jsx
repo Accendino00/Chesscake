@@ -35,6 +35,7 @@ function Timer({ time, setTime, shouldRun, setHasEnded, playerColor }) {
                 margin: '10px',
                 backgroundColor: playerColor,
                 color: playerColor == 'white' ? 'black' : 'white',
+                minWidth: '150px',
             }}
         >
             <Icon>

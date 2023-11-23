@@ -7,10 +7,11 @@
  * Description of the universal chess interface (UCI)  https://gist.github.com/aliostad/f4470274f39d29b788c1b09519e67372/
  */
 
-const { Worker } = require('worker_threads');
+// WIP
+// const { Worker } = require('worker_threads');
 
 const stockfish = new Worker("/stockfish.js");
-
+ 
 type EngineMessage = {
   /** stockfish engine message in UCI format*/
   uciMessage: string;
@@ -29,7 +30,7 @@ type EngineMessage = {
 };
 
 export default class Engine {
-  stockfish: typeof Worker;
+  stockfish: Worker;
   onMessage: (callback: (messageData: EngineMessage) => void) => void;
   isReady: boolean;
 
@@ -37,7 +38,7 @@ export default class Engine {
     this.stockfish = stockfish;
     this.isReady = false;
     this.onMessage = (callback) => {
-      this.stockfish.addListener("message", (e) => {
+      this.stockfish.addEventListener("message", (e) => {
         callback(this.transformSFMessageData(e));
       });
     };

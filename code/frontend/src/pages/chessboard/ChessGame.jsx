@@ -1,14 +1,19 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import SavedGames from './SavedGames';
 import GameReplayer from './GameReplayer';
-import { Button, Box, Modal, Typography ,TextField } from '@mui/material';
+import { Button, Box, Modal, Typography, TextField, Card, Stack } from '@mui/material';
+import ChessGameStyles from './ChessGameStyles';
 
 import { generateBoard, getPiecePosition } from './boardFunctions';
 import { findBestMove } from './movesFunctions';
 import Timer from './timer/Timer';
 
+import { useNavigate } from 'react-router-dom';
+
 const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
+  const navigate = useNavigate();
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [pieceSelected, setPieceSelected] = useState([]);
@@ -18,11 +23,14 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
 
   const [chess, setChess] = useState(generateBoard(mode, rank));
 
-  const [timeBianco, setTimeBianco] = useState(duration*60);
-  const [timeNero, setTimeNero] = useState(duration*60);
+  const [timeBianco, setTimeBianco] = useState(duration * 60);
+  const [timeNero, setTimeNero] = useState(duration * 60);
   const [shouldRunWhite, setShouldRunWhite] = useState(true);
   const [shouldRunBlack, setShouldRunBlack] = useState(false);
   const [timerHasEnded, setTimerHasEnded] = useState(false);
+
+  const [undoEnabled, setUndoEnabled] = useState(false);
+  const [endGameButtonEnabled, setEndGameButtonEnabled] = useState(true);
 
   // Gestire il cambiamento di hasEnded in true con un useEffect
   React.useEffect(() => {
@@ -35,6 +43,10 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const [fen, setFen] = useState(chess.fen());
 
   const handleOpenModal = () => {
+    setUndoEnabled(false);
+    setEndGameButtonEnabled(false);
+
+
     setModalIsOpen(true);
   };
 
@@ -43,8 +55,12 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   };
 
   function handleUndo() {
+    setUndoEnabled(false);
+
+    chess.undo();
     chess.undo();
     setFen(chess.fen());
+    checkCheck();
   }
 
   const replayGame = (savedMoves) => {
@@ -68,11 +84,15 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     handleCloseModal();
 
     // Ricomincia il timer
-    setTimeBianco(duration*60);
-    setTimeNero(duration*60);
+    setTimeBianco(duration * 60);
+    setTimeNero(duration * 60);
     setShouldRunWhite(true);
     setShouldRunBlack(false);
     setTimerHasEnded(false);
+
+    // Riabilito i pulsanti
+    setUndoEnabled(false);
+    setEndGameButtonEnabled(false);
   };
 
   // Gestore delle mosse possibili
@@ -106,6 +126,14 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
         setShouldRunBlack(true);
       }
 
+      // Riabilito l'undo solo se e' la seconda mossa
+      // Inoltre, se sto giocando player contro player locale lo abilito sempre se e' dopo la seconda
+      // se gioco qualsiasi altra modalita' lo abilito solo se e' il bianco
+      if ((mode === 'playerVsPlayer' && chess.history().length >= 2) || (mode !== 'playerVsPlayer' && chess.turn() === 'w' && chess.history().length >= 2)) {
+        setUndoEnabled(true);
+      }
+
+
       chess.fen();
 
 
@@ -116,23 +144,31 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     handleMouseOutSquare();
   };
 
+  const computerMoveBlack = async () => {
+    setUndoEnabled(false);
+
+    // Mossa dell'avversario di risposta
+    if (mode !== 'playerVsPlayer') {
+      chess.fen();
+      let chosenMove = chess.moves[Math.floor(Math.random() * chess.moves.length)];
+      if (chess.moves().length > 0) {
+        const bestMove = await findBestMove(chess.fen(), 2, 4);
+        if (bestMove) {
+          chosenMove = bestMove;
+        }
+        chess.move(chosenMove);
+        setFen(chess.fen());
+        checkCheck();
+        setUndoEnabled(true);
+      }
+    }
+  }
+
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
       setFen(chess.fen());
       checkCheck();
-      if (mode !== 'playerVsPlayer') {
-        chess.fen();
-        let chosenMove = chess.moves[Math.floor(Math.random() * chess.moves.length)];
-        if (chess.moves().length > 0) {
-          const bestMove = await findBestMove(chess.fen(), 2, 4);
-          if (bestMove) {
-            chosenMove = bestMove;
-          }
-          chess.move(chosenMove);
-          setFen(chess.fen());
-          checkCheck();
-        }
-      }
+      await computerMoveBlack();
     }
   };
 
@@ -183,57 +219,54 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   };
 
   return (
-    <div>
-      {/* Interfaccia che mostra di chi è il turno */}
-      <div>
-        <Typography variant="h4">{chess.turn() === 'w' ? player1 : player2}'s turn</Typography>
-      </div>
-
-      {/* Timer del nero e del bianco */}
-      {mode === 'playerVsPlayer' ?
-        <>
-          <Timer 
-            time={timeBianco}
-            setTime={setTimeBianco}
-            shouldRun={shouldRunWhite}
-            setHasEnded={setTimerHasEnded}
-            playerColor='white'
-          />
-
-          <Timer
-            time={timeNero}
-            setTime={setTimeNero}
-            shouldRun={shouldRunBlack}
-            setHasEnded={setTimerHasEnded}
-            playerColor='black'
-          />
-        </> : null
-      }
-
-
-
-      {/* Popup che mostra la schermata di gameover */}
-      <Modal open={modalIsOpen} onClose={handleCloseModal}>
-        <Box sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20%', height: '30%', bgcolor: 'background.paper', p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <h2>{winner ? `${winner} ha vinto!` : 'Partita finita.'}</h2>
-          </Box>
-          <Button onClick={() => window.location.href = '/'}>Esci</Button>
-          <Button onClick={handleRestart}>Ricomincia</Button>
-          <Button>Condividi su Facebook</Button>
-        </Box>
-      </Modal>
-
-      {mode === 'playerVsPlayerOnline' ?
+    mode === 'playerVsPlayerOnline' ?
+      <Box sx={ChessGameStyles.boxWIP}>
         <p>Ancora in fase di implementazione!</p>
-        :
-        <div>
-          {mode === 'playerVsComputer' ?
-            <h1>PLAYER VS COMPUTER</h1>
-            :
-            <h1>PLAYER VS PLAYER</h1>
-          }
+        <Button variant="contained" color="primary" onClick={() => navigate('/play/')}>Esci</Button>
+      </Box>
+      :
+      <div>
+        {/* Timer del nero e del bianco */}
+        {mode === 'playerVsPlayer' ?
+          <Box sx={ChessGameStyles.boxTimer}>
+            <Timer
+              time={timeBianco}
+              setTime={setTimeBianco}
+              shouldRun={shouldRunWhite}
+              setHasEnded={setTimerHasEnded}
+              playerColor='white'
+            />
 
+            <Timer
+              time={timeNero}
+              setTime={setTimeNero}
+              shouldRun={shouldRunBlack}
+              setHasEnded={setTimerHasEnded}
+              playerColor='black'
+            />
+          </Box> : null
+        }
+        {/* Popup che mostra la schermata di gameover */}
+        <Modal open={modalIsOpen} onClose={handleCloseModal}>
+          <Box sx={ChessGameStyles.boxGameOver}>
+            <Stack spacing={2}>
+              <Typography variant="h5" component="h2" style={{ margin: "auto" }}>
+                {winner ? `${winner} ha vinto!` : 'Partita finita.'}
+              </Typography>
+              <Button variant="contained" color="primary" onClick={() => navigate('/play/')}>
+                Esci
+              </Button>
+              <Button variant="outlined" onClick={handleRestart} disabled="true">
+                Ricomincia
+              </Button>
+              <Button variant="text" disabled>
+                Condividi su Facebook
+              </Button>
+            </Stack>
+          </Box>
+        </Modal>
+
+        <div style={ChessGameStyles.divChessBoard}>
           <Chessboard
             position={fen}
             onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w')
@@ -247,29 +280,40 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
             boardOrientation="white"
             width={'50vh'}
           />
+          <Box sx={ChessGameStyles.boxTurns}>
+            {/* Interfaccia che mostra di chi è il turno */}
+            <div>
+              <Typography variant="h6"><b>{chess.turn() === 'w' ? player1 : player2}'s</b> turn</Typography>
+            </div>
+            {mode === 'playerVsComputer' ?
+              <Typography variant="h6">Player Vs Computer</Typography>
+              :
+              <Typography variant="h6">Player Vs Player</Typography>
+            }
+          </Box>
+
         </div>
-      }
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="flex-end"
-        height="10vh"
-      >
-        <Button variant="contained" color="primary" onClick={handleGameOver}>
-          End Game
-        </Button>
-        {mode === 'playerVsPlayer' &&
-          <Button variant="contained" color="primary" onClick={handleUndo} style={{ marginLeft: '20px' }}>Undo</Button>
+        <Box sx={ChessGameStyles.boxControlButtons}>
+          <Button onClick={() => navigate('/play/')}>Esci</Button>
+          <Button variant="contained" color="primary" onClick={handleGameOver} disabled={!endGameButtonEnabled}>
+            End Game
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleUndo} disabled={!undoEnabled}>Undo</Button>
+        </Box>
+
+
+        {/* Interfaccia per la riproduzione di una partita salvata */}
+        {/* Per ora disabilitata in quanto non implementata completamente */}
+        {false &&
+          <div>
+            {selectedGameId ? (
+              <GameReplayer gameId={selectedGameId} />
+            ) : (
+              <SavedGames onSelectGame={handleSelectGame} />
+            )}
+          </div>
         }
-      </Box>
-      <div>
-        {selectedGameId ? (
-          <GameReplayer gameId={selectedGameId} />
-        ) : (
-          <SavedGames onSelectGame={handleSelectGame} />
-        )}
       </div>
-    </div>
   );
 };
 

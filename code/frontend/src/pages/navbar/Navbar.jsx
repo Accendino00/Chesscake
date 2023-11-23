@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItem';
@@ -33,7 +33,7 @@ const icons = {
 
 const NavbarData = [
   {
-    title: " Play",
+    title: " Really Bad Chess",
     icon: "PlayCircleIcon",
     link: "/play/reallybadchess/",
   },
@@ -77,7 +77,13 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
   },
 }));
 
+function isLocationActive(itemlink) {
+  const regex = new RegExp('^' + itemlink);
+  return regex.test(window.location.pathname);
+}
+
 function Navbar({ loginStatus }) {
+
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -97,7 +103,7 @@ function Navbar({ loginStatus }) {
       {/* Link alle altre pagine */}
       <List>
         <StyledListItem
-          key= {indexOfList++}
+          key={indexOfList++}
           onClick={() => navigate('/play')}
           className="navbarListItem"
         >
@@ -118,7 +124,7 @@ function Navbar({ loginStatus }) {
             <StyledListItem
               key={indexOfList++}
               onClick={() => navigate(item.link)}
-              selected={window.location.pathname === item.link}
+              selected={isLocationActive(item.link)}
               className="navbarListItem"
             >
               <ListItemIcon>
