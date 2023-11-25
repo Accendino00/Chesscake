@@ -4,7 +4,6 @@ var config = require("../config");
 // Middleware to authenticate JWT
 const authenticateJWT = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log("Auth header: " + authHeader);
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
@@ -22,6 +21,27 @@ const authenticateJWT = (req, res, next) => {
   }
 };
 
+const nonBlockingAutheticateJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+
+    jwt.verify(token, config.SECRET_KEY, (err, user) => {
+      if (err) {
+        // Si blocca solo se si prova a fare l'autorizzazione ma non si ha i permessi di farla
+        return res.sendStatus(403).send();
+      }
+
+      req.user = user;
+      next();
+    });
+  } else {
+    next();
+  }
+}
+
 module.exports = {
   authenticateJWT: authenticateJWT,
+  nonBlockingAutheticateJWT: nonBlockingAutheticateJWT
 };

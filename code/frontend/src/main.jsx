@@ -4,22 +4,18 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 
 import LoginPage from './pages/login_register/LoginPage.jsx'
-import Navbar from './pages/navbar/Navbar.jsx'
-import StartInterface from './pages/chessboard/ChessStart.jsx'
+import ModeSelection from './pages/reallybadchess/ModeSelection.jsx'
 import ErrorPage from './error-page.jsx'
 import NavPage from './pages/common/NavPage.jsx'
 import LandingPage from './pages/common/LandingPage.jsx'
-import useTokenChecker from './utils/useTokenChecker.jsx';
-
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-
-import Cookies from 'js-cookie';
+import ReallyBadChessLocal from './pages/reallybadchess/offline/ReallyBadChessLocal.jsx'
+import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
 
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+
 
 
 
@@ -43,7 +39,17 @@ function App() {
       children: [
         {
           path: "reallybadchess/",
-          element: <StartInterface />,
+          element: <ModeSelection />,
+          children: [
+            {
+              path: ":gameId/",
+              element: <ReallyBadChessOnline />,
+            },
+            {
+              path: "local/",
+              element: <ReallyBadChessLocal />,
+            }
+          ]
         },
         {
           path: "account/",
