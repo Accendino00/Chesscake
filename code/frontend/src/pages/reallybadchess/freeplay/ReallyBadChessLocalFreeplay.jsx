@@ -5,16 +5,16 @@ import { Button, Box, Modal, Typography, Stack } from '@mui/material';
 import ChessGameStyles from '../ChessGameStyles';
 
 import { generateBoard, getPiecePosition, cloneChessBoard } from './boardFunctions';
-import Timer from '../timer/Timer';
+import { findBestMove } from './movesFunctions';
 
+function ReallyBadChessLocalFreeplay() {
+  const navigate = useNavigate();
 
-function ReallyBadChessLocal() {
   const [searchParams] = useSearchParams();
   const gameData = JSON.parse(searchParams.get('data'));
 
   const [startingBoard, setStartingBoard] = useState(generateBoard(gameData.mode, gameData.rank));
 
-  const navigate = useNavigate();
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
@@ -24,21 +24,8 @@ function ReallyBadChessLocal() {
 
   const [chess, setChess] = useState(cloneChessBoard(startingBoard));
 
-  const [timeBianco, setTimeBianco] = useState(gameData.duration * 60);
-  const [timeNero, setTimeNero] = useState(gameData.duration * 60);
-  const [shouldRunWhite, setShouldRunWhite] = useState(true);
-  const [shouldRunBlack, setShouldRunBlack] = useState(false);
-  const [timerHasEnded, setTimerHasEnded] = useState(false);
-
   const [undoEnabled, setUndoEnabled] = useState(false);
   const [endGameButtonEnabled, setEndGameButtonEnabled] = useState(true);
-
-  // Gestire il cambiamento di hasEnded in true con un useEffect
-  React.useEffect(() => {
-    if (timerHasEnded) {
-      handleGameOver(shouldRunWhite ? 'Nero' : 'Bianco');
-    }
-  }, [timerHasEnded]);
 
   useEffect(() => {
     setFen(chess.fen());
@@ -49,9 +36,6 @@ function ReallyBadChessLocal() {
   const handleOpenModal = () => {
     setUndoEnabled(false);
     setEndGameButtonEnabled(false);
-    setShouldRunBlack(false);
-    setShouldRunWhite(false);
-
 
     setModalIsOpen(true);
   };
@@ -78,13 +62,6 @@ function ReallyBadChessLocal() {
     setChess(cloneChessBoard(startingBoard));
     handleCloseModal();
 
-    // Ricomincia il timer
-    setTimeBianco(gameData.duration * 60);
-    setTimeNero(gameData.duration * 60);
-    setShouldRunWhite(true);
-    setShouldRunBlack(false);
-    setTimerHasEnded(false);
-
     // Riabilito i pulsanti
     setUndoEnabled(false);
     setEndGameButtonEnabled(true);
@@ -103,18 +80,9 @@ function ReallyBadChessLocal() {
   const handleMove = async (sourceSquare, targetSquare) => {
     try {
       if (chess.turn() === 'w') {
-        handleWhiteTurn(sourceSquare, targetSquare);
+        await handleWhiteTurn(sourceSquare, targetSquare);
       } else if (chess.turn() === 'b') {
         handleBlackTurn(sourceSquare, targetSquare);
-      }
-
-      // Cambio di chi deve andare avanti il timer
-      if (chess.turn() === 'w') {
-        setShouldRunWhite(true);
-        setShouldRunBlack(false);
-      } else {
-        setShouldRunWhite(false);
-        setShouldRunBlack(true);
       }
 
       // Riabilito l'undo solo se e' la seconda mossa
@@ -131,10 +99,45 @@ function ReallyBadChessLocal() {
     handleMouseOutSquare();
   };
 
+  const computerMoveBlack = async () => {
+    setUndoEnabled(false);
+
+    // Mossa dell'avversario di risposta
+    if (gameData.mode !== 'playerVsPlayer') {
+      chess.fen();
+      let chosenMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
+      if (chess.moves().length > 0) {
+        let bestMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
+        switch (gameData.difficulty) {
+          case 0:
+            bestMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
+            break;
+          case 1:
+            bestMove = await findBestMove(chess.fen(), 2, 0);
+            break;
+          case 2:
+            bestMove = await findBestMove(chess.fen(), 2, 3);
+            break;
+        }
+        if (bestMove) {
+          chosenMove = bestMove;
+        }
+        // Wait 1 second before move
+        setTimeout(() => {
+          chess.move(chosenMove);
+          setFen(chess.fen());
+          checkCheck();
+          setUndoEnabled(true);
+        }, 1000);
+      }
+    }
+  }
+
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
       setFen(chess.fen());
       checkCheck();
+      await computerMoveBlack();
     }
   };
 
@@ -187,24 +190,6 @@ function ReallyBadChessLocal() {
   return (
     <Box sx={ChessGameStyles.everythingContainer}>
       <Box sx={ChessGameStyles.backgroundWrapper}>
-        {/* Timer del nero e del bianco */}
-        <Box sx={ChessGameStyles.boxTimer}>
-          <Timer
-            time={timeBianco}
-            setTime={setTimeBianco}
-            shouldRun={shouldRunWhite}
-            setHasEnded={setTimerHasEnded}
-            playerColor='white'
-          />
-
-          <Timer
-            time={timeNero}
-            setTime={setTimeNero}
-            shouldRun={shouldRunBlack}
-            setHasEnded={setTimerHasEnded}
-            playerColor='black'
-          />
-        </Box>
         {/* Popup che mostra la schermata di gameover */}
         <Modal open={modalIsOpen} onClose={handleCloseModal}>
           <Box sx={ChessGameStyles.boxGameOver}>
@@ -244,13 +229,13 @@ function ReallyBadChessLocal() {
             <div>
               <Typography variant="h6"><b>{chess.turn() === 'w' ? gameData.player1 : gameData.player2}'s</b> turn</Typography>
             </div>
-            <Typography variant="h6">Player Vs Player</Typography>
+            <Typography variant="h6">Freeplay vs Computer</Typography>
           </Box>
 
         </div>
         <Box sx={ChessGameStyles.boxControlButtons}>
           <Button onClick={() => navigate('/play/')}>Esci</Button>
-          <Button variant="contained" color="primary" onClick={() => handleGameOver(chess.turn() === 'w' ? 'Nero' : 'Bianco')} disabled={!endGameButtonEnabled}>
+          <Button variant="contained" color="primary" onClick={() => handleGameOver('Nero')} disabled={!endGameButtonEnabled}>
             Arrenditi
           </Button>
           <Button variant="contained" color="primary" onClick={handleUndo} disabled={!undoEnabled}>Undo</Button>
@@ -260,4 +245,4 @@ function ReallyBadChessLocal() {
   );
 }
 
-export default ReallyBadChessLocal;
+export default ReallyBadChessLocalFreeplay;

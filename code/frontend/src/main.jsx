@@ -8,7 +8,9 @@ import ModeSelection from './pages/reallybadchess/ModeSelection.jsx'
 import ErrorPage from './error-page.jsx'
 import NavPage from './pages/common/NavPage.jsx'
 import LandingPage from './pages/common/LandingPage.jsx'
+import AccountPage from './pages/account/AccountPage.jsx';
 import ReallyBadChessLocal from './pages/reallybadchess/offline/ReallyBadChessLocal.jsx'
+import ReallyBadChessLocalFreeplay from './pages/reallybadchess/freeplay/ReallyBadChessLocalFreeplay.jsx'
 import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
 
 import {
@@ -48,12 +50,16 @@ function App() {
             {
               path: "local/",
               element: <ReallyBadChessLocal />,
+            },
+            {
+              path: "freeplay/",
+              element: <ReallyBadChessLocalFreeplay />,
             }
           ]
         },
         {
           path: "account/",
-          element: <></>,
+          element: <AccountPage />,
         },
         {
           path: "leaderboard/",

@@ -59,6 +59,12 @@ const ChessGameStyles = {
         justifyContent: "center",
         alignItems: "center",
     },
+    backgroundWrapper: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: "10px",
+        padding: "30px",
+        boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
+    }
 }
 
 export default ChessGameStyles;

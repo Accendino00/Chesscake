@@ -7,20 +7,20 @@ import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
 function LandingPage() {
-    const { loginStatus, isLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading } = useTokenChecker();
     const navigate = useNavigate();
 
     React.useEffect(() => {
-      if (!isLoading) {
+      if (!isTokenLoading) {
         if (loginStatus) {
           navigate("/play");
         } else {
           navigate("/login");
         }
       }
-    }, [loginStatus, isLoading]);
+    }, [loginStatus, isTokenLoading]);
 
-    if (isLoading || loginStatus === undefined) {
+    if (isTokenLoading || loginStatus === undefined) {
         return (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
             <CircularProgress />

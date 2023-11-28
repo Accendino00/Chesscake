@@ -1,4 +1,4 @@
-var chessGames = require('../utils/chessgames');
+var chessGames = require('../utils/chess/chessgames');
 
 var express = require("express");
 var config = require("../config");
@@ -97,9 +97,9 @@ router.post('/movePiece/:gameId', nonBlockingAutheticateJWT, async (req, res) =>
     }
 
     // Se la mossa è valida, allora ritorniamo il game
-    res.send({
+    res.status(200).send({
         success: true,
-        game: game
+        game: game // Da capire se mandare
     });
 });
 

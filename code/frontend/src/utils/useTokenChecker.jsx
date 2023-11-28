@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 const useTokenChecker = () => {
     const [loginStatus, setLoginStatus] = useState(false);
-    const [isLoading, setIsLoading] = useState(true); // Loading state
+    const [isTokenLoading, setIsTokenLoading] = useState(true); // Loading state
 
     const checkToken = async () => {
         const token = Cookies.get('token');
@@ -32,11 +32,11 @@ const useTokenChecker = () => {
     };
 
     useEffect(() => {
-        setIsLoading(true);
-        checkToken().finally(() => setIsLoading(false));
+        setIsTokenLoading(true);
+        checkToken().finally(() => setIsTokenLoading(false));
     }, []);
 
-    return { loginStatus, isLoading };
+    return { loginStatus, isTokenLoading };
 };
 
 export default useTokenChecker;

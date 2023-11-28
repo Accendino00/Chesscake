@@ -10,7 +10,7 @@ const styles = {
         overflow: 'hidden'
     },
     imageGrid:{
-        backgroundImage: 'url(https://i.imgur.com/iz0ypgo.jpeg)',
+        backgroundImage: 'url(./loginPageBigImage.jpeg)',
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
         backgroundPosition: 'center', 

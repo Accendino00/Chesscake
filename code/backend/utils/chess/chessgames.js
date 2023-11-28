@@ -22,10 +22,6 @@ module.exports = {
         //     "duration": <numero> // In minuti, indica il tempo della partita. 0.25 corrisponde a 15 secondi per esempio.
         // }
 
-        // Generiamo le key per i due giocatori in modo che sia impossibile che siano uguali
-        var keyPlayer1 = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        var keyPlayer2 = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
         // Generiamo un gameId univoco
         var gameId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
@@ -48,15 +44,28 @@ module.exports = {
                 duration : settings.duration,
             },
             player1 : {
-                name: player1,
-                key: keyPlayer1,
+                username: player1,
+                timer: settings.duration * 60,
+                interval: null,
+                gameSaved : false,
+                side: "w",
             },
             player2 : {
-                name: player2,
-                key: keyPlayer2,
+                username: player2,
+                timer: settings.duration * 60,
+                interval: null,
+                gameSaved : false,
+                side: "b",
             },
 
             lastMove : null, // "w" o "b" per indicare chi ha mosso per ultimo
+
+            gameOver: {
+                isGameOver : false,
+                winner : null, // Username dell'utente che ha visto
+                reason : null, // "checkmate", "timeout", "resign", "stalemate", "draw", "insufficient_material", "threefold_repetition", "50_move_rule", "agreement"
+                deleteGameInterval : null, // Intervallo che cancella la partita dopo un certo tempo dopo che è finita
+            },
             
             gameId : gameId,
             chess: cloneChessBoard(board),
@@ -65,8 +74,6 @@ module.exports = {
         // Ritorniamo l'id della partita e le chiavi dei giocatori
         return {
             gameId : gameId,
-            keyPlayer1 : keyPlayer1,
-            keyPlayer2 : keyPlayer2,
         };
     },
 
@@ -88,6 +95,7 @@ module.exports = {
      * 
      * @param {string} gameId
      * @param {string} move
+     * @returns true se la mossa è stata aggiunta, false altrimenti
      */
     movePiece : function (gameId, move) {
         // Cerca la partita di scacchi
@@ -95,7 +103,27 @@ module.exports = {
 
         // Aggiungi la mossa se è una mossa corretta
         if (game.chess.move(move)) {
-            game.lastMove = game.chess.turn();
+            // Se la mossa è corretta
+            game.lastMove = game.chess.turn(); // Aggiorno di chi è il turno
+
+            // Aggiorno il timer in modo che interrompo l'ultimo intervallo
+            // e avvio quello del giocatore che deve muovere
+            clearInterval(game.player1.interval);
+            game.player1.interval = setInterval(() => {
+                game.player1.timer--;
+                if (game.player1.timer <= 0) {
+                    clearInterval(game.player1.interval);
+                    
+                    // Gestisco la sconfitta del giocatore 1
+                    game.gameOver.isGameOver = true;
+                    game.gameOver.winner = game.player2.side;
+                    game.gameOver.reason = "timeout";
+                    game.gameOver.deleteGameInterval = setTimeout(() => {
+                        chessGames.splice(chessGames.indexOf(game), 1);
+                    }, 1000 * 60 * 5); // Il game si cancellerà da solo dopo 5 minuti
+                }
+            }, 1000);
+
             return true;
         } else {
             return false;

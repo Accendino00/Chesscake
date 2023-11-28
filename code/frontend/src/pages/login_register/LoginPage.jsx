@@ -11,10 +11,10 @@ import { useNavigate } from 'react-router-dom';
 
 
 export default function LoginPage() {  
-    const { loginStatus, isLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading } = useTokenChecker();
     const navigate = useNavigate();
 
-    if (isLoading) {
+    if (isTokenLoading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
                 <CircularProgress />

@@ -1,4 +1,4 @@
-let { Chess } = require('chess.js');
+import { Chess } from 'chess.js';
 
 const pieces = [
   { name: "p", value: 1 },
@@ -169,7 +169,7 @@ const cloneChessBoard = (board) => {
   return new Chess(board.fen());
 }
 
-module.exports = {
+export {
   generateBoard,
   getPiecePosition,
   calculateRanks,
