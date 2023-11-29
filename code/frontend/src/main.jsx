@@ -11,6 +11,7 @@ import LandingPage from './pages/common/LandingPage.jsx'
 import AccountPage from './pages/account/AccountPage.jsx';
 import LeaderBoardPage from './pages/leaderboard/LeaderBoardPage.jsx';
 import MobPage from './pages/mob/MobPage.jsx';
+import AccountPageOthers from './pages/account/AccountPageOthers.jsx';
 import ReallyBadChessLocal from './pages/reallybadchess/offline/ReallyBadChessLocal.jsx'
 import ReallyBadChessLocalFreeplay from './pages/reallybadchess/freeplay/ReallyBadChessLocalFreeplay.jsx'
 import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
@@ -58,6 +59,10 @@ function App() {
               element: <ReallyBadChessLocalFreeplay />,
             }
           ]
+        },
+        {
+          path: "account/:username",
+          element: <AccountPageOthers />,
         },
         {
           path: "account/",

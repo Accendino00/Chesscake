@@ -1,16 +1,16 @@
 import React from 'react';
-import { Box, Skeleton, Avatar, Typography, Divider } from '@mui/material';
+import { Box, Skeleton, Avatar, Typography, Divider, Button } from '@mui/material';
 import styles from './AccountPageStyles';
 
 import LanguageIcon from '@mui/icons-material/Language';
 import { PlayerVsPlayerIcon, PlayerVsComputerIcon, DailyChallengeIcon } from '../../utils/ModeIcons.jsx';
+import { useNavigate } from 'react-router-dom';
 
 
 import Cookies from 'js-cookie';
 
-function ProfileComponent() {
-    // Da notare: se renderizziamo questo componente, vuol dire che il token è valido.
-    // Quindi non serve controllare se il token è valido o meno.
+function ProfileComponent({ username }) {
+    const navigate = useNavigate();
 
     // Andiamo a fare una fetch dei dati dell'account dell'utente
     // per poterli mostrare nella pagina.
@@ -18,22 +18,44 @@ function ProfileComponent() {
 
     const [accountData, setAccountData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [accountFound, setAccountFound] = React.useState(false);
 
     let token = Cookies.get('token')
 
     React.useEffect(() => {
-        fetch('/api/account/getAccountData', {
-            method: 'GET',
-            headers: { "Authorization": `Bearer ${token}` },
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    data.accountData.color = uniqueColorUsername(data.accountData.username);
-                    setAccountData(data.accountData);
-                }
-                setIsLoading(false);
-            });
+        // Se c'è un username specificato, allora lo inserisco nel header della richiesta
+        if (username) {
+            fetch('/api/account/getAccountData/' + username, {
+                method: 'GET',
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.accountData.color = uniqueColorUsername(data.accountData.username);
+                        setAccountData(data.accountData);
+                        setAccountFound(true);
+                    }
+                    setIsLoading(false);
+                });
+            return;
+        } else {
+            fetch('/api/account/getAccountData', {
+                method: 'GET',
+                headers: { "Authorization": `Bearer ${token}` },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        data.accountData.color = uniqueColorUsername(data.accountData.username);
+                        setAccountData(data.accountData);
+                        setAccountFound(true);
+                    } else {
+                        navigate('/play/');
+                    }
+                    setIsLoading(false);
+                });
+        }
+
     }, []);
 
     if (isLoading) {
@@ -50,6 +72,48 @@ function ProfileComponent() {
         </Box>
         );
     };
+
+    if (!accountFound) {
+        return (
+            <Box sx={{
+                display: "flex",
+                height: "100vh",
+                width: "50vh",
+                marginTop: "0px",
+                margin: "auto",
+                flexDirection: "column",
+                alignContent: "space-between",
+                flexWrap: "nowrap",
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <Box sx={{
+                    backgroundColor: "white",
+                    width: "50vh",
+                    padding: "30px",
+                    borderRadius: "10px",
+                    boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-evenly",
+                    alignItems: "center",
+                    height: "20vh",
+                }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ color: "black", fontWeight: "bolder" }}>
+                            Account non trovato
+                        </Typography>
+                        <Typography sx={{ color: "black", fontWeight: "thin" }}>
+                            L'account che stavi cercando non è stato trovato!
+                        </Typography>
+                    </Box>
+                    <Button variant="contained" color="primary" onClick={() => navigate('/play/')}>
+                        Torna all'home page         </Button>
+                </Box>
+            </Box>
+        )
+    };
+
 
     function uniqueColorUsername(username) {
         // Convert the string to a hash
@@ -141,7 +205,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
@@ -159,7 +223,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
@@ -200,7 +264,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
@@ -218,7 +282,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
@@ -259,7 +323,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
@@ -277,7 +341,7 @@ function ProfileComponent() {
                             display: "flex",
                             flexDirection: "row",
                             flexWrap: "nowrap",
-                            justifyContent: "space-evenly",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             width: "100%",
                             padding: "2px",
