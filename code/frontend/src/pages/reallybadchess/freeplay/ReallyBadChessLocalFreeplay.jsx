@@ -13,6 +13,49 @@ function ReallyBadChessLocalFreeplay() {
   const [searchParams] = useSearchParams();
   const gameData = JSON.parse(searchParams.get('data'));
 
+  // Nel caso si arriva qua senza essere passati per la pagina di selezione della modalita'
+  if (gameData === null) {
+    // Ritorniamo un messaggio di errore
+    return (
+      <Box sx={{
+        display: "flex",
+        height: "100vh",
+        width: "50vh",
+        marginTop: "0px",
+        margin: "auto",
+        flexDirection: "column",
+        alignContent: "space-between",
+        flexWrap: "nowrap",
+        justifyContent: "center",
+        alignItems: "center",
+      }}>
+        <Box sx={{
+          backgroundColor: "white",
+          width: "50vh",
+          padding: "30px",
+          borderRadius: "10px",
+          boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-evenly",
+          alignItems: "center",
+          height: "20vh",
+        }}>
+          <Box>
+            <Typography variant="h4" sx={{ color: "red", fontWeight: "bolder" }}>
+              Errore
+            </Typography>
+            <Typography sx={{ color: "red", fontWeight: "thin" }}>
+              Non sei passato per la selezione della modalità di gioco!
+            </Typography>
+          </Box>
+          <Button variant="contained" color="primary" onClick={() => navigate('/play/reallybadchess')}>
+            Torna alla selezione della modalità         </Button>
+        </Box>
+      </Box>
+    );
+  }
+
   const [startingBoard, setStartingBoard] = useState(generateBoard(gameData.mode, gameData.rank));
 
 

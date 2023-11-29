@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import PersonIcon from "@mui/icons-material/Person";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import GroupIcon from '@mui/icons-material/Group';
 import LoginIcon from '@mui/icons-material/Login';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -28,7 +28,7 @@ const icons = {
   LoginIcon: <LoginIcon />,
   PersonIcon: <PersonIcon />,
   LeaderboardIcon: <InsertChartIcon />,
-  EmojiEventsIcon: <EmojiEventsIcon />,
+  GroupIcon: <GroupIcon />,
 };
 
 const NavbarData = [
@@ -36,11 +36,6 @@ const NavbarData = [
     title: " Really Bad Chess",
     icon: "PlayCircleIcon",
     link: "/play/reallybadchess/",
-  },
-  {
-    title: " Login",
-    icon: "LoginIcon",
-    link: "/login/",
   },
   {
     title: " Account",
@@ -53,9 +48,14 @@ const NavbarData = [
     link: "/play/leaderboard/",
   },
   {
-    title: " Tournaments",
-    icon: "EmojiEventsIcon",
-    link: "/play/tournaments/",
+    title: " Mob Play",
+    icon: "GroupIcon",
+    link: "/play/mob/",
+  },
+  {
+    title: " Login",
+    icon: "LoginIcon",
+    link: "/login/",
   },
 ];
 
@@ -117,6 +117,7 @@ function Navbar({ loginStatus }) {
         <Divider />
         {NavbarData.map((item, index) => {
           if ((loginStatus === false && item.title === " Account") ||
+            (loginStatus === false && item.title === " Mob Play") ||
             (loginStatus === true && item.title === " Login")) {
             return null;
           }
@@ -131,7 +132,7 @@ function Navbar({ loginStatus }) {
                 {icons[item.icon]}
               </ListItemIcon>
               <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <ListItemText primary={item.title} />
+                <ListItemText secondary={item.title} />
               </Box>
             </StyledListItem>
           );
@@ -147,7 +148,7 @@ function Navbar({ loginStatus }) {
               <ExitToAppIcon />
             </ListItemIcon>
             <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <ListItemText primary="Logout" />
+              <ListItemText secondary="Logout" />
             </Box>
           </StyledListItem>
         )}

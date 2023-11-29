@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Container, Typography, Box, IconButton, Paper } from '@mui/material';
 import styles from './RegisterStyles'; // Register styles
 import CloseIcon from '@mui/icons-material/Close'; // Close icon
@@ -34,12 +34,38 @@ function RegisterComponent(props) {
     setErrorRegistration(false);
   };
 
+  useEffect(() => {
+    const listener = event => {
+      if (event.code === "Enter" || event.code === "NumpadEnter") {
+        event.preventDefault();
+        // Se la registrazione è aperta, allora non faccio nulla
+        if (!props.trigge) return;
+        else handleSubmit();
+      }
+    };
+    document.addEventListener("keydown", listener);
+    return () => {
+      document.removeEventListener("keydown", listener);
+    };
+  }, [username, password,  props.trigger]);
+
   // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    if(e)
+      e.preventDefault(); // Prevent default form submission
 
     setErrorRegistration(false);
     setLoading(true);
+
+    // Check if passwords match
+    if (password !== confirmedPassword) {
+      setPasswordsMatch(-1);
+      setLoading(false);
+      setErrorMessage("Le password non corrispondono")
+      setErrorRegistration(true);
+      return;
+    }
+
 
     let formData = {
       username: username,

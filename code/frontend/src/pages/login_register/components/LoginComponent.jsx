@@ -1,5 +1,5 @@
 // React
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Componenti nostre
 import styles from './LoginStyles'; // Import styles
@@ -51,9 +51,25 @@ function LoginComponent(props) {
     setOpenRegisterSuccess(false);
   };
 
+  useEffect(() => {
+    const listener = event => {
+      if (event.code === "Enter" || event.code === "NumpadEnter") {
+        event.preventDefault();
+        // Se la registrazione è aperta, allora non faccio nulla
+        if (buttonPopup) return;
+        else handleSubmitLogin();
+      }
+    };
+    document.addEventListener("keydown", listener);
+    return () => {
+      document.removeEventListener("keydown", listener);
+    };
+  }, [username, password, buttonPopup]);
+
   // Handle form submission
   const handleSubmitLogin = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    if (e)
+      e.preventDefault(); // Prevent default form submission if event
 
     setLoading(true);
     setOpenLoginError(false);

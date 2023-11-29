@@ -125,7 +125,7 @@ const ModeSelection = () => {
             if (token) {
                 headers = {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + Cookies.get('token') || ''
+                    'Authorization': 'Bearer ' + token || ''
                 }
             } else {
                 headers = {
@@ -377,15 +377,13 @@ const ModeSelection = () => {
                         </Box>
                     </Paper>
                     <div className="wrapperOfAccordion">
-                        <Accordion disableGutters className="custom-accordion" defaultExpanded="true" >
+                        <Accordion disableGutters className="custom-accordion" defaultExpanded={true} >
                             <AccordionSummary
                                 expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
                                 style={{
                                     flexDirection: 'row',
-                                    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+                                    '& .MuiAccordionSummaryExpandIconWrapper.MuiExpanded': {
                                         transform: 'rotate(90deg)',
-                                    },
-                                    '& .MuiAccordionSummary-content': {
                                     },
                                 }}>
                                 <Typography style={{
@@ -405,13 +403,14 @@ const ModeSelection = () => {
                             }}>
                                 <Typography style={{
                                     fontSize: '0.8em',
-                                }}>
+                                }} component={'span'}>
                                     <b>Really <i>bad</i> Chess</b> è una variante del gioco degli scacchi, in cui i pezzi sono assegnati in modo casuale ai giocatori, in base al <b>rank</b> che si ha.
                                     <br />
                                     Il resto del gioco funziona quasi nello stesso modo degli scacchi normali, le uniche eccezzioni sono le seguenti:
                                     <ul style={{ margin: "0px", paddingLeft: "20px" }}>
-                                        <li>Se si pareggia, contro il computer, conta come vittoria</li>
+                                        <li>Se è un giocatore non ha più mosse che può fare, non è pareggio ma è sconfitta</li>
                                         <li>Non esiste pareggio per mosse ripetute</li>
+                                        <li>Non esiste pareggio per troppi pochi pezzi (re contro re)</li>
                                     </ul>
                                     <br />
                                     Il gioco è stato ideato da Zech Gage, uscito nel 2016 per iOS e nel 2017 per Android.

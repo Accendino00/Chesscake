@@ -9,6 +9,8 @@ import ErrorPage from './error-page.jsx'
 import NavPage from './pages/common/NavPage.jsx'
 import LandingPage from './pages/common/LandingPage.jsx'
 import AccountPage from './pages/account/AccountPage.jsx';
+import LeaderBoardPage from './pages/leaderboard/LeaderBoardPage.jsx';
+import MobPage from './pages/mob/MobPage.jsx';
 import ReallyBadChessLocal from './pages/reallybadchess/offline/ReallyBadChessLocal.jsx'
 import ReallyBadChessLocalFreeplay from './pages/reallybadchess/freeplay/ReallyBadChessLocalFreeplay.jsx'
 import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
@@ -63,11 +65,11 @@ function App() {
         },
         {
           path: "leaderboard/",
-          element: <></>,
+          element: <LeaderBoardPage/>,
         },
         {
-          path: "tournaments/",
-          element: <></>,
+          path: "mob/",
+          element: <MobPage/>,
         }
       ]
     },

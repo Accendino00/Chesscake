@@ -24,6 +24,9 @@ async function connectToDatabase() {
     console.log("Connesso con successo a MongoDB");
   } catch (error) {
     console.error("Connessione a MongoDB fallita:", error);
+
+    // Riproviamo a connetterci dopo 5 secondi
+    setTimeout(connectToDatabase, 5000);
   }
 }
 
@@ -37,6 +40,13 @@ async function disconnectFromDatabase() {
     console.error("Disconnessione da MongoDB fallita:", error);
   }
 }
+
+// In caso di disconnessione, proviamo a riconnetterci
+clientMDB.on('disconnected', () => {
+  console.log("Disconnesso da MongoDB");
+  // Riproviamo a connetterci dopo 5 secondi
+  setTimeout(connectToDatabase, 5000);
+});
 
 
 /** MODULE EXPORTS **/

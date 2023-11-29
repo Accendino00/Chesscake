@@ -34,7 +34,7 @@ const PORT = config.PORT || 8000;
 /* MIDDLEWARE */
 
 // Middleware per autenticare JWT
-const { authenticateJWT } = require('./middleware/authorization'); 
+const { authenticateJWT, nonBlockingAutheticateJWT } = require('./middleware/authorization'); 
 
 // Gestione di CORS per poter usare Vite dev per sviluppare il frontend
 // #TODO Rimuovere in produzione
@@ -67,6 +67,8 @@ app.use("/api", require(config.ROUTESERVIZI + "/registration"))
 app.use("/api", require(config.ROUTESERVIZI + "/login"))
 app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 app.use("/api/reallybadchess", require(config.ROUTESERVIZI + "/reallybadchess"))
+app.use("/api/account/", require(config.ROUTESERVIZI + "/account"));
+
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package

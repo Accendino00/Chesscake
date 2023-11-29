@@ -52,7 +52,7 @@ function HomePage() {
                         fontSize: '0.75rem',
                         width: '45%',
                         mb: 5,
-                    }} >
+                    }} component={'span'}>
                         <Typography variant="h6" sx={{ fontWeight: 'bold' }}> Benvenuto su Chess Cake! </Typography>
                         <b>Chess Cake</b> è una web application che permette di giocare scacchi non eterodossi.
                         <br /> <br />
