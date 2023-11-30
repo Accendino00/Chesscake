@@ -68,6 +68,7 @@ app.use("/api", require(config.ROUTESERVIZI + "/login"))
 app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 app.use("/api/reallybadchess", require(config.ROUTESERVIZI + "/reallybadchess"))
 app.use("/api/account/", require(config.ROUTESERVIZI + "/account"));
+app.use("/api/leaderboard", require(config.ROUTESERVIZI + "/leaderboard"));
 
 
 

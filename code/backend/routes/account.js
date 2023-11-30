@@ -33,42 +33,13 @@ router.get("/getAccountData", authenticateJWT, function (req, res) {
         });
     }
 
-    // Prendiamo il profilo utente dal database
-    const usersCollection = clientMDB.db("ChessCake").collection("Users");
-    usersCollection.findOne({ username: username })
-    .then((user) => {
-        if (!user) {
-            res.status(404).send({
-                success: false,
-                message: "Utente non trovato",
-            });
-        } else {
-            res.status(200).send({
-                success: true,
-                message: "Informazioni prese con successo",
-                accountData: {
-                    username: user.username,
-                    // Placeholder da implementare
-                    elo: 800,
-                    winrate: 0.5,
-                    currentRank: 45,
-                    maxRank: 65,
-                    currentDailyRecord: "",
-                    maxDailyRecord: 3,
-                }
-            });
-        }
-    }).catch((error) => {
-        res.status(500).send({
-            success: false,
-            message: "Errore interno",
-        });
-    });
+    getAccountData(username, res);
 });
 
+// Questa è la versione che va a ricercare gli account dal db dato l'username
 router.get("/getAccountData/:username", function (req, res) {
     let username = req.params.username;
-
+    
     // Se username non è definito allo ritorniamo 403 e un messaggio di errore
     if (!username) {
         res.status(403).send({
@@ -76,7 +47,11 @@ router.get("/getAccountData/:username", function (req, res) {
             message: "Non sei autorizzato a richiedere questo URL senza essere loggato",
         });
     }
+    
+    getAccountData(username, res);
+});
 
+function getAccountData (username, res) {
     // Prendiamo il profilo utente dal database
     const usersCollection = clientMDB.db("ChessCake").collection("Users");
     usersCollection.findOne({ username: username })
@@ -92,13 +67,12 @@ router.get("/getAccountData/:username", function (req, res) {
                 message: "Informazioni prese con successo",
                 accountData: {
                     username: user.username,
-                    // Placeholder da implementare
-                    elo: 800,
-                    winrate: 0.5,
-                    currentRank: 45,
-                    maxRank: 65,
-                    currentDailyRecord: "",
-                    maxDailyRecord: 3,
+                    elo: user.rbcELO,
+                    winrate: 0.5,                       // Da fare usando una query
+                    currentRank: user.rbcCurrentRank,
+                    maxRank: user.rbcMaxRank,
+                    currentDailyRecord: "",             // Da fare usando una query
+                    maxDailyRecord: 3,                  // Da fare usando una query
                 }
             });
         }
@@ -108,8 +82,7 @@ router.get("/getAccountData/:username", function (req, res) {
             message: "Errore interno",
         });
     });
-});
-
+}
 
 router.get("/getLastGames/:username", function (req, res) {
     res.status(404).send({

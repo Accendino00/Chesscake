@@ -347,7 +347,7 @@ function ProfileComponent({ username }) {
                             padding: "2px",
                         }}>
                             <Typography sx={{ fontSize: "0.8em" }}>
-                                <b>Winrate</b>
+                                <b>Daily migliore</b>
                             </Typography>
                             <Typography sx={{ fontSize: "0.8em" }}>
                                 {accountData.maxDailyRecord ? accountData.maxDailyRecord : "Nessuna"}

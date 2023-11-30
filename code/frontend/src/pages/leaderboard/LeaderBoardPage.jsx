@@ -8,6 +8,9 @@ import styles from './LeaderBoardStyles.jsx';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
+import ELOLeaderBoard from './ELOLeaderBoard.jsx';
+import RankLeaderBoard from './RankLeaderBoard.jsx';
+
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
 
@@ -17,11 +20,16 @@ function CustomTabPanel(props) {
             hidden={value !== index}
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
+            style={{
+                width: "100%",
+            }}
             {...other}
         >
             {value === index && (
-                <Box sx={{ p: 3 }}>
-                    <Typography component={'span'}>{children}</Typography>
+                <Box sx={{ 
+                    width: "100%"
+                 }}>
+                    {children}
                 </Box>
             )}
         </div>
@@ -81,17 +89,10 @@ function LeaderBoardPage() {
                     <Tab label="Daily" {...a11yProps(2)} />
                 </Tabs>
                 <CustomTabPanel value={currentLeaderboard} index={0} >
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
+                    <ELOLeaderBoard />
                 </CustomTabPanel >
                 <CustomTabPanel value={currentLeaderboard} index={1} >
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
+                    <RankLeaderBoard />
                 </CustomTabPanel >
                 <CustomTabPanel value={currentLeaderboard} index={2}>
                     <Skeleton variant="text" width={700} height={30} />

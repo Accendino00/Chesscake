@@ -25,6 +25,6 @@ export const StyledListItem = styled(ListItem)(({ theme }) => ({
   },
   // Imposto il colore delle icone a nero
   '& .MuiListItemIcon-root': {
-    color: '#046695',
+    color: '#1976d2',
   },
 }));

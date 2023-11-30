@@ -39,7 +39,7 @@ function RegisterComponent(props) {
       if (event.code === "Enter" || event.code === "NumpadEnter") {
         event.preventDefault();
         // Se la registrazione è aperta, allora non faccio nulla
-        if (!props.trigge) return;
+        if (!props.trigger) return;
         else handleSubmit();
       }
     };

@@ -11,8 +11,8 @@ function AccountPageOthers() {
     const { username } = useParams(); // Extract username from URL
 
     useEffect(() => {
-        if (!username) {
-            //navigate('/'); // Redirect to home if no username is provided
+        if (!username || username === 'Computer') {
+            navigate('/'); // Redirect to home if no username is provided
         }
     }, [username, navigate]);
 

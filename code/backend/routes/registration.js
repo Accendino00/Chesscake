@@ -25,7 +25,13 @@ function registerUser(username, password) {
                         });
                     } else {
                         // Create a new user
-                        const newUser = { username: username, password: hashedPassword };
+                        const newUser = { 
+                            username: username, 
+                            password: hashedPassword,
+                            rbcELO: config.DEFAULT_ELO_RBC, 
+                            rbcCurrentRank: config.STARTING_RANK_RBC,
+                            rbcMaxRank: config.STARTING_RANK_RBC,
+                        };
                         usersCollection.insertOne(newUser)
                         .then(() => {
                             resolve({ 
