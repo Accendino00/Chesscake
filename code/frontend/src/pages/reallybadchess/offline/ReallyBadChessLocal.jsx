@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Chessboard } from 'react-chessboard';
 import { Button, Box, Modal, Typography, Stack } from '@mui/material';
 import ChessGameStyles from '../ChessGameStyles';
+import ShareButton from '../../components/ShareButton';
 
 import { generateBoard, getPiecePosition, cloneChessBoard } from './boardFunctions';
 import Timer from '../timer/Timer';
@@ -261,9 +262,7 @@ function ReallyBadChessLocal() {
               <Button variant="outlined" onClick={handleRestart}>
                 Ricomincia
               </Button>
-              <Button variant="text" disabled>
-                Condividi su Facebook
-              </Button>
+              <ShareButton sharedText={"Ho vinto questa partita con" + chess.moveNumber() + 'mosse'} />
             </Stack>
           </Box>
         </Modal>

@@ -97,6 +97,10 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     setEndGameButtonEnabled(false);
   };
 
+  const handleShare = () =>{
+    
+  }
+
   // Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
@@ -261,7 +265,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
               <Button variant="outlined" onClick={handleRestart} disabled="true">
                 Ricomincia
               </Button>
-              <Button variant="text" disabled>
+              <Button variant="text" onClick={handleShare} disabled>
                 Condividi su Facebook
               </Button>
             </Stack>

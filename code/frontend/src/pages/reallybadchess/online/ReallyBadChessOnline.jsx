@@ -33,6 +33,7 @@ function ReallyBadChessOnline() {
             });
     }, [gameId]);
 
+
     const handleMove = (sourceSquare, targetSquare) => {
         fetch(`/api/reallybadchess/makeMove/${gameId}`, {
             method: 'POST',
@@ -59,6 +60,8 @@ function ReallyBadChessOnline() {
     const handleCloseModal = () => setModalIsOpen(false);
 
     const handleNavigateToPlay = () => navigate('/play/');
+
+    const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
 
     return (
         <Box sx={ChessGameStyles.everythingContainer}>
