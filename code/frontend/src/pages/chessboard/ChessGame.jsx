@@ -9,31 +9,27 @@ import Timer from './timer/Timer';
 import Engine from '../../pages/chessboard/Engine';
 import { Button, Box, Modal, Typography, Select, MenuItem, TextField, Card, Stack } from '@mui/material';
 import { useMemo } from 'react';
+import Replay from './Replay';
 
 const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const navigate = useNavigate();
+  let allGames = JSON.parse(localStorage.getItem('allGames')) || [];
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [hasGeneratedBoard, setHasGeneratedBoard] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(false);
   const [modalIsOpen1, setModalIsOpen1] = useState(false);
   const [modalContent1, setModalContent1] = useState(<div/>);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [pieceSelected, setPieceSelected] = useState([]);
   const [gameHistory, setGameHistory] = useState([]);
   const [currentMove, setCurrentMove] = useState(0);
-  const [isReplay, setIsReplay] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState('');
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
   const [chess, setChess] = useState(generateBoard(mode, rank));
   const [timeBianco, setTimeBianco] = useState(duration * 60);
   const [timeNero, setTimeNero] = useState(duration * 60);
- 
-  let allGames = JSON.parse(localStorage.getItem('allGames')) || [];
-  let isNextMoveAvailable = false;
-  if (allGames[selectedGameId]) {
-    isNextMoveAvailable = currentMove + 1 < allGames[selectedGameId].history.length;
-  }
-  let isPreviousMoveAvailable = currentMove - 1 >= 0;
+  
   const stockfish = new Worker('/stockfish.js');
 
   const engine = useMemo(() => new Engine(), []);
@@ -52,6 +48,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     }
   }, [timerHasEnded]);
 
+  
   // Funzione per generare la scacchiera
   function generateBoard(mode, rank){
     //Inizializzazione della scacchiera
@@ -108,28 +105,6 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     return newChess; 
   }
 
-  const replayGame = (gameIndex) => {
-    setIsReplay(true);
-    // Set the current move to the first move
-    setCurrentMove(0);
-
-    let allGames = JSON.parse(localStorage.getItem('allGames')) || []; // Add default value
-    console.log(allGames[gameIndex].history);
-    if (gameIndex >= 0 && gameIndex < allGames.length) { // Check if gameIndex is a valid index in allGames
-      let gameToReplay = allGames[gameIndex]; // Get the game to replay
-      if (gameToReplay && gameToReplay.history) { // Check if gameToReplay and gameToReplay.history are defined
-        console.log(gameToReplay.history);
-        // Load the initial game state
-        loadGameState(gameToReplay.history[currentMove]);
-      } else {
-        console.error(`No saved game found with index ${gameIndex}`);
-      }
-    } else {
-      console.error(`Invalid game index: ${gameIndex}`);
-    }
-    setModalIsOpen1(false);
-  };
-
   const handleOpenModal = () => {
     setUndoEnabled(false);
     setEndGameButtonEnabled(false);
@@ -139,14 +114,18 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   };
 
   const handleOpenModal1 = () => {
+    
     let allGames = JSON.parse(localStorage.getItem('allGames')) || [];
     if (allGames.length === 0) {
       setModalContent1(<p>No saved games found.</p>);
     } else {
       setModalContent1(
+        <>
         <Select labelId="Choose game" value={selectedGameId} onChange={(event) => {
           setSelectedGameId(event.target.value);
-          replayGame(event.target.value);
+          setSelectedGame(true);
+          setFen(allGames[event.target.value].history[0]);
+          setModalIsOpen1(false);
         }}
         sx={{
           width: '100%', // Set the width to 100%
@@ -164,38 +143,16 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
             </MenuItem>
           ))}
         </Select>
+        </>
       );
     }
+    
     setModalIsOpen1(true);
   };
 
-
-  const loadGameState = (fen) => {
-    chess.load(fen);
-    setFen(chess.fen());
+  const handleCloseModal = () => {
+    setModalIsOpen(false);
   };
-
-  function handleNextMove() {
-    let allGames = JSON.parse(localStorage.getItem('allGames')) || [];
-    if (currentMove + 1 < allGames[selectedGameId].history.length) {
-      // Load the next state from the game history
-      let nextState = allGames[selectedGameId].history[currentMove + 1];
-      loadGameState(nextState);
-      // Increment the current move index
-      setCurrentMove(currentMove => currentMove + 1);
-    }
-  }
-
-  function handlePreviousMove() {
-    let allGames = JSON.parse(localStorage.getItem('allGames')) || [];
-    if (currentMove > 0) {
-      // Decrement currentMove first
-      setCurrentMove(currentMove - 1);
-  
-      // Then load the game state at the new currentMove
-      loadGameState(allGames[selectedGameId].history[currentMove - 1]);
-    }
-  }
 
 
   function handleUndo() {
@@ -213,10 +170,6 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
     // Update the position on the board
     setFen(chess.fen());
   }
-  
-  const handleCloseModal = () => {
-    setModalIsOpen(false);
-  };
 
   const handleRestart = () => {
     // Ricomincia la partita
@@ -248,13 +201,8 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
   };
-
-  const handleSelectGame = (gameId) => {
-    setSelectedGameId(gameId);
-  };
   
   const handleMove = async (sourceSquare, targetSquare) => {
-    if(isReplay) return;
     try {
       if (chess.turn() === 'w') {
         await handleWhiteTurn(sourceSquare, targetSquare);
@@ -382,7 +330,6 @@ const handleGameOver = (winner) => {
   setWinner(winner);
   handleOpenModal(true);
 };
-
   return (
     mode === 'playerVsPlayerOnline' ?
       <Box sx={ChessGameStyles.boxWIP}>
@@ -438,7 +385,8 @@ const handleGameOver = (winner) => {
         </Box>
       </Modal>
 
-    
+      
+
       {mode === 'playerVsPlayerOnline' ? 
         <p>Ancora in fase di implementazione!</p> 
         : 
@@ -449,6 +397,7 @@ const handleGameOver = (winner) => {
         <h1>PLAYER VS PLAYER</h1>
       }
       <div style={ChessGameStyles.divChessBoard}>
+
         <Chessboard
         position={fen}
         onMouseOverSquare={(mode === 'playerVsComputer' && chess.turn() === 'w') 
@@ -473,7 +422,7 @@ const handleGameOver = (winner) => {
               <Typography variant="h6">Player Vs Player</Typography>
             }
           </Box>
-      
+
       </div>
       <Box
         display="flex"
@@ -481,26 +430,34 @@ const handleGameOver = (winner) => {
         alignItems="flex-end"
         height="10vh"
       >
-      {isReplay ? (
-        <>
-          <Button variant="contained" color="primary" onClick={handlePreviousMove} disabled={!isPreviousMoveAvailable}>Previous move</Button>
-          <Button variant="contained" color="primary" style={{ marginLeft: '20px' }} onClick={handleNextMove} disabled={!isNextMoveAvailable}>Next move</Button>    
-          <Button variant="contained" color="primary" style={{ marginLeft: '20px' }} onClick={() => window.location.href = '/play'}>Stop Replay</Button>
-        </>
-      ) : (
-
       <>
+      {!selectedGame &&
         <Button variant="contained" color="primary" onClick={handleGameOver}>
           End Game
         </Button>
-        {mode === 'playerVsPlayer' && 
+      }
+      {!selectedGame && mode === 'playerVsPlayer' && 
           <Button variant="contained" color="primary" onClick={handleUndo} style={{ marginLeft: '20px' }}>Undo</Button>
         }
+      {!selectedGame &&
         <Button variant="contained" color="primary" onClick={ handleOpenModal1} style={{ marginLeft: '20px' }}> 
           Saved Games 
         </Button>
+      }
+
+      {selectedGame && (
+      <Replay 
+        gameHistory={allGames[selectedGameId].history}
+        currentMove={currentMove} 
+        setCurrentMove={setCurrentMove} 
+        selectedGameId={selectedGameId} 
+        setModalIsOpen1={setModalIsOpen1}
+        chess={chess}
+        fen={fen}
+        setFen={setFen}
+      />
+    )}
       </>
-      )}
       </Box>
       </div>
     }
