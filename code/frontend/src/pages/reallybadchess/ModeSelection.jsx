@@ -279,15 +279,7 @@ const ModeSelection = () => {
                             </>
                         }
 
-                        { ( mode === 'playerVsPlayerOnline') &&
-                            <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={openLobby}
-                            style={{ color: 'darkblack' }}
-                        >
-                            Lobby
-                        </Button>
+                        { ( mode === 'playerVsPlayerOnline') && openLobby()
                         }
 
                         {/* Slider per il rank */}

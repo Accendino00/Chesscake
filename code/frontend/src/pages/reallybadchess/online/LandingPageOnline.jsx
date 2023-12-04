@@ -25,14 +25,14 @@ function LandingPageOnline({openLobby}) {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => navigate('/reallybadchess/online/joinGame')}
+                        onClick={() => navigate('/reallybadchess/lobby/joinGame')}
                     >
                         Join Game
                     </Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => navigate('/reallybadchess/online/createGame')}
+                        onClick={() => navigate('/reallybadchess/lobby/createGame')}
                     >
                         Create Game
                     </Button>

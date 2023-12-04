@@ -62,6 +62,16 @@ function App() {
             {
               path: "lobby/",
               element: <LandingPageOnline />,
+              children: [
+                {
+                  path: "joinGame/",
+                  element: <JoinGameComponent />,
+                },
+                {
+                  path: "createGame/",
+                  element: <CreateGameComponent />,
+                },
+              ]
             }
           ]
         },
