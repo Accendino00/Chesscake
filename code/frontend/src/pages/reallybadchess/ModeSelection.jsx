@@ -163,6 +163,10 @@ const ModeSelection = () => {
             </Box>
         );
     }
+    
+    const openLobby = () => {
+        navigate('/play/reallybadchess/lobby');
+    }
 
     return (
         <>
@@ -273,6 +277,17 @@ const ModeSelection = () => {
                                     </div>
                                 </form>
                             </>
+                        }
+
+                        { ( mode === 'playerVsPlayerOnline') &&
+                            <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={openLobby}
+                            style={{ color: 'darkblack' }}
+                        >
+                            Lobby
+                        </Button>
                         }
 
                         {/* Slider per il rank */}
