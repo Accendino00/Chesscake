@@ -73,7 +73,7 @@ function getRandomValue(seed) {
 
 function selectPiece(filteredPieces, pieceWeights, randomValue) {
   let cumulativeWeight = 0;
-  let selected = null;  // Inizializza con null
+  let selected = filteredPieces[filteredPieces.length-1];  // Inizializza con null
 
   for (let j = 0; j < filteredPieces.length; j++) {
     cumulativeWeight += pieceWeights[j];

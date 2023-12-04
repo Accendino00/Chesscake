@@ -125,7 +125,7 @@ function ReallyBadChessLocalFreeplay() {
       if (chess.turn() === 'w') {
         await handleWhiteTurn(sourceSquare, targetSquare);
       } else if (chess.turn() === 'b') {
-        handleBlackTurn(sourceSquare, targetSquare);
+        //handleBlackTurn(sourceSquare, targetSquare);
       }
 
       // Riabilito l'undo solo se e' la seconda mossa
@@ -134,12 +134,11 @@ function ReallyBadChessLocalFreeplay() {
       if (chess.history().length >= 2) {
         setUndoEnabled(true);
       }
-
-      handleCheckmateAndDraw(chess);
     } catch (error) {
       console.log(error);
     }
     handleMouseOutSquare();
+    console.log("OUT");
   };
 
   const computerMoveBlack = async () => {
@@ -171,6 +170,7 @@ function ReallyBadChessLocalFreeplay() {
           setFen(chess.fen());
           checkCheck();
           setUndoEnabled(true);
+          handleCheckmateAndDraw(chess);
         }, 1000);
       }
     }
@@ -180,6 +180,7 @@ function ReallyBadChessLocalFreeplay() {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
       setFen(chess.fen());
       checkCheck();
+      handleCheckmateAndDraw();
       await computerMoveBlack();
     }
   };
@@ -202,6 +203,7 @@ function ReallyBadChessLocalFreeplay() {
 
   // Funzione per controllare se c'è un vincitore
   function handleCheckmateAndDraw(chess) {
+    console.log("CHECKMATE: " + chess.isCheckmate());
     if (chess.isCheckmate()) {
       const winner = chess.turn() === 'w' ? 'Nero' : 'Bianco';
       handleGameOver(winner)

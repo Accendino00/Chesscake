@@ -143,7 +143,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
       chess.fen();
 
 
-      handleCheckmateAndDraw(chess);
+      handleCheckmateAndDraw();
     } catch (error) {
       console.log(error);
     }
@@ -195,7 +195,7 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
   }
 
   // Funzione per controllare se c'è un vincitore
-  function handleCheckmateAndDraw(chess) {
+  function handleCheckmateAndDraw() {
     if (chess.isCheckmate()) {
       const winner = chess.turn() === 'w' ? 'Nero' : 'Bianco';
       handleGameOver(winner)

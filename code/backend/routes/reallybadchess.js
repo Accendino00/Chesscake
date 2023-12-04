@@ -49,7 +49,6 @@ router.post("/newGame", nonBlockingAutheticateJWT, async (req, res) => {
 router.get("/getGame/:gameId", nonBlockingAutheticateJWT, async (req, res) => {
   // Prendiamo il gameId
   const { gameId } = req.params;
-
   // Prendiamo il game dal database
   const game = chessGames.getGame(gameId);
 
@@ -85,19 +84,17 @@ router.post(
         message: "Game not found",
       });
     }
-
     // Controlliamo che l'utenza sia corretta
     if (
       req.user &&
-      req.user.username !== game.player1.name &&
-      req.user.username !== game.player2.name
+      req.user.username !== game.player1.username &&
+      req.user.username !== game.player2.username
     ) {
       return res.status(403).send({
         success: false,
         message: "Unauthorized",
       });
     }
-
     // Prendiamo la mossa
     const { move } = req.body;
 
@@ -115,7 +112,7 @@ router.post(
     // Se la mossa è valida, allora ritorniamo il game
     res.status(200).send({
       success: true,
-      game: game, // Da capire se mandare
+      //game: game, // Da capire se mandare
     });
   }
 );

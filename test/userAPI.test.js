@@ -2,7 +2,7 @@ const request = require("supertest");
 const app = require("../code/backend/server.js"); // Adjust the path as needed
 
 describe("API Tests for /api/register", () => {
-  // Test for empty body request
+
   test("should return 400 for POST request with empty body", async () => {
     const response = await request(app).post("/api/register").send({});
 
@@ -11,13 +11,16 @@ describe("API Tests for /api/register", () => {
   });
 
   // Test for valid credentials
-  test("should return 200 for POST request with valid credentials", async () => {
+  test("should return 200 or 400 for POST request with valid credentials", async () => {
     const response = await request(app)
       .post("/api/register")
       .send({ username: "testerUsername", password: "test" });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({ success: true });
+    expect([200, 400]).toContain(response.statusCode);
+    if (response.statusCode === 200) {
+      expect(response.body).toEqual({ success: true });
+    } else {
+      expect(response.body).toEqual({ success: false, reason: "Username already exists" });
+    }
   });
 
   // Test for duplicate registration

@@ -10,6 +10,7 @@ import Tab from '@mui/material/Tab';
 
 import ELOLeaderBoard from './ELOLeaderBoard.jsx';
 import RankLeaderBoard from './RankLeaderBoard.jsx';
+import DailyLeaderBoard from './DailyLeaderBoard.jsx';
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -95,6 +96,9 @@ function LeaderBoardPage() {
                     <RankLeaderBoard />
                 </CustomTabPanel >
                 <CustomTabPanel value={currentLeaderboard} index={2}>
+                    <DailyLeaderBoard />
+                </CustomTabPanel >
+                <CustomTabPanel value={currentLeaderboard} index={3}>
                     <Skeleton variant="text" width={700} height={30} />
                     <Skeleton variant="text" width={700} height={30} />
                     <Skeleton variant="text" width={700} height={30} />
