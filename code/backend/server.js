@@ -84,7 +84,6 @@ function startServer() {
   app.listen(PORT, () => {
     console.log(`Server acceso su http://localhost:${PORT}`);
     // Ci colleghiamo al database
-    
     connectToDatabase();
   });
 }

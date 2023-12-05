@@ -149,10 +149,9 @@ function ReallyBadChessLocalFreeplay() {
       chess.fen();
       let chosenMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
       if (chess.moves().length > 0) {
-        let bestMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
+        let bestMove = chosenMove;
         switch (gameData.difficulty) {
           case 0:
-            bestMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
             break;
           case 1:
             bestMove = await findBestMove(chess.fen(), 2, 0);
@@ -170,7 +169,7 @@ function ReallyBadChessLocalFreeplay() {
           setFen(chess.fen());
           checkCheck();
           setUndoEnabled(true);
-          handleCheckmateAndDraw(chess);
+          handleCheckmateAndDraw();
         }, 1000);
       }
     }
@@ -202,8 +201,7 @@ function ReallyBadChessLocalFreeplay() {
   }
 
   // Funzione per controllare se c'è un vincitore
-  function handleCheckmateAndDraw(chess) {
-    console.log("CHECKMATE: " + chess.isCheckmate());
+  function handleCheckmateAndDraw() {
     if (chess.isCheckmate()) {
       const winner = chess.turn() === 'w' ? 'Nero' : 'Bianco';
       handleGameOver(winner)

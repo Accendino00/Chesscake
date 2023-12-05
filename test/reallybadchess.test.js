@@ -5,8 +5,6 @@ let token; // Variable to store the token
 const Chess = require("chess.js").Chess;
 
 
-
-
 describe("API Tests for /api/reallybadchess", () => {
 
   beforeAll(async () => {
@@ -29,7 +27,6 @@ describe("API Tests for /api/reallybadchess", () => {
   });
 
   let gameID = null;
-  console.log(chessgames.chessGames);
   test("should return 200 for post to /api/reallybadchess/newGame", async () => {
     const response = await request(app)
       .post("/api/reallybadchess/newGame")
