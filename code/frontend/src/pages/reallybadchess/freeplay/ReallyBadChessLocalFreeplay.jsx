@@ -292,7 +292,6 @@ function ReallyBadChessLocalFreeplay() {
     const savedGames = JSON.parse(localStorage.getItem('games')) || [];
     const newGame = { id: savedGames.length + 1, moves };
     savedGames.push(newGame);
-    localStorage.setItem('games', JSON.stringify(savedGames));
 
     // Se diverso da undefined, nero o bianco allora lo imposto a nessuno
     if (winner !== undefined && winner !== 'Nero' && winner !== 'Bianco' && winner !== 'Patta') {

@@ -1,6 +1,9 @@
-import React from 'react';
-import { Box, Skeleton, Avatar, Typography, Divider } from '@mui/material';
+import React, {useState} from 'react';
+import { Link } from 'react-router-dom';
+import { Box, IconButton , Typography, Divider, Grid} from '@mui/material';
+import { CheckCircle, Error, Computer, Event, SportsKabaddi, Replay} from '@mui/icons-material';
 import styles from './AccountPageStyles';
+import ReplayComponent from '../replay/Replay.jsx';
 
 import LanguageIcon from '@mui/icons-material/Language';
 import { PlayerVsPlayerIcon, PlayerVsComputerIcon, DailyChallengeIcon } from '../../utils/ModeIcons.jsx';
@@ -17,24 +20,25 @@ function LastGamesComponent({username}) {
     const [lastGamesData, setLastGamesData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
     const [accountFound, setAccountFound] = React.useState(false);
+    const [replayGameIndex, setReplayGameIndex] = useState(null);
 
     let token = Cookies.get('token')
 
     React.useEffect(() => {
         if (username) {
-            fetch('/api/account/getLastGames?number=10/' + username, {
+            fetch('/api/account/getLastGames/' + username, {
                 method: 'GET',
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        setLastGamesData(data.lastGames);
-                        setAccountFound(true);
-                    }
-                    setIsLoading(false);
-                });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setLastGamesData(data.lastGames);
+                    setAccountFound(true);
+                }
+                setIsLoading(false);
+            });
         } else {
-            fetch('/api/account/getLastGames?number=10', {
+            fetch('/api/account/getLastGames/', {
                 method: 'GET',
                 headers: { "Authorization": `Bearer ${token}` },
             })
@@ -49,43 +53,38 @@ function LastGamesComponent({username}) {
         }
     }, []);
 
-    if (isLoading || !accountFound) { // Da togliere il !accountFound, lasciare come condizione solo "isLoading"
-        // Placeholder
-        return (<Box sx={styles.BoxGeneralUltimePartite}>
-            {/* Parte del titolo dove dico che si tratta di "Ultime partite" */}
-            <Box sx={styles.BoxTitle}>
-                <Typography variant="h4" sx={styles.Title}>
-                    Ultime partite
-                </Typography>
-            </Box>
-            <Skeleton variant="rounded" width={700} height={30} />
-            <Divider />
-            <Skeleton variant="rounded" width={700} height={30} />
-            <Divider />
-            <Skeleton variant="rounded" width={700} height={30} />
-            <Divider />
-            <Skeleton variant="rounded" width={700} height={30} />
-            <Divider />
-            <Skeleton variant="rounded" width={700} height={30} />
-            <Divider />
-            <Skeleton variant="rounded" width={700} height={30} />
-        </Box>
-        );
-    };
-
-    if (!accountFound) {
-        return <></>
+    if (replayGameIndex !== null) {
+        console.log(lastGamesData[replayGameIndex].matches.board);
+        return <ReplayComponent game={lastGamesData[replayGameIndex].matches.moves} />;
     }
+        // Placeholder
+        return (
+            <Box sx={styles.BoxGeneralUltimePartite}>
+                <Typography variant="h5" sx={styles.TypographyUltimePartite}>Ultime partite</Typography>
+                {lastGamesData && lastGamesData.length > 0 && lastGamesData.map((game, index) => (
+                    <div key={index}>
+                    <Grid container justifyContent="space-between" alignItems="center">
+                        <Grid item xs={5}>
+                            {game.won ? <CheckCircle color="success" /> : <Error color="error" />}
+                            <Typography>{game.won ? 'Won' : 'Lost'}</Typography>
+                        </Grid>
+                        <Grid item xs={7}>
+                            <Box display="flex" justifyContent="flex-end">
+                                {game.mode === 'playerVsComputer' ? <Computer /> : game.mode === 'dailyChallenge' ? <Event /> : <SportsKabaddi />}
+                                <Typography>{`Partita ${index + 1}:`}</Typography>
+                                <IconButton component={Link} to={`/replay/${username}:${index}`}>
+                                    <Replay />
+                                </IconButton>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                    {index < lastGamesData.length - 1 && <Divider />} 
+                    </div>
+                ))}
+                {lastGamesData <= 0 && <Typography>Non ci sono partite da mostrare</Typography>}
+            </Box>
+        );
+};
 
-    
-    // Real profile info:
-    return (
-        <Box sx={styles.BoxGeneralUltimePartite}>
-        </Box>
-    );
-
-
-
-}
 
 export default LastGamesComponent;
