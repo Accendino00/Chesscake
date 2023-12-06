@@ -122,12 +122,4 @@ router.get("/getLastGames/:username", async function (req, res) {
     }
 });
 
-router.get("/getLastGames/", function (req, res) {
-    res.status(200).send({
-        success: true,
-        message: "Informazioni prese con successo",
-        lastGames: allGames,
-    });
-});
-
 module.exports = router;
