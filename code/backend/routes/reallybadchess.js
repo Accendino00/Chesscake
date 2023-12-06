@@ -149,6 +149,49 @@ router.post(
     // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
     res.status(200).send({
       success: true,
+      //game: game, // Da capire se mandare - Commentata perché nei test non viene mandato
+    });
+  }
+);
+
+router.post(
+  "/saveDailyChallengeResults/:gameId",
+  nonBlockingAutheticateJWT,
+  async (req, res) => {
+    // Prendiamo il gameId
+    const { gameId } = req.params;
+
+    // Prendiamo il game dal database
+    const game = chessGames.getGame(gameId);
+
+    // Se il game non esiste, allora ritorniamo un errore
+    if (!game) {
+      return res.status(404).send({
+        success: false,
+        message: "Game not found",
+      });
+    }
+    // Controlliamo che l'utenza sia corretta
+    if (
+      req.user &&
+      req.user.username !== game.player1.username &&
+      req.user.username !== game.player2.username
+    ) {
+      return res.status(403).send({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Prendiamo il risultato
+    const { result } = req.body;
+
+    // Salviamo i risultati
+    chessGames.saveDailyChallengeResults(gameId);
+
+    // Ritorniamo il game
+    res.status(200).send({
+      success: true,
       game: {
         chess: updatedGame.chess,
         player1: {

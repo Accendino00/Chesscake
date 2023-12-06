@@ -100,32 +100,44 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
         
         const startOfDay = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 0, 0, 0)).toISOString();
         const endOfDay = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 23, 59, 59, 999)).toISOString();
-        console.log(startOfDay, endOfDay);
         // Retrieve the top 10 players by the number of moves in the daily challenge
         const leaderboard = await collection.aggregate([
-            {
-                $match: {
-                    "matches.mode": "DailyChallenge",
-                    "matches.dataOraInizio": { $gte: startOfDay, $lte: endOfDay }
-                    
-                }
-            },
-            {
-                $group: {
-                    _id: "$_id",
-                    username: { $first: "$username" },
-                    moves: { $sum: "$matches.gameData.turniBianco" }
-                }
-            },
-            {
-                $sort: { moves: 1 }
-            },
-            {
-                $limit: 10
+        {
+            $match: {
+                "matches.mode": "DailyChallenge",
+                "matches.dataOraInizio": { $gte: startOfDay, $lte: endOfDay },
+                "matches.gameData.vincitore": "Bianco",
             }
+        },
+        {
+            $lookup: {
+                from: "Users",
+                localField: "Player1",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $unwind: "$user"
+        },
+        {
+            $group: {
+                _id: "$_id",
+                username: { $first: "$user.username" },
+                moves: { $sum: "$matches.gameData.turniBianco" }
+            }
+        },
+        {
+            $sort: { moves: 1 }
+        },
+        {
+            $limit: 10
+        }
         ]).toArray();
-        
+
+
         let userPlace = null
+        
         if (req.user) {
             // Find the user's position in the daily challenge leaderboard
             const userRanking = leaderboard;
@@ -143,18 +155,27 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
             else
             {
                 userPlace = {
-                    username: req.user.username + "debug",
-                    moves: 0,
+                    username: req.user.username,
+                    moves: "N/A",
                     place: 0,
                 }
             }
-            
         }
-        res.json({
-            success: true,
-            leaderboard: leaderboard.map(user => ({ username: user.username, moves: user.moves })),
-            userPlace
-        });
+        if (leaderboard.length === 0) {
+            res.status(201).json({
+                success: true,
+                leaderboard: [],
+                message: "Daily challenge still empty",
+                statusCode: 201,
+                userPlace
+            });
+        } else {
+            res.json({
+                success: true,
+                leaderboard: leaderboard.map(user => ({ username: user.username, moves: user.moves })),
+                userPlace
+            });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send("Server error");

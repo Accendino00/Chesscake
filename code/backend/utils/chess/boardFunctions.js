@@ -1,6 +1,6 @@
 let { Chess } = require('chess.js');
 
-const pieces = [
+let pieces = [
   { name: "p", value: 1 },
   { name: "n", value: 3 },
   { name: "b", value: 3 },
@@ -13,11 +13,11 @@ function findChessPiecesWithRank(rank, seed) {
   let overallValue = getRandomPieceValue(seed);
   const median = calculateMedian(rank);
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 8; i++) {
     let filteredPieces = filterPieces(pieces, overallValue, median, i);
 
     if (filteredPieces.length === 0) {
-      filteredPieces = getDefaultFilteredPieces(overallValue, median,i);
+      filteredPieces = getDefaultFilteredPieces(overallValue, median, i);
     }
 
     filteredPieces = handleSpecialCase(filteredPieces, seed, i);
@@ -27,9 +27,42 @@ function findChessPiecesWithRank(rank, seed) {
     const randomValue = getRandomValue(seed) * totalWeight;
     const selected = selectPiece(filteredPieces, pieceWeights, randomValue);
 
-    overallValue += (overallValue / (i + 1)) < median ? selected.value : -selected.value;
+    overallValue += (overallValue / (i + 1)) < median ? selected.value * 1.3 : -selected.value * 0.7;
     selectedPieces.push(selected);
   }
+  pieces = [
+    { name: "p", value: 1 },
+    { name: "n", value: 3 },
+    { name: "b", value: 3 },
+    { name: "r", value: 5 },
+  ];
+  
+  for (let i = 8; i < 15; i++) {
+    let filteredPieces = filterPieces(pieces, overallValue, median, i);
+
+    if (filteredPieces.length === 0) {
+      filteredPieces = getDefaultFilteredPieces(overallValue, median, i);
+    }
+
+    filteredPieces = handleSpecialCase(filteredPieces, seed, i);
+
+    const pieceWeights = calculatePieceWeights(filteredPieces, overallValue, median, i);
+    const totalWeight = calculateTotalWeight(pieceWeights);
+    const randomValue = getRandomValue(seed) * totalWeight;
+    const selected = selectPiece(filteredPieces, pieceWeights, randomValue);
+
+    pieces = [
+      { name: "p", value: 1 },
+      { name: "n", value: 3 },
+      { name: "b", value: 3 },
+      { name: "r", value: 5 },
+      { name: "q", value: 9 }
+    ];
+
+    overallValue += (overallValue / (i + 1)) < median ? selected.value * 0.7 : -selected.value * 1.3;
+    selectedPieces.push(selected);
+  }
+
   return selectedPieces;
 }
 
@@ -38,7 +71,7 @@ function getRandomPieceValue(seed) {
 }
 
 function calculateMedian(rank) {
-  return (rank - 15) / 15;
+  return (rank) / 15;
 }
 
 function filterPieces(pieces, overallValue, median, i) {
@@ -60,7 +93,7 @@ function handleSpecialCase(filteredPieces, seed, i) {
 }
 
 function calculatePieceWeights(filteredPieces, overallValue, median, i) {
-  return filteredPieces.map(piece => weightFunction(piece.value, overallValue / (i + 1), median));
+  return filteredPieces.map(piece => weightFunction(piece.value, overallValue / (i + 1), median, 4));
 }
 
 function calculateTotalWeight(pieceWeights) {
@@ -73,11 +106,15 @@ function getRandomValue(seed) {
 
 function selectPiece(filteredPieces, pieceWeights, randomValue) {
   let cumulativeWeight = 0;
-  let selected = filteredPieces[filteredPieces.length-1];  // Inizializza con null
+  let selected = filteredPieces[filteredPieces.length-1];  // Initialize with the last piece
+
+  if (selected.name === "q") {
+    selected = filteredPieces[filteredPieces.length-2];  // Select the penultimate piece
+  }
 
   for (let j = 0; j < filteredPieces.length; j++) {
     cumulativeWeight += pieceWeights[j];
-    if (randomValue <= cumulativeWeight) {
+    if (randomValue <= cumulativeWeight + Number.EPSILON) {
       selected = filteredPieces[j];
       break;
     }
@@ -86,12 +123,13 @@ function selectPiece(filteredPieces, pieceWeights, randomValue) {
 }
 
 // Funzione del calcolo del peso
-function weightFunction(value, overallValue, median) {
+function weightFunction(value, overallValue, median, scale = 1) {
   const diffToMedian = Math.abs(value - median);
   const diffToOverall = Math.abs(value - overallValue);
-  let weight = 1 - (diffToMedian / (diffToOverall + 1));
-  return weight <= 0 ? 0 : weight;
+  let weight = scale * (1 - diffToMedian / (diffToOverall + 1));
+  return weight;
 }
+
 
 /**
  * Genera una scacchiera personalizzata basata sulla modalità e il rango forniti.
@@ -104,6 +142,7 @@ function weightFunction(value, overallValue, median) {
  *                      Rank < 50 corrisponde a vantaggio per bianco, rank > 50 corrisponde a vantaggio per nero. 
  * @returns {Object} Un'istanza della classe Chess rappresentante la scacchiera inizializzata.
  */
+
 function generateBoard(mode, rank) {
   const newChess = new Chess();
 
@@ -117,20 +156,62 @@ function generateBoard(mode, rank) {
   }
 
   const [playerRank, opponentRank] = calculateRanks(rank, seed);
-  const whitePieces = findChessPiecesWithRank(playerRank, seed);
-  const blackPieces = findChessPiecesWithRank(opponentRank, seed);
-
+  const whitePieces = findChessPiecesWithRank(playerRank, seed).sort((a, b) => a.value - b.value);
+  const blackPieces = findChessPiecesWithRank(opponentRank, seed).sort((a, b) => a.value - b.value);
+  
   const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
   const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
 
-  // Generazione pezzi nella scacchiera
+  // Metti i pezzi disponibili in modo casuale nella fila 2
+  whitePieces.filter(piece => piece.name === "q").forEach((piece) => {
+    const validSquares = whiteSquares.filter(square => square[1] === "1");
+    const randomIndex = Math.floor(Math.random() * validSquares.length);
+    const square = validSquares.splice(randomIndex, 1)[0];
+    newChess.put({ type: piece.name, color: 'w' }, square);
+    whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+    whiteSquares.splice(whiteSquares.indexOf(square), 1);
+  });
+
+  whitePieces.filter(piece => piece.name === "p").forEach((piece) => {
+    const validSquares = whiteSquares.filter(square => square[1] === "2");
+    if(validSquares.length > 0) {
+    const randomIndex = Math.floor(Math.random() * validSquares.length);
+    const square = validSquares.splice(randomIndex, 1)[0];
+    newChess.put({ type: piece.name, color: 'w' }, square);
+    whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+    whiteSquares.splice(whiteSquares.indexOf(square), 1);
+    }
+  });
+
+  //Aggiungi il resto nelle due file
   while (whiteSquares.length > 0) {
     const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
     newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
     whiteSquares.splice(randomIndex, 1);
   }
   newChess.put({ type: 'k', color: 'w' }, 'e1');
+  
+  blackPieces.filter(piece => piece.name === "q").forEach((piece) => {
+    const validSquares = blackSquares.filter(square => square[1] === "8");
+    const randomIndex = Math.floor(Math.random() * validSquares.length);
+    const square = validSquares.splice(randomIndex, 1)[0];
+    newChess.put({ type: piece.name, color: 'b' }, square);
+    blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+    blackSquares.splice(blackSquares.indexOf(square), 1);
+  });
 
+  blackPieces.filter(piece => piece.name === "p").forEach((piece) => {
+    const validSquares = blackSquares.filter(square => square[1] === "7");
+    if(validSquares.length > 0) {
+      const randomIndex = Math.floor(Math.random() * validSquares.length);
+      const square = validSquares.splice(randomIndex, 1)[0];
+      newChess.put({ type: piece.name, color: 'b' }, square);
+      blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+      blackSquares.splice(blackSquares.indexOf(square), 1);
+    }
+  });
+
+  //Aggiungi il resto nelle due file
   while (blackSquares.length > 0) {
     const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
     newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
@@ -147,9 +228,9 @@ function generateBoard(mode, rank) {
 // Funzione per calcolare il rank
 function calculateRanks(rank, seed) {
   const value = -0.5 * rank + 25;  // Funzione lineare per determinare il valore
-  // const value = 25 - (19*rank)/40 - (3*rank*rank*rank)/4000 + rank*rank*rank/200000;
-  let playerRank = ((seed === 0 ? Math.random() : seededRandom(seed)) * 20) + 45 + (Math.min(0, 100 - rank)) / 2;
-  let opponentRank = playerRank - Math.min(value, 75);
+  const baseRank = ((seed === 0 ? Math.random() : seededRandom(seed)) * 10) + 25;
+  let playerRank = baseRank + value/2;
+  let opponentRank = baseRank - value/2;
   playerRank = Math.max(playerRank, 0);
   opponentRank = Math.max(opponentRank, 0);
   return [playerRank, opponentRank];

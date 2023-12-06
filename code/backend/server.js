@@ -27,7 +27,7 @@ const { clientMDB, connectToDatabase, disconnectFromDatabase }  = require('./uti
 
 const app = express();
 const PORT = config.PORT || 8000;
-
+let server = null;
 
 
 
@@ -80,10 +80,9 @@ app.get("*", require(config.ROUTESERVIZI + "/webpages"));
 
 /* SERVER START */
 function startServer() {
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(`Server acceso su http://localhost:${PORT}`);
     // Ci colleghiamo al database
-    
     connectToDatabase();
   });
 }
@@ -99,9 +98,13 @@ function handleShutdown() {
   disconnectFromDatabase().then(() => {
     process.exit(0);
   });
+  server.close();
 }
 
 process.on('SIGTERM', handleShutdown);
 process.on('SIGINT', handleShutdown);
 
-module.exports = app;
+module.exports = {
+  app,
+  server
+};
