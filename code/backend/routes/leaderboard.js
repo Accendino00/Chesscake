@@ -16,7 +16,7 @@ router.get("/elo", nonBlockingAutheticateJWT, async function (req, res) {
         // Retrieve the top 10 players by ELO
         const leaderboard = await collection.find({ username: { $ne: "Computer" } })
             .sort({ rbcELO: -1 })
-            .limit(20)
+            .limit(10)
             .toArray()
 
         let userPlace = null;
