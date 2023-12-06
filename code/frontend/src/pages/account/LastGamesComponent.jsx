@@ -63,22 +63,23 @@ function LastGamesComponent({username}) {
                 <Typography variant="h5" sx={styles.TypographyUltimePartite}>Ultime partite</Typography>
                 {lastGamesData && lastGamesData.length > 0 && lastGamesData.map((game, index) => (
                     <div key={index}>
-                    <Grid container justifyContent="space-between" alignItems="center">
+                    <Grid container justifyContent="flex-end" alignItems="center">
                         <Grid item xs={5}>
-                            {game.won ? <CheckCircle color="success" /> : <Error color="error" />}
-                            <Typography>{game.won ? 'Won' : 'Lost'}</Typography>
+                            <Box display="flex" alignItems="center">
+                                {game.won ? <CheckCircle color="success" /> : <Error color="error" />}
+                                <Typography>{game.won ? 'Won' : 'Lost'}</Typography>
+                            </Box>
                         </Grid>
                         <Grid item xs={7}>
                             <Box display="flex" justifyContent="flex-end">
                                 {game.mode === 'playerVsComputer' ? <Computer /> : game.mode === 'dailyChallenge' ? <Event /> : <SportsKabaddi />}
-                                <Typography>{`Partita ${index + 1}:`}</Typography>
                                 <IconButton component={Link} to={`/replay/${username}:${index}`}>
                                     <Replay />
                                 </IconButton>
                             </Box>
                         </Grid>
                     </Grid>
-                    {index < lastGamesData.length - 1 && <Divider />} 
+                    {<Divider style={{ width: '500px' }} />} 
                     </div>
                 ))}
                 {lastGamesData <= 0 && <Typography>Non ci sono partite da mostrare</Typography>}
