@@ -130,27 +130,36 @@ router.post(
       });
     }
     // Prendiamo la mossa
-    const { move } = req.body;
+    const move = req.body;
+    console.log(move);
+    try {
+      // Facciamo la mossa
+      const result = chessGames.movePiece(gameId, move);
 
-    // Facciamo la mossa
-    const result = chessGames.movePiece(gameId, move);
+      // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
+      const updatedGame = chessGames.getGame(gameId);
 
-    // Se la mossa non è valida, allora ritorniamo un errore
-    if (!result) {
-      return res.status(400).send({
+      // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
+      res.status(200).send({
+        success: true,
+        game: updatedGame,
+      });
+    } catch (error) {
+      // Handle the invalid move exception
+      if (error.message === 'Invalid move') {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid move",
+        });
+      }
+
+      // Handle other exceptions if needed
+      console.error("Unhandled exception:", error);
+      return res.status(500).send({
         success: false,
-        message: "Invalid move",
+        message: "Internal server error",
       });
     }
-
-    // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
-    const updatedGame = chessGames.getGame(gameId);
-
-    // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
-    res.status(200).send({
-      success: true,
-      //game: game, // Da capire se mandare - Commentata perché nei test non viene mandato
-    });
   }
 );
 

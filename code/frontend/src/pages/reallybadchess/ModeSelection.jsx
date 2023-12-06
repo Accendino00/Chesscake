@@ -25,7 +25,7 @@ const ModeSelection = () => {
     const location = useLocation();
     const isChildRoute = /^\/play\/reallybadchess\/.+/.test(location.pathname);
 
-    const { loginStatus, isTokenLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [loading, setLoading] = useState(false);
 
 

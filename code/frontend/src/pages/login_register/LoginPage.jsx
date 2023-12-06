@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 export default function LoginPage() {  
-    const { loginStatus, isTokenLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
 
     if (isTokenLoading) {

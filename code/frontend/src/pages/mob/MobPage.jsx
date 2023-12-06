@@ -6,7 +6,7 @@ import useTokenChecker from "../../utils/useTokenChecker.jsx";
 
 
 function MobPage() {
-    const { loginStatus, isTokenLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
 
     React.useEffect(() => {

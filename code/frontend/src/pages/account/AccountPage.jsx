@@ -7,7 +7,7 @@ import ProfileComponent from './ProfileComponent.jsx';
 import LastGamesComponent from './LastGamesComponent.jsx';
 
 function AccountPage() {
-    const { loginStatus, isTokenLoading } = useTokenChecker();
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
 
     React.useEffect(() => {

@@ -7,158 +7,270 @@ import Timer from '../timer/Timer';
 import { Chess } from 'chess.js';
 import { generateBoard, getPiecePosition, cloneChessBoard } from './boardFunctions';
 import Cookies from 'js-cookie';
+import useTokenChecker from '../../../utils/useTokenChecker';
+import { CircularProgress } from '@mui/material';
 
 function ReallyBadChessOnline() {
-  const { gameId } = useParams();
-  const navigate = useNavigate();
-  const [gameData, setGameData] = useState(null);
-  const [fen, setFen] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
-  const [timeBianco, setTimeBianco] = useState(0);
-  const [timeNero, setTimeNero] = useState(0);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [winner, setWinner] = useState(null);
-  const [startingBoard, setStartingBoard] = useState(generateBoard());
-  const [chess, setChess] = useState(cloneChessBoard(startingBoard));
+    const { gameId } = useParams();
+    const navigate = useNavigate();
+    const [gameData, setGameData] = useState(null);
+    const [timeBianco, setTimeBianco] = useState(0);
+    const [timeNero, setTimeNero] = useState(0);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [winner, setWinner] = useState(null);
+    const [startingBoard, setStartingBoard] = useState();
+    const [chess, setChess] = useState();
+    const [possibleMoves, setPossibleMoves] = useState([]);
+    const [pieceSelected, setPieceSelected] = useState([]);
+    const [moves, setMoves] = useState([]);
+    const [fen, setFen] = useState();
 
-  useEffect(() => {
-      fetch(`/api/reallybadchess/getGame/${gameId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Cookies.get('token')}`
-      },
-      })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  setGameData(data.game);
-                  const newChess = new Chess();
-                  newChess.load(data.game.chess);
-                  setChess(newChess);
-                  setFen(newChess.fen());
-                  setTimeBianco(data.game.player1.timer);
-                  setTimeNero(data.game.player2.timer);
-              }
-          });
-  }, [gameId]);
+    // Nomi dei giocatori
+    const [player1, setPlayer1] = useState();
+    const [player2, setPlayer2] = useState();
 
-  useEffect(() => {
-      // Guard clause to prevent interval from running until gameData is initialized
-      if (!gameData) {
-          return;
-      }
+    // Se il secondo giocatore è arrivato
+    const [player2Arrived, setPlayer2Arrived] = useState(false);
 
-      const interval = setInterval(() => {
-          fetch(`/api/reallybadchess/getGame/${gameId}`, {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Cookies.get('token')}`
-            },
-            })
-              .then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      setGameData(data.game);
-                      const newChess = new Chess();
-                      newChess.load(data.game.chess);
-                      setChess(newChess);
-                      setFen(newChess.fen());
-                      setTimeBianco(data.game.player1.timer);
-                      setTimeNero(data.game.player2.timer);
-                      if (data.game.gameOver.isGameOver) {
-                          setWinner(data.game.gameOver.winner);
-                          setModalIsOpen(true);
-                      }
-                  }
-              });
-      }, 1000);
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
 
-      return () => clearInterval(interval);
-  }, [gameData, gameId]);
+    React.useEffect(() => {
+        if (!isTokenLoading) {
+            if (!loginStatus) {
+                navigate("/login");
+            }
+            else {
+                console.log(username)
+                // Cose da fare se si è loggati, quindi poter giocare alla partita, etc.
+                // Fetch iniziale per ottenere la partita
+                fetch(`/api/reallybadchess/getGame/${gameId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json', 'Authorization': `Bearer ${Cookies.get('token')}`
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            setGameData(data.game);
+                            let newChess = new Chess(data.game.chess._header.FEN);
+        
+                            setFen(newChess.fen());
+                            newChess.load(newChess.fen());
+                            setChess(newChess);
 
+                            setTimeBianco(data.game.player1.timer);
+                            setTimeNero(data.game.player2.timer);
 
+                            // Se non ci sono entrambi i player, allora non imposto nulla
+                            if (data.game.player1.username === null || data.game.player2.username === null) {
+                                return;
+                            } else {
+                                setPlayer2Arrived(true);
+                            }
 
+                            // Imposto l'user 1 e l'user 2 usando il mio username
+                            if (username === data.game.player1.username) {
+                                setPlayer1(data.game.player1.username);
+                                setPlayer2(data.game.player2.username);
+                            } else {
+                                setPlayer1(data.game.player2.username);
+                                setPlayer2(data.game.player1.username);
+                            }
+                        }
+                    });
 
-  const handleMove = (sourceSquare, targetSquare) => {
-    fetch(`/api/reallybadchess/movePiece/${gameId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Cookies.get('token')}`
-     },
-      body: JSON.stringify({ sourceSquare, destinationSquare: targetSquare }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        const newChess = new Chess();
-        newChess.load(data.game.chess);
-        setChess(newChess);
-        setFen(newChess.fen());
-        setTimeBianco(data.game.player1.timer);
-        setTimeNero(data.game.player2.timer);
-  
-        // Check if it's the current player's turn
-        const isMyTurn = data.game.player1.turn; // Assuming player1 is the current user
-        if (!isMyTurn) {
-          console.log("It's not your turn.");
-          // Handle the case where it's not the current player's turn (show a message, disable moves, etc.)
+            }
         }
-  
-        if (data.game.gameOver.isGameOver) {
-          setWinner(data.game.gameOver.winner);
-          setModalIsOpen(true);
-        }
-      }
-    });
-  };
+    }, [loginStatus, isTokenLoading]);
 
-    const onMouseOverSquare = square => {
-        const moves = chess.moves({
-            square,
-            verbose: true,
-        });
 
-        if (moves.length === 0) {
+    useEffect(() => {
+        // Guardia per evitare di iniziare il fetch se non abbiamo ancora i dati della partita
+        if (!gameData || isTokenLoading || !loginStatus) {
             return;
         }
 
-        const squaresToHighlight = [];
-        for (const move of moves) {
-            squaresToHighlight.push(move.to);
-        }
+        const interval = setInterval(() => {
+            fetch(`/api/reallybadchess/getGame/${gameId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Cookies.get('token')}`
+                },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        setGameData(data.game);
+                        let newChess = new Chess(data.game.chess._header.FEN);
+    
+                        setFen(newChess.fen());
+                        newChess.load(newChess.fen());
+                        setChess(newChess);
 
-        highlightSquare(square, squaresToHighlight);    
+                        setTimeBianco(data.game.player1.timer);
+                        setTimeNero(data.game.player2.timer);
+
+                        if (data.game.gameOver.isGameOver) {
+                            setWinner(data.game.gameOver.winner);
+                            setModalIsOpen(true);
+                        }
+
+                        // Se non ci sono entrambi i player, allora non imposto nulla
+                        if (data.game.player1.username === null || data.game.player2.username === null) {
+                            return;
+                        } else {
+                            setPlayer2Arrived(true);
+                        }
+
+                        // Imposto l'user 1 e l'user 2 usando il mio username
+                        if (username === data.game.player1.username) {
+                            setPlayer1(data.game.player1.username);
+                            setPlayer2(data.game.player2.username);
+                        } else {
+                            setPlayer1(data.game.player2.username);
+                            setPlayer2(data.game.player1.username);
+                        }
+                    }
+                });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // Gestore delle mosse possibili
+    const handleMouseOverSquare = (square) => {
+        const moves = chess.moves({ square, verbose: true });
+        setPossibleMoves(moves.map(move => move.to));
     };
 
-    const onMouseOutSquare = () => {
-        removeHighlightSquare();
+    const handleMouseOutSquare = () => {
+        setPossibleMoves([]);
     };
 
-    const highlightSquare = (sourceSquare, squaresToHighlight) => {
-        const highlightStyles = [getPiecePosition(sourceSquare)];
 
-        for (const square of squaresToHighlight) {
-            highlightStyles.push(getPiecePosition(square));
-        }
+    const handleMove = (sourceSquare, targetSquare) => {
+        fetch(`/api/reallybadchess/movePiece/${gameId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Cookies.get('token')}`
+            },
+            body: JSON.stringify({ from: sourceSquare, to: targetSquare, promotion: 'q' }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setGameData(data.game);
+                    let newChess = new Chess(data.game.chess._header.FEN);
 
-        const highlightPositions = highlightStyles.reduce((a, b) => Object.assign(a, b), {});
-        setFen(chess.fen());
+                    setFen(newChess.fen());
+                    newChess.load(newChess.fen());
+                    setChess(newChess);
 
-        setStartingBoard(prevState => ({
-            ...prevState,
-            ...highlightPositions,
-        }));
+                    // Gestione del timer
+                    setTimeBianco(data.game.player1.timer);
+                    setTimeNero(data.game.player2.timer);
+                    let isMyTurn = false;
 
+                    console.log(data);
+
+                    // Capiamo se sono il giocatore 1 o il giocatore 2
+                    // Check if it's the current player's turn
+                    if (username !== data.game.player1.username) {
+                        // Capiamo se è il nostro turno
+                        if (data.lastMove != data.game.player1.side || (data.lastMove == null && data.game.player1.side == 'white')) {
+                            isMyTurn = true;
+                        } else {
+                            isMyTurn = false;
+                        }
+                    } else {
+                        if (data.lastMove != data.game.player2.side) {
+                            isMyTurn = true;
+                        } else {
+                            isMyTurn = false;
+                        }
+                    }
+
+                    if (!isMyTurn) {
+                        console.log("It's not your turn.");
+                        // Handle the case where it's not the current player's turn (show a message, disable moves, etc.)
+                    }
+
+                    if (data.game.gameOver.isGameOver) {
+                        setWinner(data.game.gameOver.winner);
+                        setModalIsOpen(true);
+                    }
+                }
+            });
     };
-
-    const removeHighlightSquare = () => {
-        setFen(chess.fen());
-        setStartingBoard(generateBoard());
-    };
-
 
 
     const handleCloseModal = () => setModalIsOpen(false);
-
     const handleNavigateToPlay = () => navigate('/play/');
-
     const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
+
+
+
+
+    if (isTokenLoading || loginStatus === undefined) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (!player2Arrived) {
+        // Ritorniamo un messaggio di errore
+        return (
+            <Box sx={{
+                display: "flex",
+                height: "100vh",
+                width: "50vh",
+                marginTop: "0px",
+                margin: "auto",
+                flexDirection: "column",
+                alignContent: "space-between",
+                flexWrap: "nowrap",
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <Box sx={{
+                    backgroundColor: "white",
+                    width: "400px",
+                    padding: "30px",
+                    borderRadius: "10px",
+                    boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-evenly",
+                    alignItems: "center",
+                    height: "300px",
+                }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ color: "black", fontWeight: "bolder" }}>
+                            Sei in attesa di un altro giocatore
+                        </Typography>
+                        <Typography sx={{ color: "black", fontWeight: "thin" }}>
+                            Invita i tuoi amici nella lobby se vuoi! Copia il link, oppure digli di cercare la tua partita nell'elenco delle lobby!
+                        </Typography>
+                    </Box>
+                    <Button variant="contained" color="primary" onClick={() => {
+                        // Copiare nella clipboard in path
+                        navigator.clipboard.writeText(`http://localhost:3000/play/reallybadchess/${gameId}`);
+                    }}>
+                        Copia il link di invito!         </Button>
+                    <Button variant="contained" color="primary" onClick={() => {
+                        // Copiare nella clipboard in path
+                        navigator.clipboard.writeText(`http://localhost:3000/play/reallybadchess/${gameId}`);
+                    }}>
+                        Condividi il link sui social         </Button>
+                </Box>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={ChessGameStyles.everythingContainer}>
@@ -184,11 +296,19 @@ function ReallyBadChessOnline() {
             <div style={ChessGameStyles.divChessBoard}>
                 <Chessboard
                     position={fen}
-                    onMouseOverSquare={onMouseOverSquare}
-                    onMouseOutSquare={onMouseOutSquare}
                     onPieceDrop={handleMove}
-                    boardOrientation={gameData?.player1?.side || 'white'}
+                    boardOrientation={
+                        // L'utente può essere o bianco o nero e potrebbe essere o il player 1 o il player 2(
+                        (username === gameData.player1.username) ? 
+                        "black" : "white"
+                    }
                     width={'50vh'}
+                    onMouseOverSquare={handleMouseOverSquare}
+                    onMouseOutSquare={handleMouseOutSquare}
+                    customSquareStyles={{
+                        ...possibleMoves.reduce((a, c) => ({ ...a, [c]: { background: "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)" } }), {}),
+                        ...pieceSelected.reduce((a, c) => ({ ...a, [c]: { background: "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)" } }), {})
+                    }}
                 />
             </div>
             <Box sx={ChessGameStyles.boxControlButtons}>

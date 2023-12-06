@@ -7,29 +7,29 @@ import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
 function LandingPage() {
-    const { loginStatus, isTokenLoading } = useTokenChecker();
-    const navigate = useNavigate();
+  const { loginStatus, isTokenLoading, username } = useTokenChecker();
+  const navigate = useNavigate();
 
-    React.useEffect(() => {
-      if (!isTokenLoading) {
-        if (loginStatus) {
-          navigate("/play");
-        } else {
-          navigate("/login");
-        }
+  React.useEffect(() => {
+    if (!isTokenLoading) {
+      if (loginStatus) {
+        navigate("/play");
+      } else {
+        navigate("/login");
       }
-    }, [loginStatus, isTokenLoading]);
-
-    if (isTokenLoading || loginStatus === undefined) {
-        return (
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-            <CircularProgress />
-          </Box>
-        );
     }
+  }, [loginStatus, isTokenLoading]);
 
-    // Renderizza nulla, perché il redirect viene fatto in useEffect
-    return null;
+  if (isTokenLoading || loginStatus === undefined) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Renderizza nulla, perché il redirect viene fatto in useEffect
+  return null;
 }
 
 export default LandingPage;

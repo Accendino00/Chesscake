@@ -42,7 +42,7 @@ const RandomWordsGenerator = (usernameToHashForSeed) => {
 function LobbyOnline() {
   const navigate = useNavigate();
 
-  const { loginStatus, isTokenLoading } = useTokenChecker();
+  const { loginStatus, isTokenLoading, username } = useTokenChecker();
 
   const [message, setMessage] = useState('');
   const [games, setGames] = useState([]);
