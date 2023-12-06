@@ -67,7 +67,7 @@ function App() {
                 {
                   path: "createGame/",
                   element: <CreateGameComponent />,
-                },
+                },*/
               ]
             }
           ]
