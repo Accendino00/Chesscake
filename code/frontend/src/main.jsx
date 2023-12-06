@@ -17,7 +17,7 @@ import ReallyBadChessLocalFreeplay from './pages/reallybadchess/freeplay/ReallyB
 import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
 import LobbyOnline from './pages/reallybadchess/online/LobbyOnline.jsx'
 import CreateGameComponent from './pages/reallybadchess/online/CreateGameComponent.jsx'
-
+import Replay from './pages/replay/Replay.jsx'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -38,6 +38,10 @@ function App() {
     {
       path: "/login",
       element: <LoginPage />,
+    },
+    {
+      path: "/replay/:gameId",
+      element: <Replay />,
     },
     // Routes with a navbar on the side
     {

@@ -210,12 +210,6 @@ const ChessGame = ({ mode, duration, rank, player1, player2 }) => {
    * @param {string} winner Nero, Bianco, Nessuno o altro (tradotto a Nessuno)
    */
   const handleGameOver = (winner) => {
-    // Gestione del salvataggio della partita
-    const savedGames = JSON.parse(localStorage.getItem('games')) || [];
-    const newGame = { id: savedGames.length + 1, moves };
-    savedGames.push(newGame);
-    localStorage.setItem('games', JSON.stringify(savedGames));
-
     // Se diverso da undefined, nero o bianco allora lo imposto a nessuno
     if (winner !== undefined && winner !== 'Nero' && winner !== 'Bianco' && winner !== 'Patta') {
       winner = 'Nessuno';

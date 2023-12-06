@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
@@ -9,7 +9,7 @@ import LastGamesComponent from './LastGamesComponent.jsx';
 function AccountPage() {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
-
+    const { username } = useParams();
     React.useEffect(() => {
         if (!isTokenLoading) {
             if (!loginStatus) {
@@ -38,7 +38,7 @@ function AccountPage() {
             alignItems: 'center',
         }}>
             <ProfileComponent />
-            <LastGamesComponent />
+            <LastGamesComponent username={username}/>
         </Box>
     );
 }
