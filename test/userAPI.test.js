@@ -1,7 +1,12 @@
 const request = require("supertest");
-const app = require("../code/backend/server.js"); // Adjust the path as needed
+const {app} = require("../code/backend/server.js"); // Adjust the path as needed
+let {server} = require("../code/backend/server.js"); // Adjust the path as needed
 
 describe("API Tests for /api/register", () => {
+  // closing the server
+  afterAll(async () => {
+    await server.close();        
+  });
 
   test("should return 400 for POST request with empty body", async () => {
     const response = await request(app).post("/api/register").send({});

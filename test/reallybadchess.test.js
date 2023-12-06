@@ -1,11 +1,17 @@
 const request = require("supertest");
-const app = require("../code/backend/server.js"); // Adjust the path as needed
+const {app} = require("../code/backend/server.js"); // Adjust the path as needed
+let {server} = require("../code/backend/server.js"); // Adjust the path as needed
 const chessgames = require("../code/backend/utils/chess/chessgames");
 let token; // Variable to store the token
 const Chess = require("chess.js").Chess;
 
 
 describe("API Tests for /api/reallybadchess", () => {
+
+// closing the server
+  afterAll(async () => {
+      await server.close();        
+  });
 
   beforeAll(async () => {
     // Login to get the token

@@ -64,8 +64,14 @@ module.exports = {
         gameSaved: false,
         side: "b",
       },
-
+      
       lastMove: null, // "w" o "b" per indicare chi ha mosso per ultimo
+
+      matches: {
+        seed: null, // Seed per generare la board
+        dataOraInizio: null, // Data e ora di inizio della partita
+        dataOraFine: null, // Data e ora di fine della partita
+        },
 
       gameOver: {
         isGameOver: false,
@@ -148,6 +154,9 @@ module.exports = {
     game.gameOver.winner = winner;
     game.gameOver.reason = reason;
     this.changeElo(game.player1, game.player2, winner);
+    if(game.gameSettings.mode === "dailyChallenge"){
+        this.saveDailyChallengeResults(game.gameId);
+    }
     // Chiamare la tua funzione changeElo qui per aggiornare i punteggi dei giocatori
     // Esempio: changeElo(game.player1, game.player2, vincitore);
   },
@@ -169,19 +178,19 @@ module.exports = {
       game.lastMove = game.chess.turn(); // Aggiorna di chi è il turno
 
       // Controlla se c'è uno scacco matto
-      if (game.chess.in_checkmate()) {
-        handleGameOver(
+      if (game.chess.isCheckmate()) {
+        this.handleGameOver(
           game,
           game.chess.turn() === "p1" ? "p2" : "p1",
           "checkmate"
         );
       } else if (
-        game.chess.in_stalemate() ||
-        game.chess.threefold_repetition() ||
-        game.chess.insufficient_material()
+        game.chess.isStalemate() ||
+        game.chess.isThreefoldRepetition() ||
+        game.chess.isInsufficientMaterial()
       ) {
         // Controlla se c'è stallo, pareggio o materiale insufficiente
-        handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
+        this.handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
       } else {
         // Aggiorna il timer per interrompere l'ultimo intervallo
         // e avviare l'intervallo per il giocatore che deve muovere
@@ -197,7 +206,7 @@ module.exports = {
               clearInterval(game.player1.interval);
 
               // Gestisci il timeout del giocatore 1 (sconfitta)
-              handleGameOver(game, "p2", "timeout");
+              this.handleGameOver(game, "p2", "timeout");
             }
           }, 1000);
         } else {
@@ -209,7 +218,7 @@ module.exports = {
               clearInterval(game.player2.interval);
 
               // Gestisci il timeout del giocatore 2 (sconfitta)
-              handleGameOver(game, "p1", "timeout");
+              this.handleGameOver(game, "p1", "timeout");
             }
           }, 1000);
         }
@@ -232,34 +241,34 @@ module.exports = {
     var game = chessGames.find((game) => game.gameId == gameId);
 
     // Salva i risultati
-    const db = clientMDB.db("ChessCake"); // Replace with your database name
-    const collection = db.collection("GamesRBC"); // Replace with your collection name for daily challenges
+    const db = clientMDB.db("ChessCake");
+    const collection = db.collection("GamesRBC");
 
     collection.insertOne({
-      Payer1: game.player1,
-      Player2: game.player2,
-      matches: {
-        mode: "DailyChallenge",
-        seed: game.matches.seed,
-        dataOraInizio: game.matches.dataOraInizio,
-        dataOraFine: game.matches.dataOraFine,
-        //board: game.chess.fen();
-        moves: game.chess.history(),
-        gameData: {
-          turniBianco: game.chess
-            .history()
-            .filter((move, index) => index % 2 === 0).length,
-          turniNero: game.chess
-            .history()
-            .filter((move, index) => index % 2 === 1).length,
-          rankUsato: game.gameSettings.rank,
-          vincitore: game.gameOver.winner,
-          tipoVittoria: {
-            tempo: game.player1.timer,
-            //motivo: game.gameOver.reason,
-          },
+        Player1: game.player1,
+        Player2: game.player2,
+        matches: {
+            mode: "DailyChallenge",
+            seed: game.matches.seed,
+            dataOraInizio: game.matches.dataOraInizio,
+            dataOraFine: game.matches.dataOraFine,
+            moves: game.chess.history(),
+            //board: game.chess.fen();
+            gameData: {
+                turniBianco: game.chess
+                    .history()
+                    .filter((move, index) => index % 2 === 0).length,
+                turniNero: game.chess
+                    .history()
+                    .filter((move, index) => index % 2 === 1).length,
+                rankUsato: game.gameSettings.rank,
+                vincitore: game.gameOver.winner,
+                tipoVittoria: {
+                    tempo: game.player1.timer,
+                    motivo: game.gameOver.reason,
+                },
+            },
         },
-      },
     });
   },
 

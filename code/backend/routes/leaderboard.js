@@ -134,10 +134,10 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
             $limit: 10
         }
         ]).toArray();
-        
 
-        console.log(leaderboard);
+
         let userPlace = null
+        
         if (req.user) {
             // Find the user's position in the daily challenge leaderboard
             const userRanking = leaderboard;
@@ -160,13 +160,22 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
                     place: 0,
                 }
             }
-            
         }
-        res.json({
-            success: true,
-            leaderboard: leaderboard.map(user => ({ username: user.username, moves: user.moves })),
-            userPlace
-        });
+        if (leaderboard.length === 0) {
+            res.status(201).json({
+                success: true,
+                leaderboard: [],
+                message: "Daily challenge still empty",
+                statusCode: 201,
+                userPlace
+            });
+        } else {
+            res.json({
+                success: true,
+                leaderboard: leaderboard.map(user => ({ username: user.username, moves: user.moves })),
+                userPlace
+            });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send("Server error");
