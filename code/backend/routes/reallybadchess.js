@@ -192,20 +192,6 @@ router.post(
     // Ritorniamo il game
     res.status(200).send({
       success: true,
-      game: {
-        chess: updatedGame.chess,
-        player1: {
-          username: updatedGame.player1.username,
-          timer: updatedGame.player1.timer,
-          turn: updatedGame.lastMove === "b", // Assuming "b" represents player1's turn
-        },
-        player2: {
-          username: updatedGame.player2.username,
-          timer: updatedGame.player2.timer,
-          turn: updatedGame.lastMove === "w", // Assuming "w" represents player2's turn
-        },
-        gameOver: updatedGame.gameOver,
-      },
     });
   }
 );

@@ -25,18 +25,61 @@ module.exports = {
         const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
         const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
     
-        // Generazione pezzi nella scacchiera
+        // Metti i pezzi q disponibili in modo casuale nella seconda fila
+        whitePieces.filter(piece => piece.name === "q").forEach((piece) => {
+          const validSquares = whiteSquares.filter(square => square[1] === "1");
+          const randomIndex = Math.floor(Math.random() * validSquares.length);
+          const square = validSquares.splice(randomIndex, 1)[0];
+          newChess.put({ type: piece.name, color: 'w' }, square);
+          whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+          whiteSquares.splice(whiteSquares.indexOf(square), 1);
+        });
+
+        //Metti i pezzi p disponibili in modo casuale nella prima fila
+        whitePieces.filter(piece => piece.name === "p").forEach((piece) => {
+          const validSquares = whiteSquares.filter(square => square[1] === "2");
+          if(validSquares.length > 0) {
+          const randomIndex = Math.floor(Math.random() * validSquares.length);
+          const square = validSquares.splice(randomIndex, 1)[0];
+          newChess.put({ type: piece.name, color: 'w' }, square);
+          whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+          whiteSquares.splice(whiteSquares.indexOf(square), 1);
+          }
+        });
+
+        //Aggiungi il resto nelle due file
         while (whiteSquares.length > 0) {
-            const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
-            newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
-            whiteSquares.splice(randomIndex, 1);
+          const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
+          newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
+          whiteSquares.splice(randomIndex, 1);
         }
         newChess.put({ type: 'k', color: 'w' }, 'e1');
-    
+        
+        blackPieces.filter(piece => piece.name === "q").forEach((piece) => {
+          const validSquares = blackSquares.filter(square => square[1] === "8");
+          const randomIndex = Math.floor(Math.random() * validSquares.length);
+          const square = validSquares.splice(randomIndex, 1)[0];
+          newChess.put({ type: piece.name, color: 'b' }, square);
+          blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+          blackSquares.splice(blackSquares.indexOf(square), 1);
+        });
+
+        blackPieces.filter(piece => piece.name === "p").forEach((piece) => {
+          const validSquares = blackSquares.filter(square => square[1] === "7");
+          if(validSquares.length > 0) {
+            const randomIndex = Math.floor(Math.random() * validSquares.length);
+            const square = validSquares.splice(randomIndex, 1)[0];
+            newChess.put({ type: piece.name, color: 'b' }, square);
+            blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+            blackSquares.splice(blackSquares.indexOf(square), 1);
+          }
+        });
+
+        //Aggiungi il resto nelle due file
         while (blackSquares.length > 0) {
-            const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
-            newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
-            blackSquares.splice(randomIndex, 1);
+          const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
+          newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
+          blackSquares.splice(randomIndex, 1);
         }
         newChess.put({ type: 'k', color: 'b' }, 'e8');
     
@@ -191,7 +234,7 @@ module.exports = {
     } else {
       return false;
     }
-  }, */
+  },
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -289,14 +332,14 @@ module.exports = {
   saveDailyChallengeResults: function (gameId) {
     // Cerca la partita di scacchi
     var game = chessGames.find((game) => game.gameId == gameId);
-
+    
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
     const collection = db.collection("GamesRBC");
-
+    var computer = db.collection("Users").findOne({ _id: "6568af1b12028efd10a09141" });
     collection.insertOne({
         Player1: game.player1,
-        Player2: game.player2,
+        Player2: computer,
         matches: {
             mode: "DailyChallenge",
             seed: game.matches.seed,
@@ -359,6 +402,7 @@ module.exports = {
    * @param {string} player2 id del giocatore 2
    * @param {string} outcome risultato della partita
    */
+
   // Funzione per incapsulare la chiamata per cambiare l'elo dei giocatori e facilitare le chiamate nelle varie casistiche di game over
   changeElo: function (Player1, player2, outcome) {
     if (outcome === "p1") {
