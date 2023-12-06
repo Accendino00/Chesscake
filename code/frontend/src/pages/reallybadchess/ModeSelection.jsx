@@ -98,6 +98,11 @@ const ModeSelection = () => {
             });
             navigate(`/play/reallybadchess/freeplay?data=${encodeURIComponent(gameData)}`);
         }
+        
+        else if (mode === 'playerVsPlayerOnline') {
+            navigate(`/play/reallybadchess/lobby`);
+            
+        }
 
         // Se giochiamo in tutte le altre modalità, si tratta di una partita online
         // e quindi devo navigare a "/play/reallybadchess/:gameId"
@@ -163,10 +168,7 @@ const ModeSelection = () => {
             </Box>
         );
     }
-    
-    const openLobby = () => {
-        navigate('/play/reallybadchess/lobby');
-    }
+
 
     return (
         <>
@@ -279,8 +281,6 @@ const ModeSelection = () => {
                             </>
                         }
 
-                        { ( mode === 'playerVsPlayerOnline') && openLobby()
-                        }
 
                         {/* Slider per il rank */}
                         {(mode === 'practiceVsComputer' || mode === 'playerVsPlayer') &&

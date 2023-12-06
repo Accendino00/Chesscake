@@ -71,7 +71,6 @@ app.use("/api/account/", require(config.ROUTESERVIZI + "/account"));
 app.use("/api/leaderboard", require(config.ROUTESERVIZI + "/leaderboard"));
 
 
-
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.get("*", require(config.ROUTESERVIZI + "/webpages"));
 

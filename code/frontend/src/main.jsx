@@ -15,7 +15,8 @@ import AccountPageOthers from './pages/account/AccountPageOthers.jsx';
 import ReallyBadChessLocal from './pages/reallybadchess/offline/ReallyBadChessLocal.jsx'
 import ReallyBadChessLocalFreeplay from './pages/reallybadchess/freeplay/ReallyBadChessLocalFreeplay.jsx'
 import ReallyBadChessOnline from './pages/reallybadchess/online/ReallyBadChessOnline.jsx'
-import LandingPageOnline from './pages/reallybadchess/online/LandingPageOnline.jsx'
+import LobbyOnline from './pages/reallybadchess/online/LobbyOnline.jsx'
+import CreateGameComponent from './pages/reallybadchess/online/CreateGameComponent.jsx'
 
 import {
   createBrowserRouter,
@@ -61,12 +62,8 @@ function App() {
             },
             {
               path: "lobby/",
-              element: <LandingPageOnline />,
+              element: <LobbyOnline />,
               children: [
-                {
-                  path: "joinGame/",
-                  element: <JoinGameComponent />,
-                },
                 {
                   path: "createGame/",
                   element: <CreateGameComponent />,

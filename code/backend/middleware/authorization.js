@@ -10,7 +10,7 @@ const authenticateJWT = (req, res, next) => {
 
     jwt.verify(token, config.SECRET_KEY, (err, user) => {
       if (err) {
-        return res.sendStatus(403).send({
+        return res.status(403).send({
           success: false,
           message: "Unauthorized",
         });
@@ -20,7 +20,7 @@ const authenticateJWT = (req, res, next) => {
       next();
     });
   } else {
-    return res.sendStatus(401).send({
+    return res.status(401).send({
       success: false,
       message: "Unauthorized",
     });
@@ -36,7 +36,7 @@ const nonBlockingAutheticateJWT = (req, res, next) => {
     jwt.verify(token, config.SECRET_KEY, (err, user) => {
       if (err) {
         // Si blocca solo se si prova a fare l'autorizzazione ma non si ha i permessi di farla
-        return res.sendStatus(403).send({
+        return res.status(403).send({
           success: false,
           message: "Unauthorized",
         });

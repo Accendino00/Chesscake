@@ -21,7 +21,7 @@ router.get("/stockfish.js", (req, res) => {
   res.sendFile(stockfishPath);
 });
 
-router.post("/newGame", nonBlockingAutheticateJWT, async (req, res) => {
+router.post("/newGame", authenticateJWT, async (req, res) => {
   // Creiamo un nuovo game all'interno del database
   const { settings } = req.body;
 
@@ -34,10 +34,10 @@ router.post("/newGame", nonBlockingAutheticateJWT, async (req, res) => {
     username2 = "Computer";
   }
 
-  let { gameId, keyPlayer1, keyPlayer2 } = chessGames.createNewGameWithSettings(
+  let { gameId } = chessGames.createNewGameWithSettings(
     username1,
     username2,
-    settings
+    settings,
   );
 
   res.send({
@@ -46,7 +46,41 @@ router.post("/newGame", nonBlockingAutheticateJWT, async (req, res) => {
   });
 });
 
-router.get("/getGame/:gameId", nonBlockingAutheticateJWT, async (req, res) => {
+
+router.post("/joinGame/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+
+  // Se il game esiste, allora controlliamo che l'utente non sia già il player1
+  if (game.player1.username === req.user.username) {
+    return res.status(400).send({
+      success: false,
+      message: "You are already the player1",
+    });
+  }
+
+  // Se il game esiste, allora impostiamo l'utente come player2
+  chessGames.joinGame(gameId, req.user.username);
+
+  res.send({
+    success: true,
+    gameId: gameId,
+  });
+});
+
+router.get("/getGame/:gameId", authenticateJWT, async (req, res) => {
   // Prendiamo il gameId
   const { gameId } = req.params;
   // Prendiamo il game dal database
@@ -69,7 +103,7 @@ router.get("/getGame/:gameId", nonBlockingAutheticateJWT, async (req, res) => {
 
 router.post(
   "/movePiece/:gameId",
-  nonBlockingAutheticateJWT,
+  authenticateJWT,
   async (req, res) => {
     // Prendiamo il gameId
     const { gameId } = req.params;
@@ -109,12 +143,96 @@ router.post(
       });
     }
 
-    // Se la mossa è valida, allora ritorniamo il game
+    // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
+    const updatedGame = chessGames.getGame(gameId);
+
+    // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
     res.status(200).send({
       success: true,
-      //game: game, // Da capire se mandare
+      game: {
+        chess: updatedGame.chess,
+        player1: {
+          username: updatedGame.player1.username,
+          timer: updatedGame.player1.timer,
+          turn: updatedGame.lastMove === "b", // Assuming "b" represents player1's turn
+        },
+        player2: {
+          username: updatedGame.player2.username,
+          timer: updatedGame.player2.timer,
+          turn: updatedGame.lastMove === "w", // Assuming "w" represents player2's turn
+        },
+        gameOver: updatedGame.gameOver,
+      },
     });
   }
 );
+
+router.post("/setBoard/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Prendiamo la board
+  const { board } = req.body;
+
+  // Settiamo la board
+  chessGames.setBoard(gameId, board);
+
+  // Ritorniamo il game
+  res.send({
+    success: true,
+    game: game,
+  });
+});
+
+
+//get di tutti i games senza secondo giocatore
+router.get("/getEmptyGames",
+authenticateJWT, async (req, res) => {
+  try {
+    const games = chessGames.getEmptyGames();
+    if (!games) {
+      return res.status(404).json({
+        success: false,
+        message: 'Games not found',
+      });
+    }
+
+    // Set Content-Type header to application/json
+    res.setHeader('Content-Type', 'application/json');
+    res.send({
+      success: true,
+      games: games,
+    });
+  } catch (error) {
+    console.error('Error while getting empty games:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+});
 
 module.exports = router;

@@ -93,19 +93,14 @@ function weightFunction(value, overallValue, median) {
   return weight <= 0 ? 0 : weight;
 }
 
-function generateBoard(mode, rank) {
+function generateBoard() {
   const newChess = new Chess();
-
+  let seed = 0;
   newChess.clear();
 
   // Caricamento pezzi
-  let seed = 0;
-  if (mode === 'dailyChallenge') {
-    const today = new Date();
-    seed = ((((((today.getFullYear() * 100 + today.getMonth() * 10 + today.getDate()) * 214013 + 2531011) >> 16) & 0x7fff) * 214013 + 2531011) >> 16) & 0x7fff; // Generazione seed giornaliero attraverso funzione di hashing
-  }
-
-  const [playerRank, opponentRank] = calculateRanks(rank, seed);
+  
+  const [playerRank, opponentRank] = calculateRanks(50, seed);
   const whitePieces = findChessPiecesWithRank(playerRank, seed);
   const blackPieces = findChessPiecesWithRank(opponentRank, seed);
 

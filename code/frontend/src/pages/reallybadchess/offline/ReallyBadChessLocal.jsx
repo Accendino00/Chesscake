@@ -262,7 +262,7 @@ function ReallyBadChessLocal() {
               <Button variant="outlined" onClick={handleRestart}>
                 Ricomincia
               </Button>
-              <ShareButton sharedText={"Ho vinto questa partita con" + chess.moveNumber() + 'mosse'} />
+              <ShareButton text={winner==chess.player1 ? " Ho vinto questa partita in locale con " + chess.moveNumber() + ' mosse': "Ho perso questa partita in locale con " + chess.moveNumber() + " mosse"} />
             </Stack>
           </Box>
         </Modal>
