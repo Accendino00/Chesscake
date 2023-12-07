@@ -33,7 +33,6 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
   if (settings.mode !== "playerVsPlayerOnline") {
     username2 = "Computer";
   }
-
   let { gameId } = chessGames.createNewGameWithSettings(
     username1,
     username2,
@@ -149,7 +148,7 @@ router.post(
     }
     // Prendiamo la mossa
     const move = req.body;
-    console.log("mossa api:", move);
+    
     try {
       // Facciamo la mossa
       const result = chessGames.movePiece(gameId, move);

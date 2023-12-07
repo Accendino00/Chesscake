@@ -1,6 +1,8 @@
 var { Chess } = require("chess.js");
 var {
   generateBoard,
+  findChessPiecesWithRank,
+  calculateRanks,
   getPiecePosition,
   cloneChessBoard,
 } = require("./boardFunctions");
@@ -82,7 +84,6 @@ module.exports = {
       blackSquares.splice(randomIndex, 1);
     }
     newChess.put({ type: 'k', color: 'b' }, 'e8');
-
     // Inizializzazione
     return newChess;
   },
@@ -104,18 +105,18 @@ module.exports = {
 
     // Generiamo un gameId univoco
     var gameId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    var board = null;
+    var board = new Chess();
+    board.clear();
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      board = generateBoard("dailyChallenge", 20);
-    } if (settings.mode == "playerVsPlayerOnline") {
+      board = generateBoard("dailyChallenge", 50);
+    } else if (settings.mode == "playerVsPlayerOnline") {
       board = generateBoard("playerVsPlayerOnline", 50);
     } else {
       // In caso contrario lo generiamo in modo casuale
       board = generateBoard(null, settings.rank);
     }
-
     let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
     // Aggiungiamo la partita di scacchi
     chessGames.push({
@@ -155,7 +156,7 @@ module.exports = {
       },
 
       gameId: gameId,
-      chess: cloneChessBoard(board),
+      chess: board,
     });
 
     // Ritorniamo l'id della partita e le chiavi dei giocatori
@@ -220,22 +221,11 @@ module.exports = {
        if (game.player1.timer <= 0) {
          clearInterval(game.player1.interval);
 
-         // Gestisco la sconfitta del giocatore 1
-         game.gameOver.isGameOver = true;
-         game.gameOver.winner = game.player2.side;
-         game.gameOver.reason = "timeout";
-         game.gameOver.deleteGameInterval = setTimeout(() => {
-           chessGames.splice(chessGames.indexOf(game), 1);
-         }, 1000 * 60 * 5); // Il game si cancellerà da solo dopo 5 minuti
-       }
-     }, 1000);
-
-     return true;
-   } else {
-     return false;
-   }
- },
- */
+      return true;
+    } else {
+      return false;
+    }
+  }, 
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -286,7 +276,10 @@ module.exports = {
     // Se la mossa è valida
     if (chessMove !== null) {
       game.lastMove = game.chess.turn(); // Aggiorna di chi è il turno
-
+      // Pop dalla lista chessGames
+      chessGames = chessGames.filter((games) => games.gameId !== gameId);
+      // Inserisci il nuovo game nella lista chessGames
+      chessGames.push(game);
       // Controlla se c'è uno scacco matto
       /* if (game.chess.isCheckmate()) {
         this.handleGameOver(
