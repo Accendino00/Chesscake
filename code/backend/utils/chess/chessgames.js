@@ -22,135 +22,73 @@ module.exports = {
     const whitePieces = findChessPiecesWithRank(playerRank, seed);
     const blackPieces = findChessPiecesWithRank(opponentRank, seed);
 
-    const whiteSquares = [
-      "a1",
-      "b1",
-      "c1",
-      "d1",
-      "f1",
-      "g1",
-      "h1",
-      "a2",
-      "b2",
-      "c2",
-      "d2",
-      "e2",
-      "f2",
-      "g2",
-      "h2",
-    ];
-    const blackSquares = [
-      "a8",
-      "b8",
-      "c8",
-      "d8",
-      "f8",
-      "g8",
-      "h8",
-      "a7",
-      "b7",
-      "c7",
-      "d7",
-      "e7",
-      "f7",
-      "g7",
-      "h7",
-    ];
+    const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
+    const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
 
     // Metti i pezzi q disponibili in modo casuale nella seconda fila
-    whitePieces
-      .filter((piece) => piece.name === "q")
-      .forEach((piece) => {
-        const validSquares = whiteSquares.filter((square) => square[1] === "1");
-        const randomIndex = Math.floor(Math.random() * validSquares.length);
-        const square = validSquares.splice(randomIndex, 1)[0];
-        newChess.put({ type: piece.name, color: "w" }, square);
-        whitePieces.splice(
-          whitePieces.findIndex((p) => p === piece),
-          1
-        );
-        whiteSquares.splice(whiteSquares.indexOf(square), 1);
-      });
+    whitePieces.filter(piece => piece.name === "q").forEach((piece) => {
+      const validSquares = whiteSquares.filter(square => square[1] === "1");
+      const randomIndex = Math.floor(Math.random() * validSquares.length);
+      const square = validSquares.splice(randomIndex, 1)[0];
+      newChess.put({ type: piece.name, color: 'w' }, square);
+      whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+      whiteSquares.splice(whiteSquares.indexOf(square), 1);
+    });
 
     //Metti i pezzi p disponibili in modo casuale nella prima fila
-    whitePieces
-      .filter((piece) => piece.name === "p")
-      .forEach((piece) => {
-        const validSquares = whiteSquares.filter((square) => square[1] === "2");
-        if (validSquares.length > 0) {
-          const randomIndex = Math.floor(Math.random() * validSquares.length);
-          const square = validSquares.splice(randomIndex, 1)[0];
-          newChess.put({ type: piece.name, color: "w" }, square);
-          whitePieces.splice(
-            whitePieces.findIndex((p) => p === piece),
-            1
-          );
-          whiteSquares.splice(whiteSquares.indexOf(square), 1);
-        }
-      });
+    whitePieces.filter(piece => piece.name === "p").forEach((piece) => {
+      const validSquares = whiteSquares.filter(square => square[1] === "2");
+      if (validSquares.length > 0) {
+        const randomIndex = Math.floor(Math.random() * validSquares.length);
+        const square = validSquares.splice(randomIndex, 1)[0];
+        newChess.put({ type: piece.name, color: 'w' }, square);
+        whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+        whiteSquares.splice(whiteSquares.indexOf(square), 1);
+      }
+    });
 
     //Aggiungi il resto nelle due file
     while (whiteSquares.length > 0) {
-      const randomIndex = Math.floor(
-        (seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length
-      );
-      newChess.put(
-        { type: whitePieces.pop().name, color: "w" },
-        whiteSquares[randomIndex]
-      );
+      const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
+      newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
       whiteSquares.splice(randomIndex, 1);
     }
-    newChess.put({ type: "k", color: "w" }, "e1");
+    newChess.put({ type: 'k', color: 'w' }, 'e1');
 
-    blackPieces
-      .filter((piece) => piece.name === "q")
-      .forEach((piece) => {
-        const validSquares = blackSquares.filter((square) => square[1] === "8");
+    blackPieces.filter(piece => piece.name === "q").forEach((piece) => {
+      const validSquares = blackSquares.filter(square => square[1] === "8");
+      const randomIndex = Math.floor(Math.random() * validSquares.length);
+      const square = validSquares.splice(randomIndex, 1)[0];
+      newChess.put({ type: piece.name, color: 'b' }, square);
+      blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+      blackSquares.splice(blackSquares.indexOf(square), 1);
+    });
+
+    blackPieces.filter(piece => piece.name === "p").forEach((piece) => {
+      const validSquares = blackSquares.filter(square => square[1] === "7");
+      if (validSquares.length > 0) {
         const randomIndex = Math.floor(Math.random() * validSquares.length);
         const square = validSquares.splice(randomIndex, 1)[0];
-        newChess.put({ type: piece.name, color: "b" }, square);
-        blackPieces.splice(
-          blackPieces.findIndex((p) => p === piece),
-          1
-        );
+        newChess.put({ type: piece.name, color: 'b' }, square);
+        blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
         blackSquares.splice(blackSquares.indexOf(square), 1);
-      });
-
-    blackPieces
-      .filter((piece) => piece.name === "p")
-      .forEach((piece) => {
-        const validSquares = blackSquares.filter((square) => square[1] === "7");
-        if (validSquares.length > 0) {
-          const randomIndex = Math.floor(Math.random() * validSquares.length);
-          const square = validSquares.splice(randomIndex, 1)[0];
-          newChess.put({ type: piece.name, color: "b" }, square);
-          blackPieces.splice(
-            blackPieces.findIndex((p) => p === piece),
-            1
-          );
-          blackSquares.splice(blackSquares.indexOf(square), 1);
-        }
-      });
+      }
+    });
 
     //Aggiungi il resto nelle due file
     while (blackSquares.length > 0) {
-      const randomIndex = Math.floor(
-        (seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length
-      );
-      newChess.put(
-        { type: blackPieces.pop().name, color: "b" },
-        blackSquares[randomIndex]
-      );
+      const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
+      newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
       blackSquares.splice(randomIndex, 1);
     }
-    newChess.put({ type: "k", color: "b" }, "e8");
+    newChess.put({ type: 'k', color: 'b' }, 'e8');
 
     // Inizializzazione
     return newChess;
   },
   /**
    * Genera una partita di scacchi con le impostazioni passate
-   *
+   * 
    * @param {string} gameId L'id della partita
    * @param {string} player1 L'username dell'utente 1
    * @param {string} player2 L'username dell'utente 2
@@ -165,22 +103,20 @@ module.exports = {
     // }
 
     // Generiamo un gameId univoco
-    var gameId =
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
+    var gameId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     var board = null;
-    // Generiamo la board in modo casuale
-    if (settings.mode == "playerVsPlayerOnline") {
-      var chess = new Chess();
-    }
+
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      board = generateBoard(20, "dailyChallenge");
+      board = generateBoard("dailyChallenge", 20);
+    } if (settings.mode == "playerVsPlayerOnline") {
+      board = generateBoard("playerVsPlayerOnline", 50);
     } else {
       // In caso contrario lo generiamo in modo casuale
-      board = generateBoard(settings.rank, null);
+      board = generateBoard(null, settings.rank);
     }
 
+    let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
     // Aggiungiamo la partita di scacchi
     chessGames.push({
       gameSettings: {
@@ -229,38 +165,66 @@ module.exports = {
   },
   joinGame: function (gameId, player2) {
     // Cerca la partita di scacchi
-    var game = chessGames.find((game) => game.gameId == gameId);
+    var game = chessGames.find(game => game.gameId == gameId);
 
     // Aggiungiamo il giocatore 2
     game.player2.username = player2;
   },
   /**
    * Ricerchiamo la partita e la ritorniamo usando l'id
-   *
+   * 
    * @param {string} gameId Id univoco della partita
    * @returns L'elemento dell'array che corrisponde alla partita
    */
   getGame: function (gameId) {
     // Cerca la partita di scacchi
-    var game = chessGames.find((game) => game.gameId == gameId);
+    var game = chessGames.find(game => game.gameId == gameId);
     // Ritorna la board
     return game;
   },
 
+
   getEmptyGames: function () {
     var emptyGames = [];
-    chessGames.forEach((game) => {
-      if (
-        game.player2.username == null &&
-        game.gameSettings.mode == "playerVsPlayerOnline"
-      ) {
+    chessGames.forEach(game => {
+      if (game.player2.username == null && game.gameSettings.mode == "playerVsPlayerOnline") {
         emptyGames.push(game);
       }
     });
 
     return emptyGames;
   },
+  /**
+   * Funzione che aggiunge una mossa al gioco con id gameId
+   * 
+   * @param {string} gameId
+   * @param {string} move
+   * @returns true se la mossa è stata aggiunta, false altrimenti
+   */
 
+  /* 
+   movePiece : function (gameId, move) {
+       // Cerca la partita di scacchi
+       var game = chessGames.find(game => game.gameId == gameId);
+
+   // Aggiungi la mossa se è una mossa corretta
+   if (game.chess.move(move)) {
+     // Se la mossa è corretta
+     game.lastMove = game.chess.turn(); // Aggiorno di chi è il turno
+
+     // Aggiorno il timer in modo che interrompo l'ultimo intervallo
+     // e avvio quello del giocatore che deve muovere
+     clearInterval(game.player1.interval);
+     game.player1.interval = setInterval(() => {
+       game.player1.timer--;
+       if (game.player1.timer <= 0) {
+         clearInterval(game.player1.interval);
+
+      return true;
+    } else {
+      return false;
+    }
+  }, 
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -272,23 +236,9 @@ module.exports = {
     game.gameOver.isGameOver = true;
     game.gameOver.winner = winner;
     game.gameOver.reason = reason;
-
-    //gestione elo in playerVsPlayer
-    if (game.gameSettings.mode === "playerVsPlayer") {
-      this.changeElo(game.player1, game.player2, winner);
-    }
-    //gestione punti in dailyChallenge
+    this.changeElo(game.player1, game.player2, winner);
     if (game.gameSettings.mode === "dailyChallenge") {
       this.saveDailyChallengeResults(game.gameId);
-    }
-    //gestione rank in playerVsComputer
-    if (game.gameSettings.mode === "playerVsComputer") {
-      this.calculateRankChange(
-        game.player1.rank,
-        winner,
-        game.player1.timer,
-        game.gameSettings.duration
-      );
     }
     // Chiamare la tua funzione changeElo qui per aggiornare i punteggi dei giocatori
     // Esempio: changeElo(game.player1, game.player2, vincitore);
@@ -338,11 +288,7 @@ module.exports = {
         game.chess.isInsufficientMaterial()
       ) {
         // Controlla se c'è stallo, pareggio o materiale insufficiente
-        this.handleGameOver(
-          game,
-          game.chess.turn() === "p1" ? "p2" : "p1",
-          "stall"
-        );
+        this.handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
       } else {
         // Aggiorna il timer per interrompere l'ultimo intervallo
         // e avviare l'intervallo per il giocatore che deve muovere
@@ -395,9 +341,7 @@ module.exports = {
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
     const collection = db.collection("GamesRBC");
-    var computer = db
-      .collection("Users")
-      .findOne({ _id: "6568af1b12028efd10a09141" });
+    var computer = db.collection("Users").findOne({ _id: "6568af1b12028efd10a09141" });
     collection.insertOne({
       Player1: game.player1,
       Player2: computer,
@@ -436,7 +380,7 @@ module.exports = {
      */
 
   calculateEloChange: function (eloPlayer1, eloPlayer2, outcome, kFactor = 32) {
-    // calcolo del punteggio previsto per il giocatore
+    // calcolo del punteggio previsto per il giocatore 1
     const expectedScorePlayer1 =
       1 / (1 + 10 ** ((eloPlayer2 - eloPlayer1) / 400));
 
@@ -452,25 +396,10 @@ module.exports = {
     }
     const eloAdjustment = kFactor * (actualScorePlayer1 - expectedScorePlayer1);
 
-    // Calcolo del nuovo Elo del giocatore
+    // Calcolo del nuovo Elo del giocatore 1
     const newEloPlayer1 = eloPlayer1 + eloAdjustment;
-    // Find the player 1 document in the database
-    Player.findOne({ username: player1.username }, function (err, player1Doc) {
-      if (err) {
-        console.error(err);
-        return;
-      }
 
-      // Update del rating del giocatore
-      player1Doc.elo = newEloPlayer1;
-
-      // salva il player nel documento
-      player1Doc.save(function (err) {
-        if (err) {
-          console.error(err);
-        }
-      });
-    });
+    return newEloPlayer1;
   },
   /**
    *
@@ -488,57 +417,5 @@ module.exports = {
       this.calculateEloChange(Player1.elo, player2.elo, "p1");
       this.calculateEloChange(player2.elo, Player1.elo, "p2");
     }
-  },
-  /** Funzione che calcola il rank di un giocatore in base a una partita contro il computer
-   *
-   * @param {int} currentRank  rank attuale del giocatore
-   * @param {string} outcome    risultato della partita
-   * @param {int} timeUsed    tempo usato dal giocatore
-   * @param {int} maxTime   tempo massimo per la partita
-   */
-
-  calculateRankChange: function (currentRank, outcome, timeUsed, maxTime) {
-    // Definisce un fattore di aggiustamento del rank in base al rank attuale
-    const rankAdjustmentFactor = 10;
-    if (player.rank >= 200) {
-      const rankAdjustmentFactor = 8;
-    } else if (player.rank >= 400) {
-      const rankAdjustmentFactor = 5;
-    }
-
-    // calcola il fattore di tempo
-    const timeFactor = maxTime / timeUsed;
-
-    // calcola il nuovo rank in base al risultato della partita
-    let newRank;
-    if (outcome === "p1") {
-      // se il giocatore vince, aumenta il rank
-      newRank = currentRank + rankAdjustmentFactor * timeFactor;
-    } else {
-      // se il giocatore perde, diminuisce il rank
-      const rankAdjustmentFactor = 8;
-      newRank = currentRank - rankAdjustmentFactor;
-    }
-
-    // controlla che il rank non sia minore di 0
-    newRank = Math.max(newRank, 0);
-
-    // trova il documento del giocatore nel database di mongo
-    Player.findOne({ username: player.username }, function (err, playerDoc) {
-      if (err) {
-        console.error(err);
-        return;
-      }
-
-      // aggiorna il rank del giocatore
-      playerDoc.rank = newRank;
-
-      // salva il player nel documento
-      playerDoc.save(function (err) {
-        if (err) {
-          console.error(err);
-        }
-      });
-    });
   },
 };
