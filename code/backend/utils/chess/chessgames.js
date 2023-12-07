@@ -220,22 +220,11 @@ module.exports = {
        if (game.player1.timer <= 0) {
          clearInterval(game.player1.interval);
 
-         // Gestisco la sconfitta del giocatore 1
-         game.gameOver.isGameOver = true;
-         game.gameOver.winner = game.player2.side;
-         game.gameOver.reason = "timeout";
-         game.gameOver.deleteGameInterval = setTimeout(() => {
-           chessGames.splice(chessGames.indexOf(game), 1);
-         }, 1000 * 60 * 5); // Il game si cancellerà da solo dopo 5 minuti
-       }
-     }, 1000);
-
-     return true;
-   } else {
-     return false;
-   }
- },
- */
+      return true;
+    } else {
+      return false;
+    }
+  }, 
   /**
    *
    * @param {string} game  game id univoco della partita
