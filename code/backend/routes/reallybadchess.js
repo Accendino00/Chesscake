@@ -33,7 +33,6 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
   if (settings.mode !== "playerVsPlayerOnline") {
     username2 = "Computer";
   }
-
   let { gameId } = chessGames.createNewGameWithSettings(
     username1,
     username2,

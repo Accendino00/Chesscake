@@ -6,6 +6,7 @@ import ChessGameStyles from '../ChessGameStyles';
 import Timer from '../timer/Timer';
 import { Chess } from 'chess.js';
 import { generateBoard, getPiecePosition, cloneChessBoard } from './boardFunctions';
+import { findBestMove } from './movesFunctions';
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../../utils/useTokenChecker';
 import { CircularProgress } from '@mui/material';
@@ -19,7 +20,7 @@ function ReallyBadChessOnline() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [startingBoard, setStartingBoard] = useState();
-    const [chess, setChess] = useState(new Chess());
+    const [chess, setChess] = useState(new Chess().clear());
     const [possibleMoves, setPossibleMoves] = useState([]);
     const [pieceSelected, setPieceSelected] = useState([]);
     const [moves, setMoves] = useState([]);
@@ -53,8 +54,9 @@ function ReallyBadChessOnline() {
                     .then(data => {
                         if (data.success) {
                             setGameData(data.game);
-                            let newChess = new Chess(data.game.chess._header.FEN);
-        
+                            let newChess = new Chess();
+                            newChess.load(data.game.chess._header.FEN);
+                            
                             setFen(newChess.fen());
                             newChess.load(newChess.fen());
                             setChess(newChess);
@@ -103,8 +105,9 @@ function ReallyBadChessOnline() {
                 .then(data => {
                     if (data.success) {
                         setGameData(data.game);
-                        let newChess = new Chess(data.game.chess._header.FEN);
-    
+                        let newChess = new Chess();
+                        newChess.load(data.game.chess._header.FEN);
+                        
                         setFen(newChess.fen());
                         newChess.load(newChess.fen());
                         setChess(newChess);
@@ -163,12 +166,12 @@ function ReallyBadChessOnline() {
             .then(data => {
                 if (data.success) {
                     setGameData(data.game);
+                    setGameData(data.game);
                     let newChess = new Chess();
                     newChess.load(data.game.chess._header.FEN);
                     
                     setFen(newChess.fen());
                     newChess.load(newChess.fen());
-                    setChess(newChess);
 
                     // Gestione del timer
                     setTimeBianco(data.game.player1.timer);
@@ -192,7 +195,7 @@ function ReallyBadChessOnline() {
                             isMyTurn = false;
                         }
                     }
-
+                        
                     if (!isMyTurn) {
                         console.log("It's not your turn.");
                         // Handle the case where it's not the current player's turn (show a message, disable moves, etc.)
@@ -204,9 +207,50 @@ function ReallyBadChessOnline() {
                     }
                 }
             });
+            
     };
 
+    const handleMoveAI = async (data) => {
+        // Capiamo se siamo il player 1 o il layer 2
+        if(data.game.gameSettings.mode==='dailyChallenge')
+        {
+            chess.fen();
+            console.log("DAILYDENTRO");
+            if(chess.moves().length > 0&&chess.turn()=='b') {
+                console.log("111");
+                let bestMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
+                setTimeout(() => {
+                    bestMove = findBestMove(chess.fen(), 2, 1);
+                    console.log(bestMove);
+                    }, 2000);
+                fetch(`/api/reallybadchess/movePiece/${gameId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${Cookies.get('token')}`
+                    },
+                    body: JSON.stringify({bestMove})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        setGameData(data.game);
+                        let newChess = new Chess();
+                        newChess.load(data.game.chess._header.FEN);
+                        
+                        setFen(newChess.fen());
+                        newChess.load(newChess.fen());
+                        setChess(newChess);
 
+                        // Gestione del timer
+                        setTimeBianco(data.game.player1.timer);
+                        setTimeNero(data.game.player2.timer);
+                        isMyTurn = true;
+                    }
+                });
+            }
+        }
+    };
     const handleCloseModal = () => setModalIsOpen(false);
     const handleNavigateToPlay = () => navigate('/play/');
     const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);

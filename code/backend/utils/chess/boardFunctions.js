@@ -159,8 +159,8 @@ function generateBoard(mode, rank) {
   }
 
   const [playerRank, opponentRank] = calculateRanks(rank, seed);
-  const whitePieces = findChessPiecesWithRank(playerRank, seed).sort((a, b) => a.value - b.value);
-  const blackPieces = findChessPiecesWithRank(opponentRank, seed).sort((a, b) => a.value - b.value);
+  const whitePieces = findChessPiecesWithRank(playerRank, seed);
+  const blackPieces = findChessPiecesWithRank(opponentRank, seed);
   
   const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
   const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
@@ -221,7 +221,6 @@ function generateBoard(mode, rank) {
     blackSquares.splice(randomIndex, 1);
   }
   newChess.put({ type: 'k', color: 'b' }, 'e8');
-
   // Inizializzazione
   return newChess;
 }
