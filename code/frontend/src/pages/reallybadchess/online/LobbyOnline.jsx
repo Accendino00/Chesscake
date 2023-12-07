@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
 import { Refresh } from '@mui/icons-material';
 import { faker } from '@faker-js/faker';
 
+import CreateGameComponent from '../../components/CreateGameComponent';
+
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../../utils/useTokenChecker';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -121,40 +123,6 @@ function LobbyOnline() {
   };
 
 
-  const handleCreateGame = () => {
-    fetch('/api/reallybadchess/newGame', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Cookies.get('token')}`
-      },
-      body: JSON.stringify({
-        settings: {
-          mode: "playerVsPlayerOnline",
-          duration: 5,
-        },
-      }),
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        console.log('Response Status:', response.status);
-        console.log('Response Headers:', response.headers);
-        return response.json();  // Parse the response as JSON and return the promise
-      })
-      .then(data => {
-        console.log('Data from server:', data)
-        if (data.success) {
-          navigate(`/play/reallybadchess/${data.gameId}`);
-        } else {
-          setMessage(data.message);
-          console.log(data.message);
-        }
-      });
-  };
-
-
   return (
     <Box sx={ChessGameStyles.everythingContainer}>
       <Paper elevation={3} sx={{
@@ -221,7 +189,7 @@ function LobbyOnline() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {games.length == 0 ?
+          {games.length == 0 ?
               <TableRow>
                 <TableCell colSpan={4} sx={{textAlign: "center"}}>Nessuna partita disponibile, crea la tua</TableCell>
               </TableRow>
@@ -245,14 +213,10 @@ function LobbyOnline() {
           </TableBody>
         </Table>
 
-        <Button
-          variant="contained"
+        <Button variant="contained"
           color="primary"
-          onClick={() => handleCreateGame()}
           sx={{ mt: 2 }} // Add margin-top for better spacing
-        >
-          Create Game
-        </Button>
+          onClick={()=> navigate('/play/reallybadchess')}>Go Back</Button>
       </Paper>
     </Box>
   );

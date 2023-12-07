@@ -47,6 +47,7 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
 });
 
 
+
 router.post("/joinGame/:gameId", authenticateJWT, (req, res) => {
   // Prendiamo il gameId
   const { gameId } = req.params;
@@ -110,7 +111,7 @@ router.post(
 
     // Prendiamo il game dal database
     const game = chessGames.getGame(gameId);
-
+    console.log("game:", game.chess._header.FEN);
     // Se il game non esiste, allora ritorniamo un errore
     if (!game) {
       return res.status(404).send({
@@ -129,21 +130,46 @@ router.post(
         message: "Unauthorized",
       });
     }
+    console.log("lastMove:", game.lastMove);
+    console.log('req.user:', req.user);
+    console.log('game.player1.username:', game.player1.username);
+    console.log('game.player2.username:', game.player2.username);
+    console.log('game.player1.side:', game.player1.side);
+    console.log('game.player2.side:', game.player2.side);
+    console.log('req.user.username', req.user.username);
+    // controllo in modo che il giocatore nero non possa 
+    // muovere pedine bianche e nere
+    if((game.lastMove == null && req.user.username === game.player1.username && game.player2.side === "b") || (game.lastMove == null && req.user.username === game.player2.username && game.player1.side === "b")){
+      console.log('sono entrato fica');
+      return res.status(403).send({
+        success: false,
+        game: game,
+        message: "Its not your turn",
+      });
+    }
     // Prendiamo la mossa
     const move = req.body;
-    console.log(move);
+    console.log("mossa api:", move);
     try {
       // Facciamo la mossa
       const result = chessGames.movePiece(gameId, move);
-
+      console.log("result:", result);
       // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
-      const updatedGame = chessGames.getGame(gameId);
-
       // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
-      res.status(200).send({
-        success: true,
-        game: updatedGame,
-      });
+      if (result) {
+        const updatedGame = chessGames.getGame(gameId);
+        console.log("game2", game.chess._header.FEN);
+        console.log("updatedGame:", updatedGame.chess._header.FEN);
+        res.status(200).send({
+          success: true,
+          game: updatedGame,
+        });
+      } else {
+        res.status(200).send({
+          success: false,
+          game: game,
+        });
+      }
     } catch (error) {
       // Handle the invalid move exception
       if (error.message === 'Invalid move') {
@@ -272,5 +298,93 @@ authenticateJWT, async (req, res) => {
     });
   }
 });
+
+router.post("/gameOver/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Prendiamo la board
+  const { } = req.body;
+
+  // Settiamo la board
+  let isGameOver = chessGames.gameOver(gameId);
+
+  // Ritorniamo il game
+  if (isGameOver) {
+    res.send({
+      success: true,
+      game: game,
+    });
+  } else {
+    res.send({
+      success: false,
+      game: game,
+    });
+  }
+}
+
+);
+
+router.post("/timer/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  const { time } = req.body;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  if(chessGames.TimeRuns(time)){
+    res.send({
+      success: true,
+      game: game,
+    });
+  }
+}
+
+);
 
 module.exports = router;

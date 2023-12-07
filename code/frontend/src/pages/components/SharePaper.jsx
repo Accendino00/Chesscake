@@ -22,7 +22,7 @@ const SharePaper = ({ text, onClose }) => {
                     borderRadius: '20px',
                     p: 3,
                     m: 2,
-                    maxWidth: '600px',
+                    maxWidth: '21%',
                     width: '100%',
                     backdropFilter: 'blur(10px)',
                 }}

@@ -5,6 +5,7 @@ import ArrowForwardIosSharpIcon from '@mui/icons-material/ExpandMore';
 import InfoIconButton from '../../utils/infoIconButton';
 import useTokenChecker from '../../utils/useTokenChecker';
 import './customAccordionInformation.css';
+import CreateGameComponent from '../components/CreateGameComponent';
 
 import Cookies from 'js-cookie';
 
@@ -326,7 +327,23 @@ const ModeSelection = () => {
                             </>
                         }
 
-                        {/* Slider per il rank */}
+                        {mode === 'playerVsPlayerOnline' && 
+                            <>
+                                <Box m={2} width={1 / 2}>
+                                    <FormControl variant="outlined" fullWidth>
+                                        <InputLabel id="duration-label" style={{ color: 'darkblack' }}>Duration</InputLabel>
+                                        <Select labelId="duration-label" label="Duration" value={duration} onChange={handleDurationChange}>
+                                            <MenuItem value={0.25}>15 seconds</MenuItem>
+                                            <MenuItem value={1}>1 minute</MenuItem>
+                                            <MenuItem value={5}>5 minutes</MenuItem>
+                                            <MenuItem value={10}>10 minutes</MenuItem>
+                                            <MenuItem value={15}>15 minutes</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+                            </>
+                               }
+
                         {mode === 'practiceVsComputer' &&
                             <>
                                 <Typography variant="h8" component="div" gutterBottom align="center" style={{ color: 'black', fontFamily: 'Arial', margin: '20px 0' }}>
@@ -377,6 +394,22 @@ const ModeSelection = () => {
                                     <CircularProgress />
                                 </Grid>
                             ) :
+
+                            (mode === 'playerVsPlayerOnline' ) ? ( 
+                            <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="row"
+                            width="100%"
+                            padding = "10px"
+                            >
+                                <Button sx={{ mt: 2, mr: 2}} onClick={() => navigate(`/play/reallybadchess/lobby`)} variant="contained" color="primary" style={{ color: 'darkblack' }}>
+                                        Lobbies
+                                    </Button>
+                            <CreateGameComponent duration = {duration} />
+                            </Box>
+                             ) :
                                 <Button variant="contained" color="primary" onClick={handleStartGame} style={{ color: 'darkblack' }}>
                                     Start Game
                                 </Button>

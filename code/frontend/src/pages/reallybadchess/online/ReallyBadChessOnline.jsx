@@ -9,6 +9,7 @@ import { generateBoard, getPiecePosition, cloneChessBoard } from './boardFunctio
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../../utils/useTokenChecker';
 import { CircularProgress } from '@mui/material';
+import ShareButton from '../../components/ShareButton';
 
 function ReallyBadChessOnline() {
     const { gameId } = useParams();
@@ -24,15 +25,95 @@ function ReallyBadChessOnline() {
     const [pieceSelected, setPieceSelected] = useState([]);
     const [moves, setMoves] = useState([]);
     const [fen, setFen] = useState();
+    const [gameOver, setGameOver] = useState(false);
+
 
     // Nomi dei giocatori
     const [player1, setPlayer1] = useState();
     const [player2, setPlayer2] = useState();
 
+    const [whiteTurn, setWhiteTurn] = useState(true);
+    const [blackTurn, setBlackTurn] = useState(false); 
+
     // Se il secondo giocatore è arrivato
     const [player2Arrived, setPlayer2Arrived] = useState(false);
 
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
+
+    React.useEffect(() => {
+        if (!isTokenLoading) {
+            if (!loginStatus) {
+                navigate("/login");
+            } else {
+                fetch('/api/reallybadchess/gameOver/' + gameId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${Cookies.get('token')}`
+                    },
+                    //body deve contenere la partita che verrà salvata nell'account
+                    body: JSON.stringify({}),
+                })
+                .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            setGameOver(data.game.gameOver.isGameOver);
+                            setWinner(data.game.gameOver.winner);
+                            setModalIsOpen(true);
+                        }
+                    });
+            }
+        }
+    }, [gameOver, isTokenLoading, loginStatus]);
+
+    const handleTimer = (timeColor) => {
+        if(timeColor === timeBianco) {
+            fetch('/api/reallybadchess/timer/' + gameId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Cookies.get('token')}`
+                },
+                body: {
+                    'white': timeBianco,
+                },
+            })
+            .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+
+                            setTimeBianco(data.game.player1.timer);
+
+                    }
+                });
+            }
+            else {
+                fetch('/api/reallybadchess/timer/' + gameId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${Cookies.get('token')}`
+                    },
+                    body: {
+                        'black': timeNero,
+                    },
+                })
+                .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+    
+                                setTimeNero(data.game.player2.timer);
+    
+                        }
+                    });
+                }
+                
+
+
+
+
+    }
+    
 
     React.useEffect(() => {
         if (!isTokenLoading) {
@@ -52,6 +133,8 @@ function ReallyBadChessOnline() {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            setTimeBianco(data.game.player1.timer);
+                            setTimeNero(data.game.player2.timer);
                             setGameData(data.game);
                             let newChess = new Chess(data.game.chess._header.FEN);
         
@@ -59,8 +142,6 @@ function ReallyBadChessOnline() {
                             newChess.load(newChess.fen());
                             setChess(newChess);
 
-                            setTimeBianco(data.game.player1.timer);
-                            setTimeNero(data.game.player2.timer);
 
                             // Se non ci sono entrambi i player, allora non imposto nulla
                             if (data.game.player1.username === null || data.game.player2.username === null) {
@@ -73,10 +154,15 @@ function ReallyBadChessOnline() {
                             if (username === data.game.player1.username) {
                                 setPlayer1(data.game.player1.username);
                                 setPlayer2(data.game.player2.username);
+                                console.log("colore player1:", data.game.player1.side)
+                                console.log("colore player2:", data.game.player2.side)
                             } else {
                                 setPlayer1(data.game.player2.username);
                                 setPlayer2(data.game.player1.username);
+                                console.log("colore player1:", data.game.player1.side)
+                                console.log("colore player2:", data.game.player2.side)
                             }
+                            
                         }
                     });
 
@@ -109,8 +195,6 @@ function ReallyBadChessOnline() {
                         newChess.load(newChess.fen());
                         setChess(newChess);
 
-                        setTimeBianco(data.game.player1.timer);
-                        setTimeNero(data.game.player2.timer);
 
                         if (data.game.gameOver.isGameOver) {
                             setWinner(data.game.gameOver.winner);
@@ -137,7 +221,7 @@ function ReallyBadChessOnline() {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [gameData, isTokenLoading, loginStatus, gameId, username]);
 
     // Gestore delle mosse possibili
     const handleMouseOverSquare = (square) => {
@@ -149,8 +233,22 @@ function ReallyBadChessOnline() {
         setPossibleMoves([]);
     };
 
-
+    
+    
     const handleMove = (sourceSquare, targetSquare) => {
+        console.log("handlemove entrance:")
+        if(username === gameData.player1.username) {
+            if(gameData.lastMove === gameData.player1.side) {
+                return;
+            }
+        }
+        if(username === gameData.player2.username) {
+            if(gameData.lastMove === gameData.player2.side) {
+                return;
+            }
+        }
+    
+
         fetch(`/api/reallybadchess/movePiece/${gameId}`, {
             method: 'POST',
             headers: {
@@ -162,20 +260,27 @@ function ReallyBadChessOnline() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    if(chess.turn() === 'w') {
+                        handleTimer(timeBianco);
+                    } else {
+                        handleTimer(timeNero);
+                    }
                     setGameData(data.game);
                     let newChess = new Chess(data.game.chess._header.FEN);
-
+                    console.log("Before move:", newChess.fen());
                     setFen(newChess.fen());
                     newChess.load(newChess.fen());
                     setChess(newChess);
-
+                    console.log("Component re-rendered!");
+                    console.log("After move:", newChess.fen());
                     // Gestione del timer
-                    setTimeBianco(data.game.player1.timer);
-                    setTimeNero(data.game.player2.timer);
-                    let isMyTurn = false;
 
-                    console.log(data);
 
+
+                    //let isMyTurn = false;
+
+                    /*  console.log("reallybadchess data:", data);
+                    console.log("New FEN:", newChess.fen());
                     // Capiamo se sono il giocatore 1 o il giocatore 2
                     // Check if it's the current player's turn
                     if (username !== data.game.player1.username) {
@@ -197,7 +302,7 @@ function ReallyBadChessOnline() {
                         console.log("It's not your turn.");
                         // Handle the case where it's not the current player's turn (show a message, disable moves, etc.)
                     }
-
+                        */
                     if (data.game.gameOver.isGameOver) {
                         setWinner(data.game.gameOver.winner);
                         setModalIsOpen(true);
@@ -262,11 +367,7 @@ function ReallyBadChessOnline() {
                         navigator.clipboard.writeText(`http://localhost:3000/play/reallybadchess/${gameId}`);
                     }}>
                         Copia il link di invito!         </Button>
-                    <Button variant="contained" color="primary" onClick={() => {
-                        // Copiare nella clipboard in path
-                        navigator.clipboard.writeText(`http://localhost:3000/play/reallybadchess/${gameId}`);
-                    }}>
-                        Condividi il link sui social         </Button>
+                    <ShareButton />
                 </Box>
             </Box>
         );
@@ -275,8 +376,13 @@ function ReallyBadChessOnline() {
     return (
         <Box sx={ChessGameStyles.everythingContainer}>
             <Box sx={ChessGameStyles.boxTimer}>
-                <Timer time={timeBianco} setTime={setTimeBianco} />
-                <Timer time={timeNero} setTime={setTimeNero} />
+                <Timer 
+                time={timeBianco} 
+                setTime={setTimeBianco}
+                playerColor='white' />
+                <Timer time={timeNero}
+                setTime={setTimeNero}
+                playerColor='black' />
             </Box>
             <Modal open={modalIsOpen} onClose={handleCloseModal}>
                 <Box sx={ChessGameStyles.boxGameOver}>
@@ -290,16 +396,19 @@ function ReallyBadChessOnline() {
                         <Button variant="outlined" onClick={() => window.location.reload()}>
                             Ricomincia
                         </Button>
+                        
+              <ShareButton text={winner==chess.player1 ? " Ho vinto questa partita in locale con " + chess.moveNumber() + ' mosse': "Ho perso questa partita in locale con " + chess.moveNumber() + " mosse"} />
+            
                     </Stack>
                 </Box>
             </Modal>
             <div style={ChessGameStyles.divChessBoard}>
                 <Chessboard
                     position={fen}
-                    onPieceDrop={handleMove}
+                    onPieceDrop={ handleMove }
                     boardOrientation={
                         // L'utente può essere o bianco o nero e potrebbe essere o il player 1 o il player 2(
-                        (username === gameData.player1.username) ? 
+                        ( username === gameData.player1.username ) ? 
                         "black" : "white"
                     }
                     width={'50vh'}

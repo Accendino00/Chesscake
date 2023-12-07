@@ -129,14 +129,14 @@ module.exports = {
         timer: settings.duration * 60,
         interval: null,
         gameSaved: false,
-        side: "w",
+        side: "b"
       },
       player2: {
         username: player2,
         timer: settings.duration * 60,
         interval: null,
         gameSaved: false,
-        side: "b",
+        side: "w"
       },
 
       lastMove: null, // "w" o "b" per indicare chi ha mosso per ultimo
@@ -265,11 +265,20 @@ module.exports = {
   movePiece: function (gameId, mossa) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
-
+    console.log("mossa passata:", mossa);
     // Verifica se la mossa è valida
     let chessMove = null;
     try {
       chessMove = game.chess.move(mossa);
+      // chessMove.after sarebbe il FEN aggiornato, dato che chessmove
+      // è un json che contiene alcune info tra cui before e after
+      // poi aggiorno manualmente il fen perchè a quanto pare non lo fa da solo
+      // tutto scoperto a mie spese
+      game.chess._header.FEN = chessMove.after;
+      // lo inserisco manualmente nell'array di chessgames
+      chessGames.find((game) => game.gameId == gameId).chess = game.chess;
+      console.log("ischessgameupdated?:", chessGames.find((game) => game.gameId == gameId).chess._header.FEN);
+      console.log("chessMove:", chessMove);
     } catch (error) {
       return false;
     }
@@ -421,4 +430,51 @@ module.exports = {
       this.calculateEloChange(player2.elo, Player1.elo, "p2");
     }
   },
+  gameOver: function (gameId) {
+    // Trova la partita di scacchi
+    let isGameOver = false;
+    let game = chessGames.find((game) => game.gameId == gameId);
+    
+    if (game.chess.isCheckmate()) {
+        isGameOver = true;
+        this.handleGameOver(
+            game,
+            game.chess.turn() === "p1" ? "p2" : "p1",
+            "checkmate"
+        );
+    } else if (
+        game.chess.isStalemate() ||
+        game.chess.isThreefoldRepetition() ||
+        game.chess.isInsufficientMaterial()
+    ) {
+        isGameOver = true;
+        // Controlla se c'è stallo, pareggio o materiale insufficiente
+        this.handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
+    } else {
+        // Controlla se il tempo del giocatore 1 è scaduto
+        if (game.player1.timer <= 0) {
+            isGameOver = true;
+            clearInterval(game.player1.interval);
+
+            // Gestisci il timeout del giocatore 1 (sconfitta)
+            this.handleGameOver(game, "p2", "timeout");
+        } else {
+            // Controlla se il tempo del giocatore 2 è scaduto
+            if (game.player2.timer <= 0) {
+                isGameOver = true;
+                clearInterval(game.player2.interval);
+
+                // Gestisci il timeout del giocatore 2 (sconfitta)
+                this.handleGameOver(game, "p1", "timeout");
+            }
+        }
+    }
+    return isGameOver;
+},
+
+TimeRuns: function (time) {
+  
+  time = time - 1;
+  return time;
+}
 };
