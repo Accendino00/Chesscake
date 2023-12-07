@@ -155,7 +155,7 @@ module.exports = {
       },
 
       gameId: gameId,
-      chess: cloneChessBoard(board),
+      chess: board,
     });
 
     // Ritorniamo l'id della partita e le chiavi dei giocatori
@@ -256,17 +256,25 @@ module.exports = {
     let game = chessGames.find((game) => game.gameId == gameId);
 
     // Verifica se la mossa è valida
-    let chessMove = null;
-    try {
-      chessMove = game.chess.move(mossa);
-    } catch (error) {
+    let chessMove = new Chess();
+    chessMove.load(game.chess.fen());
+    try
+    {
+      if(chessMove.move(mossa)) {
+      }
+    }
+     catch (error) {
       return false;
     }
 
     // Se la mossa è valida
     if (chessMove !== null) {
       game.lastMove = game.chess.turn(); // Aggiorna di chi è il turno
-
+      game.chess.load(chessMove.fen());
+      // Pop dalla lista chessGames
+      chessGames = chessGames.filter((games) => games.gameId !== gameId);
+      // Inserisci il nuovo game nella lista chessGames
+      chessGames.push(game);
       // Controlla se c'è uno scacco matto
       /* if (game.chess.isCheckmate()) {
         this.handleGameOver(

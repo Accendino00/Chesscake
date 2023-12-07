@@ -19,7 +19,7 @@ function ReallyBadChessOnline() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [winner, setWinner] = useState(null);
     const [startingBoard, setStartingBoard] = useState();
-    const [chess, setChess] = useState();
+    const [chess, setChess] = useState(new Chess());
     const [possibleMoves, setPossibleMoves] = useState([]);
     const [pieceSelected, setPieceSelected] = useState([]);
     const [moves, setMoves] = useState([]);
@@ -150,21 +150,22 @@ function ReallyBadChessOnline() {
     };
 
 
-    const handleMove = (sourceSquare, targetSquare) => {
+    const handleMove = async (sourceSquare, targetSquare) => {
         fetch(`/api/reallybadchess/movePiece/${gameId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${Cookies.get('token')}`
             },
-            body: JSON.stringify({ from: sourceSquare, to: targetSquare, promotion: 'q' }),
+            body: JSON.stringify({ from: sourceSquare, to: targetSquare, promotion: 'q' })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     setGameData(data.game);
-                    let newChess = new Chess(data.game.chess._header.FEN);
-
+                    let newChess = new Chess();
+                    newChess.load(data.game.chess._header.FEN);
+                    
                     setFen(newChess.fen());
                     newChess.load(newChess.fen());
                     setChess(newChess);
@@ -174,7 +175,6 @@ function ReallyBadChessOnline() {
                     setTimeNero(data.game.player2.timer);
                     let isMyTurn = false;
 
-                    console.log(data);
 
                     // Capiamo se sono il giocatore 1 o il giocatore 2
                     // Check if it's the current player's turn

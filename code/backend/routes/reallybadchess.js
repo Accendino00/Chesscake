@@ -131,19 +131,29 @@ router.post(
     }
     // Prendiamo la mossa
     const move = req.body;
-    console.log(move);
+    
     try {
       // Facciamo la mossa
-      const result = chessGames.movePiece(gameId, move);
+      if(chessGames.movePiece(gameId, (move)))
+      {
+        const updatedGame = chessGames.getGame(gameId);
+        
+        // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
+        res.status(200).send({
+          success: true,
+          game: updatedGame,
+        });
+      }
+      else
+      {
+        res.status(400).send({
+          success: false,
+          message: "Eepy move :c",
+        });
+      }
 
       // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
-      const updatedGame = chessGames.getGame(gameId);
-
-      // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
-      res.status(200).send({
-        success: true,
-        game: updatedGame,
-      });
+      
     } catch (error) {
       // Handle the invalid move exception
       if (error.message === 'Invalid move') {

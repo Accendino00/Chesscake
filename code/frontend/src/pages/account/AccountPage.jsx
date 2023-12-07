@@ -9,7 +9,7 @@ import LastGamesComponent from './LastGamesComponent.jsx';
 function AccountPage() {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
-    const { username } = useParams();
+    // const { username } = useParams();
     React.useEffect(() => {
         if (!isTokenLoading) {
             if (!loginStatus) {
