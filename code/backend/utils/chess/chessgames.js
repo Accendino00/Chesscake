@@ -24,72 +24,134 @@ module.exports = {
     const whitePieces = findChessPiecesWithRank(playerRank, seed);
     const blackPieces = findChessPiecesWithRank(opponentRank, seed);
 
-    const whiteSquares = ['a1', 'b1', 'c1', 'd1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2'];
-    const blackSquares = ['a8', 'b8', 'c8', 'd8', 'f8', 'g8', 'h8', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'];
+    const whiteSquares = [
+      "a1",
+      "b1",
+      "c1",
+      "d1",
+      "f1",
+      "g1",
+      "h1",
+      "a2",
+      "b2",
+      "c2",
+      "d2",
+      "e2",
+      "f2",
+      "g2",
+      "h2",
+    ];
+    const blackSquares = [
+      "a8",
+      "b8",
+      "c8",
+      "d8",
+      "f8",
+      "g8",
+      "h8",
+      "a7",
+      "b7",
+      "c7",
+      "d7",
+      "e7",
+      "f7",
+      "g7",
+      "h7",
+    ];
 
     // Metti i pezzi q disponibili in modo casuale nella seconda fila
-    whitePieces.filter(piece => piece.name === "q").forEach((piece) => {
-      const validSquares = whiteSquares.filter(square => square[1] === "1");
-      const randomIndex = Math.floor(Math.random() * validSquares.length);
-      const square = validSquares.splice(randomIndex, 1)[0];
-      newChess.put({ type: piece.name, color: 'w' }, square);
-      whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
-      whiteSquares.splice(whiteSquares.indexOf(square), 1);
-    });
-
-    //Metti i pezzi p disponibili in modo casuale nella prima fila
-    whitePieces.filter(piece => piece.name === "p").forEach((piece) => {
-      const validSquares = whiteSquares.filter(square => square[1] === "2");
-      if (validSquares.length > 0) {
+    whitePieces
+      .filter((piece) => piece.name === "q")
+      .forEach((piece) => {
+        const validSquares = whiteSquares.filter((square) => square[1] === "1");
         const randomIndex = Math.floor(Math.random() * validSquares.length);
         const square = validSquares.splice(randomIndex, 1)[0];
-        newChess.put({ type: piece.name, color: 'w' }, square);
-        whitePieces.splice(whitePieces.findIndex(p => p === piece), 1);
+        newChess.put({ type: piece.name, color: "w" }, square);
+        whitePieces.splice(
+          whitePieces.findIndex((p) => p === piece),
+          1
+        );
         whiteSquares.splice(whiteSquares.indexOf(square), 1);
-      }
-    });
+      });
+
+    //Metti i pezzi p disponibili in modo casuale nella prima fila
+    whitePieces
+      .filter((piece) => piece.name === "p")
+      .forEach((piece) => {
+        const validSquares = whiteSquares.filter((square) => square[1] === "2");
+        if (validSquares.length > 0) {
+          const randomIndex = Math.floor(Math.random() * validSquares.length);
+          const square = validSquares.splice(randomIndex, 1)[0];
+          newChess.put({ type: piece.name, color: "w" }, square);
+          whitePieces.splice(
+            whitePieces.findIndex((p) => p === piece),
+            1
+          );
+          whiteSquares.splice(whiteSquares.indexOf(square), 1);
+        }
+      });
 
     //Aggiungi il resto nelle due file
     while (whiteSquares.length > 0) {
-      const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length);
-      newChess.put({ type: whitePieces.pop().name, color: 'w' }, whiteSquares[randomIndex]);
+      const randomIndex = Math.floor(
+        (seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length
+      );
+      newChess.put(
+        { type: whitePieces.pop().name, color: "w" },
+        whiteSquares[randomIndex]
+      );
       whiteSquares.splice(randomIndex, 1);
     }
-    newChess.put({ type: 'k', color: 'w' }, 'e1');
+    newChess.put({ type: "k", color: "w" }, "e1");
 
-    blackPieces.filter(piece => piece.name === "q").forEach((piece) => {
-      const validSquares = blackSquares.filter(square => square[1] === "8");
-      const randomIndex = Math.floor(Math.random() * validSquares.length);
-      const square = validSquares.splice(randomIndex, 1)[0];
-      newChess.put({ type: piece.name, color: 'b' }, square);
-      blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
-      blackSquares.splice(blackSquares.indexOf(square), 1);
-    });
-
-    blackPieces.filter(piece => piece.name === "p").forEach((piece) => {
-      const validSquares = blackSquares.filter(square => square[1] === "7");
-      if (validSquares.length > 0) {
+    blackPieces
+      .filter((piece) => piece.name === "q")
+      .forEach((piece) => {
+        const validSquares = blackSquares.filter((square) => square[1] === "8");
         const randomIndex = Math.floor(Math.random() * validSquares.length);
         const square = validSquares.splice(randomIndex, 1)[0];
-        newChess.put({ type: piece.name, color: 'b' }, square);
-        blackPieces.splice(blackPieces.findIndex(p => p === piece), 1);
+        newChess.put({ type: piece.name, color: "b" }, square);
+        blackPieces.splice(
+          blackPieces.findIndex((p) => p === piece),
+          1
+        );
         blackSquares.splice(blackSquares.indexOf(square), 1);
-      }
-    });
+      });
+
+    blackPieces
+      .filter((piece) => piece.name === "p")
+      .forEach((piece) => {
+        const validSquares = blackSquares.filter((square) => square[1] === "7");
+        if (validSquares.length > 0) {
+          const randomIndex = Math.floor(Math.random() * validSquares.length);
+          const square = validSquares.splice(randomIndex, 1)[0];
+          newChess.put({ type: piece.name, color: "b" }, square);
+          blackPieces.splice(
+            blackPieces.findIndex((p) => p === piece),
+            1
+          );
+          blackSquares.splice(blackSquares.indexOf(square), 1);
+        }
+      });
 
     //Aggiungi il resto nelle due file
     while (blackSquares.length > 0) {
-      const randomIndex = Math.floor((seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length);
-      newChess.put({ type: blackPieces.pop().name, color: 'b' }, blackSquares[randomIndex]);
+      const randomIndex = Math.floor(
+        (seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length
+      );
+      newChess.put(
+        { type: blackPieces.pop().name, color: "b" },
+        blackSquares[randomIndex]
+      );
       blackSquares.splice(randomIndex, 1);
     }
-    newChess.put({ type: 'k', color: 'b' }, 'e8');
+    newChess.put({ type: "k", color: "b" }, "e8");
     // Inizializzazione
     return newChess;
   },
   /**
    * Genera una partita di scacchi con le impostazioni passate
-   * 
+   *
    * @param {string} gameId L'id della partita
    * @param {string} player1 L'username dell'utente 1
    * @param {string} player2 L'username dell'utente 2
@@ -104,7 +166,9 @@ module.exports = {
     // }
 
     // Generiamo un gameId univoco
-    var gameId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    var gameId =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
     var board = new Chess();
     board.clear();
 
@@ -129,15 +193,13 @@ module.exports = {
         username: player1,
         timer: settings.duration * 60,
         interval: null,
-        gameSaved: false,
-        side: "b"
+        side: "b",
       },
       player2: {
         username: player2,
         timer: settings.duration * 60,
         interval: null,
-        gameSaved: false,
-        side: "w"
+        side: "w",
       },
 
       lastMove: null, // "w" o "b" per indicare chi ha mosso per ultimo
@@ -166,29 +228,32 @@ module.exports = {
   },
   joinGame: function (gameId, player2) {
     // Cerca la partita di scacchi
-    var game = chessGames.find(game => game.gameId == gameId);
+    var game = chessGames.find((game) => game.gameId == gameId);
 
     // Aggiungiamo il giocatore 2
     game.player2.username = player2;
   },
   /**
    * Ricerchiamo la partita e la ritorniamo usando l'id
-   * 
+   *
    * @param {string} gameId Id univoco della partita
    * @returns L'elemento dell'array che corrisponde alla partita
    */
   getGame: function (gameId) {
     // Cerca la partita di scacchi
-    var game = chessGames.find(game => game.gameId == gameId);
+    var game = chessGames.find((game) => game.gameId == gameId);
+
     // Ritorna la board
     return game;
   },
 
-
   getEmptyGames: function () {
     var emptyGames = [];
-    chessGames.forEach(game => {
-      if (game.player2.username == null && game.gameSettings.mode == "playerVsPlayerOnline") {
+    chessGames.forEach((game) => {
+      if (
+        game.player2.username == null &&
+        game.gameSettings.mode == "playerVsPlayerOnline"
+      ) {
         emptyGames.push(game);
       }
     });
@@ -197,35 +262,12 @@ module.exports = {
   },
   /**
    * Funzione che aggiunge una mossa al gioco con id gameId
-   * 
+   *
    * @param {string} gameId
    * @param {string} move
    * @returns true se la mossa è stata aggiunta, false altrimenti
    */
 
-  /* 
-   movePiece : function (gameId, move) {
-       // Cerca la partita di scacchi
-       var game = chessGames.find(game => game.gameId == gameId);
-
-   // Aggiungi la mossa se è una mossa corretta
-   if (game.chess.move(move)) {
-     // Se la mossa è corretta
-     game.lastMove = game.chess.turn(); // Aggiorno di chi è il turno
-
-     // Aggiorno il timer in modo che interrompo l'ultimo intervallo
-     // e avvio quello del giocatore che deve muovere
-     clearInterval(game.player1.interval);
-     game.player1.interval = setInterval(() => {
-       game.player1.timer--;
-       if (game.player1.timer <= 0) {
-         clearInterval(game.player1.interval);
-
-      return true;
-    } else {
-      return false;
-    }
-  }, 
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -234,15 +276,31 @@ module.exports = {
    */
   // Funzione per gestire gli scenari di fine partita
   handleGameOver: function (game, winner, reason) {
+    // Fermiamo per sicurezza tutti gli intervalli
+    if (game.player1.interval !== null) clearInterval(game.player1.interval);
+    if (game.player2.interval !== null) clearInterval(game.player2.interval);
+
+    // Impostiamo il game over
     game.gameOver.isGameOver = true;
     game.gameOver.winner = winner;
     game.gameOver.reason = reason;
-    this.changeElo(game.player1, game.player2, winner);
+
+    let returnValue = false;
+
     if (game.gameSettings.mode === "dailyChallenge") {
-      this.saveDailyChallengeResults(game.gameId);
+      returnValue = this.saveDailyChallengeResults(game.gameId);
+    } else if (game.gameSettings.mode === "playerVsPlayerOnline") {
+      returnValue = this.changeElo(game.player1, game.player2, winner);
+    } else if (game.gameSettings.mode === "playerVsComputer") {
+      returnValue = this.changeRank(game.player1, game.player2, winner);
     }
-    // Chiamare la tua funzione changeElo qui per aggiornare i punteggi dei giocatori
-    // Esempio: changeElo(game.player1, game.player2, vincitore);
+
+    // Imposto un timer che cancella questo game dopo 10 minuti
+    setTimeout(() => {
+      chessGames.splice(chessGames.indexOf(game), 1);
+    }, 1000 * 60 * 10);
+
+    return returnValue;
   },
 
   /**
@@ -255,52 +313,56 @@ module.exports = {
   movePiece: function (gameId, mossa) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
-    console.log("mossa passata:", mossa);
-    // Verifica se la mossa è valida
+
+    // Catch nel caso la mossa risulti non valida
     let chessMove = null;
     try {
       chessMove = game.chess.move(mossa);
-      // chessMove.after sarebbe il FEN aggiornato, dato che chessmove
-      // è un json che contiene alcune info tra cui before e after
-      // poi aggiorno manualmente il fen perchè a quanto pare non lo fa da solo
-      // tutto scoperto a mie spese
-      game.chess._header.FEN = chessMove.after;
-      // lo inserisco manualmente nell'array di chessgames
-      chessGames.find((game) => game.gameId == gameId).chess = game.chess;
-      console.log("ischessgameupdated?:", chessGames.find((game) => game.gameId == gameId).chess._header.FEN);
-      console.log("chessMove:", chessMove);
+      game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
+      game.chess._header.FEN = game.chess.fen();
     } catch (error) {
       return false;
     }
 
     // Se la mossa è valida
     if (chessMove !== null) {
-      game.lastMove = game.chess.turn(); // Aggiorna di chi è il turno
-      // Pop dalla lista chessGames
-      chessGames = chessGames.filter((games) => games.gameId !== gameId);
-      // Inserisci il nuovo game nella lista chessGames
-      chessGames.push(game);
+      let currentPlayerTurn =
+        game.chess.turn() === game.player1.side ? "p1" : "p2";
+
+      // Loggo se c'è un gameover
+      console.log(
+        "Game over: " +
+          game.chess.isGameOver() +
+          " - " +
+          game.chess.isCheckmate() +
+          " - " +
+          game.chess.isStalemate() +
+          " - " +
+          game.chess.isInsufficientMaterial() +
+          " - " +
+          game.chess.isThreefoldRepetition()
+      );
+
       // Controlla se c'è uno scacco matto
-      /* if (game.chess.isCheckmate()) {
-        this.handleGameOver(
-          game,
-          game.chess.turn() === "p1" ? "p2" : "p1",
-          "checkmate"
-        );
+      if (game.chess.isCheckmate()) {
+        this.handleGameOver(game, currentPlayerTurn, "checkmate");
       } else if (
         game.chess.isStalemate() ||
         game.chess.isThreefoldRepetition() ||
         game.chess.isInsufficientMaterial()
       ) {
         // Controlla se c'è stallo, pareggio o materiale insufficiente
-        this.handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
+        this.handleGameOver(game, currentPlayerTurn, "stall");
       } else {
         // Aggiorna il timer per interrompere l'ultimo intervallo
         // e avviare l'intervallo per il giocatore che deve muovere
-        clearInterval(game.player1.interval);
-        clearInterval(game.player2.interval);
+        // Se sono definiti
+        if (game.player1.interval !== null)
+          clearInterval(game.player1.interval);
+        if (game.player2.interval !== null)
+          clearInterval(game.player2.interval);
 
-        if (game.chess.turn() === "p1") {
+        if (currentPlayerTurn === "p1") {
           game.player1.interval = setInterval(() => {
             game.player1.timer--;
 
@@ -324,10 +386,11 @@ module.exports = {
               this.handleGameOver(game, "p1", "timeout");
             }
           }, 1000);
-        }*/
+        }
+      }
+
       return true; // Mossa riuscita
-    }
-    else {
+    } else {
       return false; // Mossa non valida
     }
   },
@@ -346,7 +409,9 @@ module.exports = {
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
     const collection = db.collection("GamesRBC");
-    var computer = db.collection("Users").findOne({ _id: "6568af1b12028efd10a09141" });
+    var computer = db
+      .collection("Users")
+      .findOne({ _id: "6568af1b12028efd10a09141" });
     collection.insertOne({
       Player1: game.player1,
       Player2: computer,
@@ -383,7 +448,6 @@ module.exports = {
      * @param {const} kFactor Il k factor da utilizzare per il calcolo dell'elo in base alle regole degli scacchi
      * @returns Nuovo elo del giocatore 1
      */
-
   calculateEloChange: function (eloPlayer1, eloPlayer2, outcome, kFactor = 32) {
     // calcolo del punteggio previsto per il giocatore 1
     const expectedScorePlayer1 =
@@ -423,51 +487,8 @@ module.exports = {
       this.calculateEloChange(player2.elo, Player1.elo, "p2");
     }
   },
-  gameOver: function (gameId) {
-    // Trova la partita di scacchi
-    let isGameOver = false;
-    let game = chessGames.find((game) => game.gameId == gameId);
-    
-    if (game.chess.isCheckmate()) {
-        isGameOver = true;
-        this.handleGameOver(
-            game,
-            game.chess.turn() === "p1" ? "p2" : "p1",
-            "checkmate"
-        );
-    } else if (
-        game.chess.isStalemate() ||
-        game.chess.isThreefoldRepetition() ||
-        game.chess.isInsufficientMaterial()
-    ) {
-        isGameOver = true;
-        // Controlla se c'è stallo, pareggio o materiale insufficiente
-        this.handleGameOver(game, game.chess.turn() === "p1" ? "p2" : "p1", "stall");
-    } else {
-        // Controlla se il tempo del giocatore 1 è scaduto
-        if (game.player1.timer <= 0) {
-            isGameOver = true;
-            clearInterval(game.player1.interval);
 
-            // Gestisci il timeout del giocatore 1 (sconfitta)
-            this.handleGameOver(game, "p2", "timeout");
-        } else {
-            // Controlla se il tempo del giocatore 2 è scaduto
-            if (game.player2.timer <= 0) {
-                isGameOver = true;
-                clearInterval(game.player2.interval);
-
-                // Gestisci il timeout del giocatore 2 (sconfitta)
-                this.handleGameOver(game, "p1", "timeout");
-            }
-        }
-    }
-    return isGameOver;
-},
-
-TimeRuns: function (time) {
-  
-  time = time - 1;
-  return time;
-}
+  changeRank: function (Player1, player2, outcome) {
+    console.log("Da fare questa parte");
+  },
 };

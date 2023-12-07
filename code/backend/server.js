@@ -47,8 +47,8 @@ app.use(cors({
 
 /* ROUTES */
 
-app.get("/prova", function (req, res) {
-  res.send("Ciao");
+app.get("/testingDirectory/impossibleToFind/diagnostic", function (req, res) {
+  res.send("Server on");
 });
 
 app.use(express.json()) // Per parsing di application/json

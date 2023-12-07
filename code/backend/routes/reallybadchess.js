@@ -12,6 +12,29 @@ const { randomBytes } = require("crypto");
 
 var router = express.Router();
 
+function resizeGame (game) {
+  return {
+    gameSettings: game.gameSettings,
+    player1: {
+      username: game.player1.username,
+      side: game.player1.side,
+      timer: game.player1.timer,
+    },
+    player2: {
+      username: game.player2.username,
+      side: game.player2.side,
+      timer: game.player2.timer,
+    },
+
+    lastMove: game.lastMove,
+    matches: game.matches,
+    gameOver: game.gameOver,
+
+    gameId: game.gameId,
+    chess: game.chess,
+  }
+}
+
 // Serve the stockfish.js file
 router.get("/stockfish.js", (req, res) => {
   const stockfishPath = path.join(
@@ -36,7 +59,7 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
   let { gameId } = chessGames.createNewGameWithSettings(
     username1,
     username2,
-    settings,
+    settings
   );
 
   res.send({
@@ -44,8 +67,6 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
     gameId: gameId,
   });
 });
-
-
 
 router.post("/joinGame/:gameId", authenticateJWT, (req, res) => {
   // Prendiamo il gameId
@@ -61,7 +82,6 @@ router.post("/joinGame/:gameId", authenticateJWT, (req, res) => {
       message: "Game not found",
     });
   }
-
 
   // Se il game esiste, allora controlliamo che l'utente non sia già il player1
   if (game.player1.username === req.user.username) {
@@ -94,99 +114,153 @@ router.get("/getGame/:gameId", authenticateJWT, async (req, res) => {
     });
   }
 
+  resizeGame(game)
+
   // Se il game esiste, allora ritorniamo il game
   res.send({
     success: true,
-    game: game,
+    game: resizeGame(game),
   });
 });
 
-router.post(
-  "/movePiece/:gameId",
-  authenticateJWT,
-  async (req, res) => {
-    // Prendiamo il gameId
-    const { gameId } = req.params;
+router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
 
-    // Prendiamo il game dal database
-    const game = chessGames.getGame(gameId);
-    console.log("game:", game.chess._header.FEN);
-    // Se il game non esiste, allora ritorniamo un errore
-    if (!game) {
-      return res.status(404).send({
-        success: false,
-        message: "Game not found",
-      });
-    }
-    // Controlliamo che l'utenza sia corretta
-    if (
-      req.user &&
-      req.user.username !== game.player1.username &&
-      req.user.username !== game.player2.username
-    ) {
-      return res.status(403).send({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-    console.log("lastMove:", game.lastMove);
-    console.log('req.user:', req.user);
-    console.log('game.player1.username:', game.player1.username);
-    console.log('game.player2.username:', game.player2.username);
-    console.log('game.player1.side:', game.player1.side);
-    console.log('game.player2.side:', game.player2.side);
-    console.log('req.user.username', req.user.username);
-    // controllo in modo che il giocatore nero non possa 
-    // muovere pedine bianche e nere
-    if((game.lastMove == null && req.user.username === game.player1.username && game.player2.side === "b") || (game.lastMove == null && req.user.username === game.player2.username && game.player1.side === "b")){
-      console.log('sono entrato fica');
-      return res.status(403).send({
-        success: false,
-        game: game,
-        message: "Its not your turn",
-      });
-    }
-    // Prendiamo la mossa
-    const move = req.body;
-    
-    try {
-      // Facciamo la mossa
-      const result = chessGames.movePiece(gameId, move);
-      console.log("result:", result);
-      // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
-      // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
-      if (result) {
-        const updatedGame = chessGames.getGame(gameId);
-        console.log("game2", game.chess._header.FEN);
-        console.log("updatedGame:", updatedGame.chess._header.FEN);
-        res.status(200).send({
-          success: true,
-          game: updatedGame,
-        });
-      } else {
-        res.status(200).send({
-          success: false,
-          game: game,
-        });
-      }
-    } catch (error) {
-      // Handle the invalid move exception
-      if (error.message === 'Invalid move') {
-        return res.status(400).send({
-          success: false,
-          message: "Invalid move",
-        });
-      }
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
 
-      // Handle other exceptions if needed
-      console.error("Unhandled exception:", error);
-      return res.status(500).send({
-        success: false,
-        message: "Internal server error",
-      });
-    }
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
   }
-);
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Imposto il "side" del giocatore che sta cercando di fare la mossa
+  let side = null;
+  if (req.user.username === game.player1.username) {
+    side = game.player1.side;
+  } else {
+    side = game.player2.side;
+  }
+
+  // controllo in modo che il giocatore nero non possa
+  // muovere pedine bianche e nere
+  if (
+    // Se il giocatore bianco prova a fare una mossa quando l'ultimo turno era suo
+    (game.lastMove === "w" && side === "w") ||
+    // Se il giocatore nero prova a fare una mossa quando l'ultimo turno era suo
+    (game.lastMove === "b" && side === "b") ||
+    // Se il giocatore nero prova a fare una mossa quando non c'è ancora stato nessun turno
+    (game.lastMove === null && side === "b")
+  ) {
+    return res.status(400).send({
+      success: false,
+      game: resizeGame(game),
+      message: "Its not your turn",
+    });
+  }
+
+  // Prendiamo la mossa
+  const move = req.body;
+
+  try {
+    // Facciamo la mossa
+    const result = chessGames.movePiece(gameId, move);
+
+    // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
+    // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
+    if (result) {
+      const updatedGame = chessGames.getGame(gameId);
+
+      res.status(200).send({
+        success: true,
+        game: resizeGame(updatedGame),
+      });
+    } else {
+      res.status(200).send({
+        success: false,
+        game: resizeGame(game),
+      });
+    }
+  } catch (error) {
+    // Handle the invalid move exception
+    if (error.message === "Invalid move") {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid move",
+      });
+    }
+
+    // Handle other exceptions if needed
+    console.error("Unhandled exception:", error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+});
+
+router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Imposto il "side" del giocatore che sta cercando di fare la mossa
+  let winnerSide = null;
+  if (req.user.username === game.player1.username) {
+    winnerSide = "p2";
+  } else {
+    winnerSide = "p1";
+  }
+
+  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "surrender");
+
+  // Ritorniamo il game
+  res.send({
+    success: returnOfGameOver,
+    game: resizeGame(game)
+  });
+});  
+
 
 router.post(
   "/saveDailyChallengeResults/:gameId",
@@ -266,124 +340,34 @@ router.post("/setBoard/:gameId", authenticateJWT, (req, res) => {
   // Ritorniamo il game
   res.send({
     success: true,
-    game: game,
+    game: resizeGame(game),
   });
 });
 
-
-//get di tutti i games senza secondo giocatore
-router.get("/getEmptyGames",
-authenticateJWT, async (req, res) => {
+// Richiesta che ritorna tutte le partite che sono in attesa del secondo giocatore
+router.get("/getEmptyGames", authenticateJWT, async (req, res) => {
   try {
     const games = chessGames.getEmptyGames();
     if (!games) {
       return res.status(404).json({
         success: false,
-        message: 'Games not found',
+        message: "Games not found",
       });
     }
 
     // Set Content-Type header to application/json
-    res.setHeader('Content-Type', 'application/json');
+    res.setHeader("Content-Type", "application/json");
     res.send({
       success: true,
       games: games,
     });
   } catch (error) {
-    console.error('Error while getting empty games:', error);
+    console.error("Error while getting empty games:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 });
-
-router.post("/gameOver/:gameId", authenticateJWT, (req, res) => {
-  // Prendiamo il gameId
-  const { gameId } = req.params;
-
-  // Prendiamo il game dal database
-  const game = chessGames.getGame(gameId);
-
-  // Se il game non esiste, allora ritorniamo un errore
-  if (!game) {
-    return res.status(404).send({
-      success: false,
-      message: "Game not found",
-    });
-  }
-
-  // Controlliamo che l'utenza sia corretta
-  if (
-    req.user &&
-    req.user.username !== game.player1.username &&
-    req.user.username !== game.player2.username
-  ) {
-    return res.status(403).send({
-      success: false,
-      message: "Unauthorized",
-    });
-  }
-
-  // Prendiamo la board
-  const { } = req.body;
-
-  // Settiamo la board
-  let isGameOver = chessGames.gameOver(gameId);
-
-  // Ritorniamo il game
-  if (isGameOver) {
-    res.send({
-      success: true,
-      game: game,
-    });
-  } else {
-    res.send({
-      success: false,
-      game: game,
-    });
-  }
-}
-
-);
-
-router.post("/timer/:gameId", authenticateJWT, (req, res) => {
-  // Prendiamo il gameId
-  const { gameId } = req.params;
-
-  const { time } = req.body;
-
-  // Prendiamo il game dal database
-  const game = chessGames.getGame(gameId);
-
-  // Se il game non esiste, allora ritorniamo un errore
-  if (!game) {
-    return res.status(404).send({
-      success: false,
-      message: "Game not found",
-    });
-  }
-
-  // Controlliamo che l'utenza sia corretta
-  if (
-    req.user &&
-    req.user.username !== game.player1.username &&
-    req.user.username !== game.player2.username
-  ) {
-    return res.status(403).send({
-      success: false,
-      message: "Unauthorized",
-    });
-  }
-
-  if(chessGames.TimeRuns(time)){
-    res.send({
-      success: true,
-      game: game,
-    });
-  }
-}
-
-);
 
 module.exports = router;

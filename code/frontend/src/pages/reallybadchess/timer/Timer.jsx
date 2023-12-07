@@ -3,7 +3,12 @@ import { Paper, Typography, Icon, Box } from '@mui/material';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 
-function Timer({ time, setTime, shouldRun, setHasEnded, playerColor }) {
+function Timer({ time, setTime, shouldRun, setHasEnded, playerColor, justForDisplay }) {
+
+    if (justForDisplay === undefined || !justForDisplay) {
+        justForDisplay = false;
+    }
+
     // Convert seconds to MM:SS format
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
@@ -12,7 +17,7 @@ function Timer({ time, setTime, shouldRun, setHasEnded, playerColor }) {
     };
 
     React.useEffect(() => {
-        if (shouldRun) {
+        if (shouldRun && !justForDisplay) {
             if (time > 0) {
                 const timer = setTimeout(() => {
                     setTime(time - 1);
