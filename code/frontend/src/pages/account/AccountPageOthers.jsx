@@ -16,8 +16,6 @@ function AccountPageOthers() {
         }
     }, [username, navigate]);
 
-    console.log(username);
-
     // Renderizza nulla, perché il redirect viene fatto in useEffect
     return (
         // Div che contiene tutto lo stile
@@ -29,8 +27,8 @@ function AccountPageOthers() {
             justifyContent: 'flex-start',
             alignItems: 'center',
         }}>
-            <ProfileComponent username={username} />
-            <LastGamesComponent />
+            <ProfileComponent username={username} />       
+            <LastGamesComponent username={username}/>
         </Box>
     );
 }

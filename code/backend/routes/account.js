@@ -84,18 +84,42 @@ function getAccountData (username, res) {
     });
 }
 
-router.get("/getLastGames/:username", function (req, res) {
-    res.status(404).send({
-        success: false,
-        message: "Non implementato",
-    });
-});
+router.get("/getLastGames/:username", async function (req, res) {
+    const { ObjectId } = require('mongodb');
+    const users = clientMDB.db("ChessCake").collection('Users');
+    const games = clientMDB.db("ChessCake").collection('GamesRBC');
+    // Get the username from the URL
+    const username = req.params.username;
+    // Find the user by username
+    const user = await users.findOne({ username: username });
+    const userId = new ObjectId(user._id);
+    
+    if (!user) {
+        return res.status(404).send({
+            success: false,
+            message: "User not found",
+        });
+    }
+    const userGames = await games.find({
+        $or: [
+            { Player1: userId },
+            { Player2: userId }
+        ]
+    }).toArray();
 
-router.get("/getLastGames/", function (req, res) {
-    res.status(404).send({
-        success: false,
-        message: "Non implementato",
-    });
+    // If username is not defined then return 403 and an error message
+    if (!username) {
+        return res.status(403).send({
+            success: false,
+            message: "Non sei autorizzato a richiedere questo URL senza essere loggato",
+        });
+    } else {
+        return res.status(200).send({
+            success: true,
+            message: "Informazioni prese con successo",
+            lastGames: userGames,
+        });
+    }
 });
 
 module.exports = router;
