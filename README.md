@@ -89,11 +89,13 @@ La scelta della tecnologia da usare è stata fatta in modo democratico, in quant
   - In quanto lo stile di **Material-UI** è molto piacevole e facile da usare e ci velocizza il lavoro di creare un frontend
 - *NodeJS* e *ExpressJS* per il backend
   - Motivato sia da una maggior familiarità con il linguaggio e il framework, sia dal fatto che ci permette di avere un backend molto leggero e veloce da sviluppare
-- *MySQL* come DBMS
-  - Anch'esso molto popolare e con cui diversi di noi hanno esperienza. Sicuramente richiede più attenzioni di *MongoDB* in quanto è relazionale, ma ci permette di avere una struttura più rigida e coerente dei dati.
-  - Pianifichiamo anche di usare *phpMyAdmin* per aiutarci nella gestione del database.
+- *MongoDB* come DBMS
+  - Questo DBMS è presente direttamente sui server DISI, quindi è stato scelto per rispettare il vincolo di avere tutto sui server DISI. Inoltre è un DBMS che abbiamo già usato in passato, quindi ci permette di velocizzare il lavoro.
+  - Infine è un DBMS che si integra bene con NodeJS, quindi è stato scelto per la sua facilità di integrazione.
 
 Usiamo tutti **Visual Studio Code**, in quanto è flessibile, grazie alle estensioni, e ci permette di lavorare con facilità in gruppo. Non abbiamo quindi scelto un IDE specifico, ma abbiamo deciso di usare questo editor di testo.
+
+Manteniamo il tempo lavorato usando **WakaTime**, un plugin per Visual Studio Code che ci permette di vedere quanto tempo abbiamo lavorato su un progetto e su quali file abbiamo lavorato. Le quantità non sono state caricate come documentazione del progetto, ma sono state usate per tenere traccia del tempo lavorato e per poterlo confrontare con le stime fatte.
 
 Cerchiamo di integrare l'uso di ChatGPT con il nostro development per migliorare sopratutto la nostra velocità nella scrittura di cose semplici o che sono talmente chiare che l'unica cosa che manca è trascriverle in modo formale (che questo sia codice o testo). In ogni caso viene tutti *controllato e revisionato* prima di essere inserito nel progetto.
 

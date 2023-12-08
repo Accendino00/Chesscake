@@ -56,7 +56,27 @@ router.post("/newGame", authenticateJWT, async (req, res) => {
   if (settings.mode !== "playerVsPlayerOnline") {
     username2 = "Computer";
   }
-  let { gameId } = chessGames.createNewGameWithSettings(
+
+  // Se la modalità è "playerVsComputer" oppure "dailyChallenge", impostiamo il rank come parametro di settings
+  // facendo una query a mongodb per ottenere il rank attuale del giocatore
+
+  let rank = 20 // valore base per daily challenge
+
+  if (settings.mode === "playerVsComputer") {
+    // Prendiamo il rank del giocatore
+    rank = await clientMDB
+      .db("ChessCake")
+      .collection("Users")
+      .find({ username: username1 })
+      .limit(1)
+      .toArray();
+
+    rank = rank.length == 0 ? 20 : rank[0].rbcCurrentRank;  
+  }
+
+  settings.rank = rank;
+
+  let { gameId } = await chessGames.createNewGameWithSettings(
     username1,
     username2,
     settings

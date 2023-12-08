@@ -27,7 +27,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     alignContent: "center",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     width: "68%",
   },
 

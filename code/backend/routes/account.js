@@ -90,10 +90,10 @@ router.get("/getLastGames/:username", async function (req, res) {
     const games = clientMDB.db("ChessCake").collection('GamesRBC');
     // Get the username from the URL
     const username = req.params.username;
-    // Find the user by username
-    const user = await users.findOne({ username: username });
-    const userId = new ObjectId(user._id);
     
+    // Controlliamo se l'utente esiste nel db facendo una query
+    let user = await users.findOne({ username: username });
+
     if (!user) {
         return res.status(404).send({
             success: false,
@@ -102,10 +102,12 @@ router.get("/getLastGames/:username", async function (req, res) {
     }
     const userGames = await games.find({
         $or: [
-            { Player1: userId },
-            { Player2: userId }
+            { "Player1.username": username },
+            { "Player2.username": username },
         ]
     }).toArray();
+
+    console.log(userGames)
 
     // If username is not defined then return 403 and an error message
     if (!username) {
@@ -118,6 +120,7 @@ router.get("/getLastGames/:username", async function (req, res) {
             success: true,
             message: "Informazioni prese con successo",
             lastGames: userGames,
+            playerRequestiong: username,
         });
     }
 });

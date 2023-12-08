@@ -10,7 +10,7 @@ import {
   getPiecePosition,
   cloneChessBoard,
 } from "./boardFunctions";
-import { findBestMove } from "./movesFunctions";
+
 import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
 import { CircularProgress } from "@mui/material";
@@ -147,7 +147,7 @@ function ReallyBadChessOnline() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${Cookies.get("token")}`,
+            Authorization: `Bearer ${Cookies.get("token")}`,
           },
         })
           .then((response) => response.json())
@@ -172,7 +172,7 @@ function ReallyBadChessOnline() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${Cookies.get("token")}`,
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
       })
         .then((response) => {
@@ -182,6 +182,7 @@ function ReallyBadChessOnline() {
           return response.json();
         })
         .then((data) => {
+          console.log(data);
           handleGetGameResponse(data);
         })
         .catch((err) => {
@@ -195,7 +196,10 @@ function ReallyBadChessOnline() {
   const handleMove = (sourceSquare, targetSquare) => {
     // Gestisco il fatto che non si possa muovere se non è il proprio turno
     // Questo evita richieste inutili
-    if (gameData.lastMove === playerSide) {
+    if (
+      gameData.lastMove === playerSide ||
+      (gameData.lastMove == null && playerSide === "black")
+    ) {
       return;
     }
 
@@ -203,7 +207,7 @@ function ReallyBadChessOnline() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("token")}`,
+        Authorization: `Bearer ${Cookies.get("token")}`,
       },
       body: JSON.stringify({
         from: sourceSquare,
@@ -227,7 +231,10 @@ function ReallyBadChessOnline() {
     const moves = chess.moves({ square, verbose: true });
 
     // Se il turno non è del giocatore attuale allora non lo mostro
-    if (gameData.lastMove === playerSide) {
+    if (
+      gameData.lastMove === playerSide ||
+      (gameData.lastMove === null && playerSide === "black")
+    ) {
       return;
     }
 
@@ -318,127 +325,128 @@ function ReallyBadChessOnline() {
 
   return (
     <Box sx={ChessGameStyles.everythingContainer}>
-      <Box sx={ChessGameStyles.boxTimer}>
-        <Timer
-          time={timeBianco}
-          setTime={setTimeBianco}
-          shouldRun={gameData.lastMove !== playerSide}
-          playerColor={playerSide === "w" ? "white" : "black"}
-          justForDisplay={true}
-        />
-        <Timer
-          time={timeNero}
-          setTime={setTimeNero}
-          shouldRun={gameData.lastMove === playerSide}
-          playerColor={playerSide === "w" ? "black" : "white"}
-          justForDisplay={true}
-        />
-      </Box>
-
-      {/* Modal quando finisce la partita */}
-      <Modal open={modalIsOpen} onClose={handleCloseModal}>
-        <Box sx={ChessGameStyles.boxGameOver}>
-          <Stack spacing={2}>
-            <Typography variant="h5" component="h2" style={{ margin: "auto" }}>
-              {winner === "Nessuno" ? "Partita finita." : `${winner} ha vinto!`}
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleNavigateToPlay}
-            >
-              Esci
-            </Button>
-            <Button variant="outlined" onClick={() => window.location.reload()}>
-              Ricomincia
-            </Button>
-
-            <ShareButton
-              text={
-                winner == chess.player1
-                  ? " Ho vinto questa partita in locale con " +
-                    chess.moveNumber() +
-                    " mosse"
-                  : "Ho perso questa partita in locale con " +
-                    chess.moveNumber() +
-                    " mosse"
-              }
-            />
-          </Stack>
+      <Box sx={ChessGameStyles.backgroundWrapper}>
+        <Box sx={ChessGameStyles.boxTimer}>
+          <Timer
+            time={timeBianco}
+            setTime={setTimeBianco}
+            shouldRun={gameData.lastMove !== playerSide}
+            playerColor={playerSide === "w" ? "white" : "black"}
+            justForDisplay={true}
+          />
+          <Timer
+            time={timeNero}
+            setTime={setTimeNero}
+            shouldRun={gameData.lastMove === playerSide}
+            playerColor={playerSide === "w" ? "black" : "white"}
+            justForDisplay={true}
+          />
         </Box>
-      </Modal>
 
-      <div style={ChessGameStyles.divChessBoard}>
-        <Chessboard
-          position={fen}
-          onPieceDrop={handleMove}
-          boardOrientation={
-            // L'utente può essere o bianco o nero e potrebbe essere o il player 1 o il player 2(
-            playerSide === "w" ? "white" : "black"
-          }
-          width={"50vh"}
-          onMouseOverSquare={handleMouseOverSquare}
-          onMouseOutSquare={handleMouseOutSquare}
-          customSquareStyles={{
-            ...possibleMoves.reduce(
-              (a, c) => ({
-                ...a,
-                [c]: {
-                  background:
-                    "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)",
+        {/* Modal quando finisce la partita */}
+        <Modal open={modalIsOpen} onClose={handleCloseModal}>
+          <Box sx={ChessGameStyles.boxGameOver}>
+            <Stack spacing={2}>
+              <Typography
+                variant="h5"
+                component="h2"
+                style={{ margin: "auto" }}
+              >
+                {winner === "Nessuno"
+                  ? "Partita finita."
+                  : `${winner} ha vinto!`}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleNavigateToPlay}
+              >
+                Esci
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => window.location.reload()}
+              >
+                Ricomincia
+              </Button>
+
+              <ShareButton />
+            </Stack>
+          </Box>
+        </Modal>
+
+        <div style={ChessGameStyles.divChessBoard}>
+          <Chessboard
+            position={fen}
+            onPieceDrop={handleMove}
+            boardOrientation={
+              // L'utente può essere o bianco o nero e potrebbe essere o il player 1 o il player 2(
+              playerSide === "w" ? "white" : "black"
+            }
+            width={"50vh"}
+            onMouseOverSquare={handleMouseOverSquare}
+            onMouseOutSquare={handleMouseOutSquare}
+            customSquareStyles={{
+              ...possibleMoves.reduce(
+                (a, c) => ({
+                  ...a,
+                  [c]: {
+                    background:
+                      "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)",
+                  },
+                }),
+                {}
+              ),
+              ...pieceSelected.reduce(
+                (a, c) => ({
+                  ...a,
+                  [c]: {
+                    background:
+                      "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)",
+                  },
+                }),
+                {}
+              ),
+            }}
+          />
+        </div>
+        <Box sx={ChessGameStyles.boxControlButtons}>
+          <Button onClick={handleNavigateToPlay}>Esci</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={disableSurrender}
+            onClick={() => {
+              setDisableSurrender(true);
+
+              // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
+              // se ritorna success == true, allora ho arreso con successo
+
+              fetch(`/api/reallybadchess/surrender/${gameId}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${Cookies.get("token")}`,
                 },
-              }),
-              {}
-            ),
-            ...pieceSelected.reduce(
-              (a, c) => ({
-                ...a,
-                [c]: {
-                  background:
-                    "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)",
-                },
-              }),
-              {}
-            ),
-          }}
-        />
-      </div>
-      <Box sx={ChessGameStyles.boxControlButtons}>
-        <Button onClick={handleNavigateToPlay}>Esci</Button>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={disableSurrender}
-          onClick={() => {
-            setDisableSurrender(true);
-
-            // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
-            // se ritorna success == true, allora ho arreso con successo
-
-            fetch(`/api/reallybadchess/surrender/${gameId}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${Cookies.get("token")}`,
-              },
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.success) {
-                  setWinner(data.winner);
-                  setModalIsOpen(true);
-                } else {
-                  setDisableSurrender(false);
-                }
               })
-              .catch((err) => {
-                console.log(err);
-                setDisableSurrender(false);
-              });
-          }}
-        >
-          Arrenditi
-        </Button>
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    setWinner(data.winner);
+                    setModalIsOpen(true);
+                  } else {
+                    setDisableSurrender(false);
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                  setDisableSurrender(false);
+                });
+            }}
+          >
+            Arrenditi
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
