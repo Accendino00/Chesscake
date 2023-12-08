@@ -100,6 +100,7 @@ function ReallyBadChessOnline() {
       setFen(newChess.fen());
       newChess.load(newChess.fen());
       setChess(newChess);
+      checkCheck();
 
       // Impostazione dei timer
       if (response.game.player1.username === username) {
@@ -245,6 +246,15 @@ function ReallyBadChessOnline() {
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
   };
+
+  function checkCheck() {
+    if (chess.isCheck()) {
+      setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
+    } else {
+      setPieceSelected([]);
+    }
+  }
+
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
   const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
@@ -363,14 +373,9 @@ function ReallyBadChessOnline() {
               >
                 Esci
               </Button>
-              <Button
-                variant="outlined"
-                onClick={() => window.location.reload()}
-              >
-                Ricomincia
-              </Button>
 
               <ShareButton />
+              
             </Stack>
           </Box>
         </Modal>
