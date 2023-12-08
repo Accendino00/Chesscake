@@ -77,8 +77,6 @@ module.exports = {
       eloPlayer2 = eloPlayer2.length == 1 ? eloPlayer2[0].rbcELO : eloPlayer1;
     }
 
-    console.log("Elo player 1: ", eloPlayer1, " Elo player 2: ", eloPlayer2);
-
     let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
     // Aggiungiamo la partita di scacchi
     chessGames.push({
@@ -128,12 +126,26 @@ module.exports = {
       gameId: gameId,
     };
   },
-  joinGame: function (gameId, player2) {
+  joinGame: async function (gameId, player2) {
     // Cerca la partita di scacchi
     var game = chessGames.find((game) => game.gameId == gameId);
 
     // Aggiungiamo il giocatore 2
     game.player2.username = player2;
+
+    const db = clientMDB.db("ChessCake");
+    const collection = db.collection("Users");
+
+    // Impostiamo l'elo del giocatore 2
+    // Prendiamo l'elo del giocatore 2
+    let eloPlayer2 = await collection
+      .find({ username: player2 })
+      .limit(1)
+      .toArray();
+
+    eloPlayer2 = eloPlayer2.length == 1 ? eloPlayer2[0].rbcELO : 400;
+
+    game.player2.elo = eloPlayer2;
   },
 
   /**
@@ -198,7 +210,11 @@ module.exports = {
         returnValue = this.changeElo(game.player1, game.player2, winner);
         returnValue = this.saveGame(game.gameId);
       } else if (game.gameSettings.mode === "playerVsComputer") {
-        returnValue = this.changeRank(game.player1, game.gameSettings.rank, winner);
+        returnValue = this.changeRank(
+          game.player1,
+          game.gameSettings.rank,
+          winner
+        );
         returnValue = this.saveGame(game.gameId);
       }
     }
@@ -293,19 +309,27 @@ module.exports = {
     // Cerca la partita di scacchi
     var game = chessGames.find((game) => game.gameId == gameId);
 
-
-
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
-    const collection = db.collection("GamesRBC");    
-    
+    const collection = db.collection("GamesRBC");
+
     collection.insertOne({
       Player1: game.player1,
       Player2: game.player2,
       Player1Elo: game.player1.elo,
       Player2Elo: game.player2.elo,
-      Player1Gain: this.calculateEloChange(game.player1.elo, game.player2.elo, game.gameOver.winner === "p1" ? "p1" : "p2") - game.player1.elo,
-      Player2Gain: this.calculateEloChange(game.player2.elo, game.player1.elo, game.gameOver.winner === "p2" ? "p1" : "p2")  - game.player2.elo,
+      Player1Gain:
+        this.calculateEloChange(
+          game.player1.elo,
+          game.player2.elo,
+          game.gameOver.winner === "p1" ? "p1" : "p2"
+        ) - game.player1.elo,
+      Player2Gain:
+        this.calculateEloChange(
+          game.player2.elo,
+          game.player1.elo,
+          game.gameOver.winner === "p2" ? "p1" : "p2"
+        ) - game.player2.elo,
       matches: {
         mode: game.gameSettings.mode,
         seed: game.matches.seed,
@@ -377,11 +401,11 @@ module.exports = {
     let nuovoEloPlayer1 = 0;
     let nuovoEloPlayer2 = 0;
     if (outcome === "p1") {
-      nuovoEloPlayer1 = this.calculateEloChange(player1.elo, player2.elo, "p1");
-      nuovoEloPlayer2 = this.calculateEloChange(player2.elo, player1.elo, "p2");
+      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p1"));
+      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p2"));
     } else {
-      nuovoEloPlayer1 = this.calculateEloChange(player1.elo, player2.elo, "p2");
-      nuovoEloPlayer2 = this.calculateEloChange(player2.elo, player1.elo, "p1");
+      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p2"));
+      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p1"));
     }
 
     // Aggiorniamo i valori nel database

@@ -34,6 +34,7 @@ function LastGamesComponent({ username }) {
   // Fino a quando la fetch non ritorna i dati, mostriamo uno skeleton.
 
   const [lastGamesData, setLastGamesData] = React.useState(null);
+  const [playerRequesting, setPlayerRequesting] = React.useState(null); // Username dell'utente di chi è la pagina
   const [isLoading, setIsLoading] = React.useState(true);
   const [accountFound, setAccountFound] = React.useState(false);
   const [replayGameIndex, setReplayGameIndex] = useState(null);
@@ -50,6 +51,7 @@ function LastGamesComponent({ username }) {
           console.log(data);
           if (data.success) {
             setLastGamesData(data.lastGames);
+            setPlayerRequesting(data.playerRequesting);
             setAccountFound(true);
           }
           setIsLoading(false);
@@ -64,6 +66,7 @@ function LastGamesComponent({ username }) {
           console.log(data);
           if (data.success) {
             setLastGamesData(data.lastGames);
+            setPlayerRequesting(data.playerRequesting);
             setAccountFound(true);
           }
           setIsLoading(false);
@@ -111,29 +114,29 @@ function LastGamesComponent({ username }) {
               <Grid item xs={2}>
                 <Box display="flex" alignItems="center">
                   {game.matches.gameData.vincitore === "p1" ? (
-                    lastGamesData.playerRequesting === game.Player1.username ? (
+                    playerRequesting === game.Player1.username ? (
                       <>
                         <CheckCircle color="success" />
-                        <Typography>Won</Typography>
+                        <Typography>Won 2</Typography>
                       </>
                     ) : (
                       <>
                         <Error color="error" />
-                        <Typography>Lost</Typography>
+                        <Typography>Los 3t</Typography>
                       </>
                     )
-                  ) : lastGamesData.playerRequesting ===
+                  ) : (playerRequesting ===
                     game.Player2.username ? (
                     <>
                       <CheckCircle color="success" />
-                      <Typography>Won</Typography>
+                      <Typography>Won 1</Typography>
                     </>
                   ) : (
                     <>
                       <Error color="error" />
                       <Typography>Lost</Typography>
                     </>
-                  )}
+                  ))}
                 </Box>
               </Grid>
               <Grid item xs={5}>

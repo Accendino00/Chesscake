@@ -8,7 +8,6 @@ var {
   nonBlockingAutheticateJWT,
 } = require("../middleware/authorization");
 
-
 /**
  * Gestione della richiesta "/api/account/getAccountData"
  * 
@@ -22,107 +21,109 @@ var {
  * 
  */
 router.get("/getAccountData", authenticateJWT, function (req, res) {
-    // req.user dovrebbe essere impostato con il nome utente che dobbiamo cercare nel DB
-    const username = req.user.username;
+  // req.user dovrebbe essere impostato con il nome utente che dobbiamo cercare nel DB
+  const username = req.user.username;
 
-    // Se username non è definito allo ritorniamo 403 e un messaggio di errore
-    if (!username) {
-        res.status(403).send({
-            success: false,
-            message: "Non sei autorizzato",
-        });
-    }
+  // Se username non è definito allo ritorniamo 403 e un messaggio di errore
+  if (!username) {
+    res.status(403).send({
+      success: false,
+      message: "Non sei autorizzato",
+    });
+  }
 
-    getAccountData(username, res);
+  getAccountData(username, res);
 });
 
 // Questa è la versione che va a ricercare gli account dal db dato l'username
 router.get("/getAccountData/:username", function (req, res) {
-    let username = req.params.username;
-    
-    // Se username non è definito allo ritorniamo 403 e un messaggio di errore
-    if (!username) {
-        res.status(403).send({
-            success: false,
-            message: "Non sei autorizzato a richiedere questo URL senza essere loggato",
-        });
-    }
-    
-    getAccountData(username, res);
+  let username = req.params.username;
+
+  // Se username non è definito allo ritorniamo 403 e un messaggio di errore
+  if (!username) {
+    res.status(403).send({
+      success: false,
+      message:
+        "Non sei autorizzato a richiedere questo URL senza essere loggato",
+    });
+  }
+
+  getAccountData(username, res);
 });
 
-function getAccountData (username, res) {
-    // Prendiamo il profilo utente dal database
-    const usersCollection = clientMDB.db("ChessCake").collection("Users");
-    usersCollection.findOne({ username: username })
+function getAccountData(username, res) {
+  // Prendiamo il profilo utente dal database
+  const usersCollection = clientMDB.db("ChessCake").collection("Users");
+  usersCollection
+    .findOne({ username: username })
     .then((user) => {
-        if (!user) {
-            res.status(404).send({
-                success: false,
-                message: "Utente non trovato",
-            });
-        } else {
-            res.status(200).send({
-                success: true,
-                message: "Informazioni prese con successo",
-                accountData: {
-                    username: user.username,
-                    elo: user.rbcELO,
-                    winrate: 0.5,                       // Da fare usando una query
-                    currentRank: user.rbcCurrentRank,
-                    maxRank: user.rbcMaxRank,
-                    currentDailyRecord: "",             // Da fare usando una query
-                    maxDailyRecord: 3,                  // Da fare usando una query
-                }
-            });
-        }
-    }).catch((error) => {
-        res.status(500).send({
-            success: false,
-            message: "Errore interno",
+      if (!user) {
+        res.status(404).send({
+          success: false,
+          message: "Utente non trovato",
         });
+      } else {
+        res.status(200).send({
+          success: true,
+          message: "Informazioni prese con successo",
+          accountData: {
+            username: user.username,
+            elo: user.rbcELO,
+            winrate: 0.5, // Da fare usando una query
+            currentRank: user.rbcCurrentRank,
+            maxRank: user.rbcMaxRank,
+            currentDailyRecord: "", // Da fare usando una query
+            maxDailyRecord: 3, // Da fare usando una query
+          },
+          playerRequesting: username,
+        });
+      }
+    })
+    .catch((error) => {
+      res.status(500).send({
+        success: false,
+        message: "Errore interno",
+      });
     });
 }
 
 router.get("/getLastGames/:username", async function (req, res) {
-    const { ObjectId } = require('mongodb');
-    const users = clientMDB.db("ChessCake").collection('Users');
-    const games = clientMDB.db("ChessCake").collection('GamesRBC');
-    // Get the username from the URL
-    const username = req.params.username;
-    
-    // Controlliamo se l'utente esiste nel db facendo una query
-    let user = await users.findOne({ username: username });
+  const { ObjectId } = require("mongodb");
+  const users = clientMDB.db("ChessCake").collection("Users");
+  const games = clientMDB.db("ChessCake").collection("GamesRBC");
+  // Get the username from the URL
+  const username = req.params.username;
 
-    if (!user) {
-        return res.status(404).send({
-            success: false,
-            message: "User not found",
-        });
-    }
-    const userGames = await games.find({
-        $or: [
-            { "Player1.username": username },
-            { "Player2.username": username },
-        ]
-    }).toArray();
+  // Controlliamo se l'utente esiste nel db facendo una query
+  let user = await users.findOne({ username: username });
 
-    console.log(userGames)
+  if (!user) {
+    return res.status(404).send({
+      success: false,
+      message: "User not found",
+    });
+  }
+  const userGames = await games
+    .find({
+      $or: [{ "Player1.username": username }, { "Player2.username": username }],
+    })
+    .toArray();
 
-    // If username is not defined then return 403 and an error message
-    if (!username) {
-        return res.status(403).send({
-            success: false,
-            message: "Non sei autorizzato a richiedere questo URL senza essere loggato",
-        });
-    } else {
-        return res.status(200).send({
-            success: true,
-            message: "Informazioni prese con successo",
-            lastGames: userGames,
-            playerRequestiong: username,
-        });
-    }
+  // If username is not defined then return 403 and an error message
+  if (!username) {
+    return res.status(403).send({
+      success: false,
+      message:
+        "Non sei autorizzato a richiedere questo URL senza essere loggato",
+    });
+  } else {
+    return res.status(200).send({
+      success: true,
+      message: "Informazioni prese con successo",
+      lastGames: userGames,
+      playerRequesting: username,
+    });
+  }
 });
 
 module.exports = router;
