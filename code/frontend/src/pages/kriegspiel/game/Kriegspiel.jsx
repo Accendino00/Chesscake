@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import { Button, Box, Modal, Typography, Stack } from "@mui/material";
-import ChessGameStyles from "../ChessGameStyles";
-import Timer from "../timer/Timer";
+import GameStyles from "./GameStyles";
+import Timer from "../../reallybadchess/timer/Timer";
 import { Chess } from "chess.js";
 import {
   generateBoard,
@@ -15,8 +15,10 @@ import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
 import { CircularProgress } from "@mui/material";
 import ShareButton from "../../components/ShareButton";
+import { RemoveShoppingCartRounded } from "@mui/icons-material";
+import { TextField } from "@mui/material";
 
-function ReallyBadChessOnline() {
+function Kriegspiel() {
   // Hook generali e utili
   const navigate = useNavigate();
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -40,10 +42,10 @@ function ReallyBadChessOnline() {
   const [gameOver, setGameOver] = useState(false); // Se la partita è finita o no
   const [modalIsOpen, setModalIsOpen] = useState(false); // Se il modal di gameOver è aperto o no
   const [disableSurrender, setDisableSurrender] = useState(false); // Se il bottone di arrendersi è disabilitato o no
-
   // Nomi dei giocatori
   const [player1, setPlayer1] = useState("");
   const [player2, setPlayer2] = useState("");
+
 
   // Lato del giocatore
   const [playerSide, setPlayerSide] = useState("white"); // Metto che di standard è il bianco, ma poi verrà cambiato
@@ -51,9 +53,14 @@ function ReallyBadChessOnline() {
   // Se il secondo giocatore è arrivato - stampiamo qualcosa di diverso se si è ancora in attesa
   const [player2Arrived, setPlayer2Arrived] = useState(false);
 
+  const [umpire, setUmpire] = useState(""); // L'arbitro della partita
+  const [umpireAnswer, setUmpireAnswer] = useState(""); // La risposta dell'arbitro della partita
+  const [umpireFlag, setUmpireFlag] = useState(false); // Se l'arbitro ha risposto Try! Devi provare una cattura col pedone
+  const [lastMoveForCheck, setLastMoveTargetSquare] = useState(null); // L'ultima mossa per il check
+  const [lastMoveChessPiece, setLastMoveChessPiece] = useState(null); // L'ultima mossa per il check
   /**
    * Funzione che gestisce tutto quello che è interente al game,
-   * usando i dati che vengono ritornati da "api/reallybadchess/getGame/:gameid"
+   * usando i dati che vengono ritornati da "api/kriegspiel/getGame/:gameid"
    *
    * @param {object} response Il body della risposta
    * @returns
@@ -96,34 +103,82 @@ function ReallyBadChessOnline() {
       setGameData(response.game);
       let newChess = new Chess();
       newChess.load(response.game.chess._header.FEN);
-
-      setFen(newChess.fen());
+      
+      setFen(response.game.chess._header.FEN);
+      
       newChess.load(newChess.fen());
       setChess(newChess);
-      checkCheck();
+      // informazioni utili soprattutto per checkCheck()
+      setLastMoveTargetSquare(response.game.lastMoveTargetSquare);
+      setLastMoveChessPiece(response.game.lastMoveChessPiece);
+      
+      if (checkCheck()) {
+        console.log('checkcheck' + checkCheck())
+        setUmpire(checkCheck());
+      };
+
+      if (response.game.lastMove !== null) {
+        console.log('lastmove' + response.game.lastMove)
+        if (response.game.lastMove === 'w' && !checkCheck()) {
+          setUmpire("Black to move");
+        } else if (response.game.lastMove === 'b' && !checkCheck()) {
+          setUmpire("White to move");
+        }
+      }
 
       // Impostazione dei timer
       if (response.game.player1.username === username) {
         if (playerSide === "white") {
           setTimeBianco(response.game.player1.timer);
           setTimeNero(response.game.player2.timer);
+
         } else {
           setTimeBianco(response.game.player2.timer);
           setTimeNero(response.game.player1.timer);
+
+
         }
       } else {
         if (playerSide === "white") {
           setTimeBianco(response.game.player2.timer);
           setTimeNero(response.game.player1.timer);
+
+
         } else {
           setTimeBianco(response.game.player1.timer);
           setTimeNero(response.game.player2.timer);
+
+
         }
       }
-
+      
+      let length = response.game.chess._history.length;
+      if (length > 0) {
+        let history = response.game.chess._history;
+        let lastMove = history[length - 1];
+        
+        if (lastMove.move.captured !== undefined) {
+          let piecePosition = response.game.lastMoveTargetSquare;
+          
+          // if there is no check then the umpire says "Piece gone on " + piecePosition
+          if (lastMove.move.captured === 'p' && !checkCheck()) {
+            setUmpire("Pawn gone on " + piecePosition);
+          } else if (lastMove.move.captured !== 'p' && !checkCheck()){
+            setUmpire("Piece gone on " + piecePosition);
+          }
+          // if there is check then the umpire says "Piece gone on " + piecePosition + " and " + checkCheck()
+          // since its important to know where the piece was captured and what kind of check it is
+          else if (lastMove.move.captured === 'p' && checkCheck()) {
+            setUmpire("Pawn gone on " + piecePosition + " and " + checkCheck());
+          } else if (lastMove.move.captured !== 'p' && checkCheck()){
+            setUmpire("Piece gone on " + piecePosition + " and " + checkCheck());
+          }
+        }
+      }
       // Gestione nel caso di gameover
       if (response.game.gameOver.isGameOver) {
         setWinner(response.game.gameOver.winner == "p1" ? player1 : player2);
+        setUmpire("Checkmate");
         setModalIsOpen(true);
       }
     } else {
@@ -144,7 +199,7 @@ function ReallyBadChessOnline() {
         console.log(username);
         // Cose da fare se si è loggati, quindi poter giocare alla partita, etc.
         // Fetch iniziale per ottenere la partita
-        fetch(`/api/reallybadchess/getGame/${gameId}`, {
+        fetch(`/api/kriegspiel/getGame/${gameId}/user?player=${username}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -169,7 +224,7 @@ function ReallyBadChessOnline() {
     }
 
     const interval = setInterval(() => {
-      fetch(`/api/reallybadchess/getGame/${gameId}`, {
+      fetch(`/api/kriegspiel/getGame/${gameId}/user?player=${username}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -198,39 +253,80 @@ function ReallyBadChessOnline() {
     // Gestisco il fatto che non si possa muovere se non è il proprio turno
     // Questo evita richieste inutili
     if (
-      gameData.lastMove === playerSide ||
-      (gameData.lastMove == null && playerSide === "black")
+      (gameData.lastMove === playerSide ||
+        (gameData.lastMove == null && playerSide === "black"))
     ) {
       return;
     }
+    // se l'umpire ha risposto Try! e il giocatore non ha provato una mossa col pedone
+    // allora non si può muovere
+    else if ((chess.get(sourceSquare).type != 'p' && umpireFlag)) {
+      return;
+    }
+    // se l'umpire ha risposto Try! e il giocatore ha provato una mossa col pedone
+    // allora si può muovere
+    else if (chess.get(sourceSquare).type == 'p' && umpireFlag) {
+      setUmpireFlag(false);
 
-    fetch(`/api/reallybadchess/movePiece/${gameId}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Cookies.get("token")}`,
-      },
-      body: JSON.stringify({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: "q",
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          handleGetGameResponse(data);
-        }
+      fetch(`/api/kriegspiel/movePiece/${gameId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({
+          from: sourceSquare,
+          to: targetSquare,
+          promotion: "q",
+        }),
       })
-      .catch((err) => {
-        console.log(err);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            handleGetGameResponse(data);
+
+
+          }
+          else {
+            setUmpire("No")
+          }
+        })
+        .catch(() => {
+          setUmpire("Hell No")
+        });
+    } else {
+      fetch(`/api/kriegspiel/movePiece/${gameId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+        body: JSON.stringify({
+          from: sourceSquare,
+          to: targetSquare,
+          promotion: "q",
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            handleGetGameResponse(data);
+
+
+          }
+          else {
+            setUmpire("No")
+          }
+        })
+        .catch(() => {
+          setUmpire("Hell No")
+        });
+    }
   };
 
   // Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
-    
 
     // Se il turno non è del giocatore attuale allora non lo mostro
     if (
@@ -241,7 +337,9 @@ function ReallyBadChessOnline() {
     }
 
     // Imposto le mosse disponibile
-    setPossibleMoves(moves.map((move) => move.to));
+    if (!umpireFlag) {
+      setPossibleMoves(moves.map((move) => move.to));
+    }
   };
 
   const handleMouseOutSquare = () => {
@@ -250,7 +348,66 @@ function ReallyBadChessOnline() {
 
   function checkCheck() {
     if (chess.isCheck()) {
-      setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
+      // Imposto l'alone giallo del check sul Re solo se è il turno del giocatore,
+      // in modo da non dare informazioni al nemico
+      if(playerSide === 'w' && chess.turn() === 'w'){
+        setPieceSelected(getPiecePosition(chess, { type: 'k', color: 'w' }));
+      } else if(playerSide === 'b' && chess.turn() === 'b'){
+        setPieceSelected(getPiecePosition(chess, { type: 'k', color: 'b' }));
+      }
+      // Imposto le informazioni per l'umpire tra cui la posizione del Re in scacco e la posizione
+      // della pedina che ha mosso per metterlo in scacco
+      let kingArray = getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' });
+      let pos2 = kingArray[0];
+      let pos1 = lastMoveForCheck;
+      const fileToNumber = (fileChar, playerSide) => {
+        const fileNumber = fileChar.charCodeAt(0) - 'a'.charCodeAt(0) + 1;
+        return playerSide === 'w' ? fileNumber : 9 - fileNumber;
+      };
+      const rankToNumber = (rankChar) => {
+        return parseInt(rankChar, 10);
+      };
+      // Ottieni file e rank per entrambe le posizioni
+      const file1 = fileToNumber(pos1[0]);
+      const rank1 = rankToNumber(pos1[1]);
+      const file2 = fileToNumber(pos2[0]);
+      const rank2 = rankToNumber(pos2[1]);
+      // Check se la mossa è su una diagonale lunga
+      const isOnLongDiagonal = (file, rank) => {
+        // La diagonale lunga comprende le caselle in cui la somma degli indici di file e di rango è 9
+        // Questo è vero indipendentemente dal lato in cui si trova il giocatore
+        return file + rank === 9;
+      };
+      // Controlla se la mossa è su una diagonale
+      if (Math.abs(file1 - file2) === Math.abs(rank1 - rank2)) {
+        // Controlla se è una diagonale lunga
+        const isLongDiagonal = isOnLongDiagonal(file1, rank1) || isOnLongDiagonal(file2, rank2);
+
+        if (playerSide === 'w' && chess.turn !== 'w') {
+          return isLongDiagonal ? "Check on the short diagonal" : "Check on the long diagonal";
+        } else if (playerSide === 'b' && chess.turn !== 'b') { // playerSide === 'b'
+          // Per nero la board è flippata quindi dobbiamo invertire le file
+          const fileInverted = 9 - file1;
+          const isLongDiagonalBlack = isOnLongDiagonal(fileInverted, rank1) || isOnLongDiagonal(9 - file2, rank2);
+          return isLongDiagonalBlack ? "Check on the short diagonal" : "Check on the long diagonal";
+        }
+      }
+
+      // Check per un check sulla stessa riga o colonna
+      if (file1 === file2) {
+        console.log('alo')
+        return "Check on the vertical";
+      }
+      if (rank1 === rank2) {
+        return "Check on the horizontal";
+      }
+
+      // Check per un check da cavallo
+      if ((Math.abs(file1 - file2) === 2 && Math.abs(rank1 - rank2) === 1) ||
+        (Math.abs(file1 - file2) === 1 && Math.abs(rank1 - rank2) === 2)) {
+        return "Check by a knight";
+      }
+      return "No check";
     } else {
       setPieceSelected([]);
     }
@@ -258,7 +415,54 @@ function ReallyBadChessOnline() {
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
-  const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
+  const handleNavigatetoGame = () => navigate(`/play/kriegspiel/${gameId}`);
+
+
+
+  // rende i pezzi invisibili a seconda del lato del giocatore
+  const renderCustomPiece = () => {
+    if (playerSide == "b") {
+      return {
+        "wK": "({visibility: hidden})",
+        "wQ": "({visibility: hidden})",
+        "wR": "({visibility: hidden})",
+        "wB": "({visibility: hidden})",
+        "wN": "({visibility: hidden})",
+        "wP": "({visibility: hidden})",
+      };
+    } else {
+      return {
+        "bK": "({visibility: hidden})",
+        "bQ": "({visibility: hidden})",
+        "bR": "({visibility: hidden})",
+        "bB": "({visibility: hidden})",
+        "bN": "({visibility: hidden})",
+        "bP": "({visibility: hidden})",
+      }
+    }
+  };
+
+  // gestisce la domanda Any? e la risposta dell'arbitro, imposto una flag umpireFlag
+  // in modo da poter gestire la mossa del pedone
+  const handleAnyQuestion = () => {
+    const moves = chess.moves({ verbose: true });
+    console.log('moves' + moves[0].to)
+    const hasPawnCaptures = moves.some(move => move.piece === 'p' && move.flags.includes('c'));
+    const hasPawns = chess.fen().split(' ')[0].match(chess.turn() === 'w' ? 'P' : 'p');
+
+    if (!hasPawns) {
+      setUmpireAnswer('Hell no');
+      setUmpireFlag(false);
+    } else if (hasPawnCaptures) {
+      setUmpireAnswer('Try!');
+      setUmpireFlag(true);
+
+    } else {
+      setUmpireAnswer('No.');
+      setUmpireFlag(false);
+    }
+
+  };
 
   if (isTokenLoading || loginStatus === undefined) {
     return (
@@ -322,7 +526,7 @@ function ReallyBadChessOnline() {
             onClick={() => {
               // Copiare nella clipboard in path
               navigator.clipboard.writeText(
-                `http://localhost:3000/play/reallybadchess/${gameId}`
+                `http://localhost:3000/play/kriegspiel/${gameId}`
               );
             }}
           >
@@ -335,9 +539,9 @@ function ReallyBadChessOnline() {
   }
 
   return (
-    <Box sx={ChessGameStyles.everythingContainer}>
-      <Box sx={ChessGameStyles.backgroundWrapper}>
-        <Box sx={ChessGameStyles.boxTimer}>
+    <Box sx={GameStyles.everythingContainer}>
+      <Box sx={GameStyles.backgroundWrapper}>
+        <Box sx={GameStyles.boxTimer}>
           <Timer
             time={timeBianco}
             setTime={setTimeBianco}
@@ -356,7 +560,7 @@ function ReallyBadChessOnline() {
 
         {/* Modal quando finisce la partita */}
         <Modal open={modalIsOpen} onClose={handleCloseModal}>
-          <Box sx={ChessGameStyles.boxGameOver}>
+          <Box sx={GameStyles.boxGameOver}>
             <Stack spacing={2}>
               <Typography
                 variant="h5"
@@ -376,13 +580,14 @@ function ReallyBadChessOnline() {
               </Button>
 
               <ShareButton />
-              
+
             </Stack>
           </Box>
         </Modal>
 
-        <div style={ChessGameStyles.divChessBoard}>
+        <div style={GameStyles.divChessBoard}>
           <Chessboard
+            customPieces={renderCustomPiece()}
             position={fen}
             onPieceDrop={handleMove}
             boardOrientation={
@@ -416,7 +621,7 @@ function ReallyBadChessOnline() {
             }}
           />
         </div>
-        <Box sx={ChessGameStyles.boxControlButtons}>
+        <Box sx={GameStyles.boxControlButtons}>
           <Button onClick={handleNavigateToPlay}>Esci</Button>
           <Button
             variant="contained"
@@ -425,10 +630,10 @@ function ReallyBadChessOnline() {
             onClick={() => {
               setDisableSurrender(true);
 
-              // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
+              // Invio la fetch in POST a "/api/kriegspiel/surrender/:gameid"
               // se ritorna success == true, allora ho arreso con successo
 
-              fetch(`/api/reallybadchess/surrender/${gameId}`, {
+              fetch(`/api/kriegspiel/surrender/${gameId}`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -453,9 +658,22 @@ function ReallyBadChessOnline() {
             Arrenditi
           </Button>
         </Box>
+        <Box sx={GameStyles.boxUmpire}>
+          <Button variant="contained" onClick={handleAnyQuestion}>
+            Any?
+          </Button>
+          <Typography variant="h6">
+            Umpire Answer: {umpireAnswer}
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            {umpire}
+          </Typography>
+        </Box>
+
+
       </Box>
     </Box>
   );
 }
 
-export default ReallyBadChessOnline;
+export default Kriegspiel;

@@ -543,7 +543,7 @@ const ModeSelection = () => {
                   >
                     Lobbies
                   </Button>
-                  <CreateGameComponent duration={duration} />
+                  <CreateGameComponent duration={duration} mode = {mode}  />
                 </Box>
               ) : (
                 <Button

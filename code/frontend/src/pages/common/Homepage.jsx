@@ -68,6 +68,13 @@ function HomePage() {
                             Gioca <b style={{ marginLeft: "10px" }} >Really Bad Chess</b>
                         </Button>
                         <Button
+                            startIcon={<PlayCircleIcon />} // Add an icon to the button
+                            variant="contained"
+                            sx={buttonStyle}
+                            onClick={() => navigate('/play/kriegspiel/')}>
+                            Gioca <b style={{ marginLeft: "10px" }} >Kriegspiel</b>
+                        </Button>
+                        <Button
                             startIcon={<InsertChartIcon />} // Add an icon to the button
                             variant="contained"
                             sx={buttonStyle}

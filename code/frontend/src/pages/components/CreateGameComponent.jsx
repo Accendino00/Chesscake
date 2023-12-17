@@ -9,12 +9,13 @@ import { useState } from 'react';
 
 // TODO nome della lobby
 
-function CreateGameComponent({duration}) {
-    
-    const [message, setMessage] = React.useState('');
-
-    const navigate = useNavigate();
-    const handleCreateGame = () => {
+function CreateGameComponent({duration, mode}) {
+  
+  const [message, setMessage] = React.useState('');
+  const path = (mode == 'kriegspiel' ? 'kriegspiel' : 'reallybadchess'); 
+  const navigate = useNavigate();
+  const handleCreateGame = () => {
+      if( path == 'reallybadchess'){
         fetch('/api/reallybadchess/newGame', {
           method: 'POST',
           headers: {
@@ -23,37 +24,69 @@ function CreateGameComponent({duration}) {
           },
           body: JSON.stringify({
             settings: {
-              mode: "playerVsPlayerOnline",
+              mode: mode,
               duration: duration,
             },
           }),
         })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            console.log('Response Status:', response.status);
-            console.log('Response Headers:', response.headers);
-            return response.json();  // Parse the response as JSON and return the promise
-          })
-          .then(data => {
-            console.log('Data from server:', data)
-            if (data.success) {
-              navigate(`/play/reallybadchess/${data.gameId}`);
-            } else {
-              setMessage(data.message);
-              console.log(data.message);
-            }
-          });
-      };
-    
-    return (
-        <Button
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          console.log('Response Status:', response.status);
+          console.log('Response Headers:', response.headers);
+          return response.json();  // Parse the response as JSON and return the promise
+        })
+        .then(data => {
+          console.log('Data from server:', data)
+              if (data.success) {
+                navigate(`/play/reallybadchess/${data.gameId}`);
+              } else {
+                setMessage(data.message);
+                console.log(data.message);
+              }
+            });
+      }
+      else if( path == 'kriegspiel'){
+        fetch('/api/kriegspiel/newGame', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Cookies.get('token')}`
+          },
+          body: JSON.stringify({
+            settings: {
+              mode: mode,
+              duration: duration,
+            },
+          }),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          console.log('Response Status:', response.status);
+          console.log('Response Headers:', response.headers);
+          return response.json();  // Parse the response as JSON and return the promise
+        })
+        .then(data => {
+          console.log('Data from server:', data)
+              if (data.success) {
+                navigate(`/play/kriegspiel/${data.gameId}`);
+              } else {
+                setMessage(data.message);
+                console.log(data.message);
+              }
+            });
+        };
+  };
+        return (
+          <Button
           variant="contained"
           color="primary"
           onClick={() => handleCreateGame()}
           sx={{ mt: 2 }} // Add margin-top for better spacing
-        >
+          >
           Create Game
         </Button>
     );

@@ -69,6 +69,7 @@ app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 app.use("/api/reallybadchess", require(config.ROUTESERVIZI + "/reallybadchess"))
 app.use("/api/account/", require(config.ROUTESERVIZI + "/account"));
 app.use("/api/leaderboard", require(config.ROUTESERVIZI + "/leaderboard"));
+app.use("/api/kriegspiel/", require(config.ROUTESERVIZI + "/kriegspiel"));
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package

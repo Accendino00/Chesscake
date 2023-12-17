@@ -38,6 +38,11 @@ const NavbarData = [
     link: "/play/reallybadchess/",
   },
   {
+    title: " Kriegspiel",
+    icon: "PlayCircleIcon",
+    link: "/play/kriegspiel/",
+  },
+  {
     title: " Account",
     icon: "PersonIcon",
     link: "/play/account/",

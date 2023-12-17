@@ -327,7 +327,6 @@ function generateBoard(mode, rank) {
   }
   newChess.put({ type: "k", color: "b" }, "e8");
 
-
   // Inizializzazione
   return { board : newChess, seed: seed };
 }
@@ -501,6 +500,7 @@ const getPiecePosition = (game, piece) => {
       return row + column;
     });
 };
+
 
 const cloneChessBoard = (board) => {
   return new Chess(board.fen());

@@ -34,7 +34,7 @@ module.exports = {
     let gameId =
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
-
+    
     let board = new Chess();
     let seed = 0;
     board.clear();
@@ -46,7 +46,9 @@ module.exports = {
       values = generateBoard("dailyChallenge", 50);
     } else if (settings.mode == "playerVsPlayerOnline") {
       values = generateBoard("playerVsPlayerOnline", 50);
-    } else {
+    } else if (settings.mode == "kriegspiel") {
+      values = generateBoard("kriegspiel", 50);
+    } else{
       // In caso contrario lo generiamo in modo casuale
       values = generateBoard(null, settings.rank);
     }
@@ -101,6 +103,8 @@ module.exports = {
       },
 
       lastMove: null, // "w" o "b" per indicare chi ha mosso per ultimo
+      lastMoveTargetSquare: null, // Casella di arrivo dell'ultima mossa
+      lastMoveChessPiece: null, // Pezzo che è stato mosso per ultimo
 
       matches: {
         seed: seed, // Seed per generare la board
@@ -157,7 +161,6 @@ module.exports = {
   getGame: function (gameId) {
     // Cerca la partita di scacchi
     var game = chessGames.find((game) => game.gameId == gameId);
-
     // Ritorna la board
     return game;
   },
@@ -168,6 +171,20 @@ module.exports = {
       if (
         game.player2.username == null &&
         game.gameSettings.mode == "playerVsPlayerOnline"
+      ) {
+        emptyGames.push(game);
+      }
+    });
+
+    return emptyGames;
+  },
+
+  getKEmptyGames: function () {
+    let emptyGames = [];
+    chessGames.forEach((game) => {
+      if (
+        game.player2.username == null &&
+        game.gameSettings.mode == "kriegspiel"
       ) {
         emptyGames.push(game);
       }
@@ -243,6 +260,8 @@ module.exports = {
     try {
       chessMove = game.chess.move(mossa);
       game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
+      game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
+      game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
       game.chess._header.FEN = game.chess.fen();
     } catch (error) {
       return false;
