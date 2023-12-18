@@ -1,5 +1,5 @@
 var chessGames = require("../utils/chess/chessgames");
-
+const { Chess } = require("chess.js");
 var express = require("express");
 var config = require("../config");
 var { clientMDB } = require("../utils/dbmanagement");
@@ -154,6 +154,28 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
   const source = game.chess.get(move.from);
 
   try {
+    // Mi serve sapere se c'è un pin per mandare un messaggio di errore in modo che l'umpire dica "No" invece di "Hell no".
+    // controllo se c'è un pin ( se c'è un pezzo che non può muoversi perchè deve difendere il re ) 
+    // con un testGame in modo da non modificare il game originale nel caso la mossa abbia successo
+    // mi serve fare ciò dato che chessgames.movePiece ritorna solo un booleano ed è molto più facile e veloce
+    // fare questo controllo invece di cambiare la funzione per farla ritornare un oggetto.
+    const testGame = new Chess(game.chess.fen());
+    try{
+      testGame.move(move);
+    } catch (error) {
+      const errorMessage = error.message;
+      const invalidMoveMessage = errorMessage.split(":")[0];
+      console.log(invalidMoveMessage)
+      if(invalidMoveMessage === "Invalid move"){
+        res.status(400).send({
+          success: false,
+          game: resizeGame(game),
+          message: "Invalid move",
+        });
+        return;
+      }
+    }
+
     const result = chessGames.movePiece(gameId, move);
 
     if (result) {
@@ -199,7 +221,9 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
       }
     }
   } catch (error) {
-    if (error.message === "Invalid move") {
+      const errorMessage = error.message;
+      const invalidMoveMessage = errorMessage.split(":")[0];
+      if(invalidMoveMessage === "Invalid move"){
       res.status(400).send({
         success: false,
         message: "Invalid move",

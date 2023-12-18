@@ -319,7 +319,7 @@ function Kriegspiel() {
           if (data.success) {
             handleGetGameResponse(data);
             setUmpireMove("")
-          } else if(data.message === "A piece is blocking the way") {
+          } else if(data.message === "A piece is blocking the way" || data.message === "Invalid move") {
             console.log('provano')
             setUmpireMove("No")
           } else {
