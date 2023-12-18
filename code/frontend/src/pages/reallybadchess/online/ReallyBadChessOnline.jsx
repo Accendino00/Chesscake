@@ -10,7 +10,7 @@ import {
   getPiecePosition,
   cloneChessBoard,
 } from "./boardFunctions";
-
+import { findBestMove } from "./movesFunctions";
 import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
 import { CircularProgress } from "@mui/material";
@@ -58,7 +58,7 @@ function ReallyBadChessOnline() {
    * @param {object} response Il body della risposta
    * @returns
    */
-  async function handleGetGameResponse(response) {
+  function handleGetGameResponse(response) {
     // Dobbiamo aggiornare i nuovi dati
     if (response.success) {
       // Se non ci sono entrambi i player, allora non imposto nulla
@@ -72,7 +72,6 @@ function ReallyBadChessOnline() {
       }
 
       // Gestione aggiornamento dati permanenti della partita
-
       // Imposto i dati sugli utenti se sono diversi da quelli attuali
       if (response.game.player1.username !== player1) {
         setPlayer1(response.game.player1.username);
@@ -90,42 +89,53 @@ function ReallyBadChessOnline() {
           setPlayerSide(response.game.player2.side);
         }
       }
-
-      // Gestione aggiornamento dati temporanei della partita
-
-      setGameData(response.game);
-      let newChess = new Chess();
-      newChess.load(response.game.chess._header.FEN);
-
-      setFen(newChess.fen());
-      newChess.load(newChess.fen());
-      setChess(newChess);
-      checkCheck();
-
+      
       // Impostazione dei timer
-      if (response.game.player1.username === username) {
-        if (playerSide === "white") {
-          setTimeBianco(response.game.player1.timer);
-          setTimeNero(response.game.player2.timer);
-        } else {
-          setTimeBianco(response.game.player2.timer);
-          setTimeNero(response.game.player1.timer);
-        }
-      } else {
-        if (playerSide === "white") {
-          setTimeBianco(response.game.player2.timer);
-          setTimeNero(response.game.player1.timer);
-        } else {
-          setTimeBianco(response.game.player1.timer);
-          setTimeNero(response.game.player2.timer);
-        }
-      }
+      // if (response.game.player1.username === username) {
+      //   if (playerSide === "white") {
+      //     setTimeBianco(response.game.player1.timer);
+      //     setTimeNero(response.game.player2.timer);
+      //   } else {
+      //     setTimeBianco(response.game.player2.timer);
+      //     setTimeNero(response.game.player1.timer);
+      //   }
+      // } else {
+      //   if (playerSide === "white") {
+      //     setTimeBianco(response.game.player2.timer);
+      //     setTimeNero(response.game.player1.timer);
+      //   } else {
+      //     setTimeBianco(response.game.player1.timer);
+      //     setTimeNero(response.game.player2.timer);
+      //   }
+      // }
+      setTimeBianco(response.game.player1.timer);
+      setTimeNero(response.game.player2.timer);
+      
+
+      // Setta il gamedata con response.game
+      setGameData(response.game);
+      let chessTaken = new Chess();
+      chessTaken.load(response.game.chess._header.FEN);
+      // Gestione aggiornamento dati temporanei della partita
+      // Clona chess da response.game.chess in chess con setChess
+      setChess(chessTaken);
+      if(chess)
+        chess.load(chessTaken.fen());
+      // Setta il Fen di setFen con il fen del chess appena creato
+      setFen(chessTaken.fen());
+      checkCheck();
+      setCurrentTurn(response.game.chess._turn);
+      
+
 
       // Gestione nel caso di gameover
       if (response.game.gameOver.isGameOver) {
+        if(response.game.gameOver.winner == "p1")
+          handleVictory();
         setWinner(response.game.gameOver.winner == "p1" ? player1 : player2);
         setModalIsOpen(true);
       }
+
     } else {
       // Non dobbiamo aggiornare dati, dobbiamo ritornare un messaggio di errore
       console.log("Errore nel fetch della partita: ", response.message);
@@ -183,7 +193,6 @@ function ReallyBadChessOnline() {
           return response.json();
         })
         .then((data) => {
-          console.log(data);
           handleGetGameResponse(data);
         })
         .catch((err) => {
@@ -194,23 +203,55 @@ function ReallyBadChessOnline() {
     return () => clearInterval(interval);
   }, [gameData, isTokenLoading, loginStatus, gameId, username]);
 
-  const handleMove = (sourceSquare, targetSquare) => {
+  useEffect(() => {
+    if (gameData != null) {
+      if (gameData.chess._turn === gameData.player2.side) {
+        setTimeout(() => {
+          let chosenMove = chess.moves({ verbose: true })[Math.floor(Math.random() * chess.moves().length)];
+          findBestMove(chess.fen(), 2, 0)
+            .then((Move) => {
+              console.log(Move);
+              makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
+            })
+            .catch((err) => {
+              console.log(err);
+              makeMove(chosenMove.from, chosenMove.to, player2);
+            });
+        }, 2000);
+      }
+    }
+  }, [currentTurn != playerSide]);
+
+  const handleMove = async (sourceSquare, targetSquare) => {
+    await makeMove(sourceSquare, targetSquare, player1);
+  };
+
+  
+  /**
+   * Fa una mossa nel da inviare a movePiece
+   * 
+   * @param {string} sourceSquare - Square di partenza della mossa.
+   * @param {string} targetSquare - Square di arrivo della mossa.
+   */
+
+  const makeMove = async (sourceSquare, targetSquare, username) => {
     // Gestisco il fatto che non si possa muovere se non è il proprio turno
     // Questo evita richieste inutili
-    if (
-      gameData.lastMove === playerSide ||
-      (gameData.lastMove == null && playerSide === "black")
-    ) {
-      return;
-    }
-
-    fetch(`/api/reallybadchess/movePiece/${gameId}`, {
+    // if (
+    //   gameData.lastMove === playerSide ||
+    //   (gameData.lastMove == null && playerSide === "black")
+    // ) {
+    // if (gameData.lastMove === playerSide) {
+    //   return;
+    // }
+    await fetch(`/api/reallybadchess/movePiece/${gameId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${Cookies.get("token")}`,
       },
       body: JSON.stringify({
+        username: username,
         from: sourceSquare,
         to: targetSquare,
         promotion: "q",
@@ -225,8 +266,27 @@ function ReallyBadChessOnline() {
       .catch((err) => {
         console.log(err);
       });
-  };
+  // };
+}
 
+  const handleVictory = async () => {
+    try {
+      const response = await fetch(`/api/reallybadchess/saveDailyChallengeResults/${gameId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        console.log("Salvato con successo");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+    
   // Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
@@ -249,12 +309,16 @@ function ReallyBadChessOnline() {
   };
 
   function checkCheck() {
-    if (chess.isCheck()) {
-      setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
-    } else {
-      setPieceSelected([]);
+    if (chess!=null){
+      if (chess.isCheck()) {
+        setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
+      } else {
+        setPieceSelected([]);
+      }
     }
   }
+
+  
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
@@ -341,14 +405,14 @@ function ReallyBadChessOnline() {
           <Timer
             time={timeBianco}
             setTime={setTimeBianco}
-            shouldRun={gameData.lastMove !== playerSide}
+            shouldRun={currentTurn === playerSide}
             playerColor={playerSide === "w" ? "white" : "black"}
             justForDisplay={true}
           />
           <Timer
             time={timeNero}
             setTime={setTimeNero}
-            shouldRun={gameData.lastMove === playerSide}
+            shouldRun={currentTurn !== playerSide}
             playerColor={playerSide === "w" ? "black" : "white"}
             justForDisplay={true}
           />
