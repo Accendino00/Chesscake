@@ -119,13 +119,9 @@ router.get("/getGame/:gameId/user", authenticateJWT, async (req, res) => {
 });
 
 router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
-  // Prendiamo il gameId
   const { gameId } = req.params;
-
-  // Prendiamo il game dal database
   const game = chessGames.getGame(gameId);
 
-  // Se il game non esiste, allora ritorniamo un errore
   if (!game) {
     return res.status(404).send({
       success: false,
@@ -133,82 +129,91 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
     });
   }
 
-  // Controlliamo che l'utenza sia corretta
-  if (
-    req.user &&
+  if (req.user &&
     req.user.username !== game.player1.username &&
-    req.user.username !== game.player2.username
-  ) {
+    req.user.username !== game.player2.username) {
     return res.status(403).send({
       success: false,
       message: "Unauthorized",
     });
   }
 
-  // Imposto il "side" del giocatore che sta cercando di fare la mossa
-  let side = null;
-  if (req.user.username === game.player1.username) {
-    side = game.player1.side;
-  } else {
-    side = game.player2.side;
-  }
+  let side = req.user.username === game.player1.username ? game.player1.side : game.player2.side;
 
-  // controllo in modo che il giocatore nero non possa
-  // muovere pedine bianche e nere
-  if (
-    // Se il giocatore bianco prova a fare una mossa quando l'ultimo turno era suo
-    (game.lastMove === "w" && side === "w") ||
-    // Se il giocatore nero prova a fare una mossa quando l'ultimo turno era suo
+  if ((game.lastMove === "w" && side === "w") ||
     (game.lastMove === "b" && side === "b") ||
-    // Se il giocatore nero prova a fare una mossa quando non c'è ancora stato nessun turno
-    (game.lastMove === null && side === "b")
-  ) {
+    (game.lastMove === null && side === "b")) {
     return res.status(400).send({
       success: false,
       game: resizeGame(game),
-      message: "Its not your turn",
+      message: "It's not your turn",
     });
   }
 
-  // Prendiamo la mossa
   const move = req.body;
+  const source = game.chess.get(move.from);
 
   try {
-    // Facciamo la mossa
     const result = chessGames.movePiece(gameId, move);
 
-    // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
-    // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
     if (result) {
       const updatedGame = chessGames.getGame(gameId);
-
       res.status(200).send({
         success: true,
         game: resizeGame(updatedGame),
       });
     } else {
-      res.status(200).send({
-        success: false,
-        game: resizeGame(game),
-      });
+      let blocked = false;
+      if (source && source.type !== 'n') {
+        const sourceFile = move.from.charCodeAt(0);
+        const sourceRank = parseInt(move.from[1], 10);
+        const targetFile = move.to.charCodeAt(0);
+        const targetRank = parseInt(move.to[1], 10);
+  
+        const fileStep = Math.sign(targetFile - sourceFile);
+        const rankStep = Math.sign(targetRank - sourceRank);
+  
+        let currentFile = sourceFile + fileStep;
+        let currentRank = sourceRank + rankStep;
+  
+        while (currentFile !== targetFile || currentRank !== targetRank) {
+          if (game.chess.get(String.fromCharCode(currentFile) + currentRank)) {
+            console.log("A piece is blocking the way");
+            blocked = true;
+            break;
+          }
+          currentFile += fileStep;
+          currentRank += rankStep;
+        }
+      } if(blocked){
+        res.status(200).send({
+          success: false,
+          game: resizeGame(game),
+          message: "A piece is blocking the way"
+        });
+      } else {
+        res.status(200).send({
+          success: false,
+          game: resizeGame(game),
+        });
+      }
     }
   } catch (error) {
-    // Handle the invalid move exception
     if (error.message === "Invalid move") {
-      return res.status(400).send({
+      res.status(400).send({
         success: false,
         message: "Invalid move",
       });
+    } else {
+      console.error("Unhandled exception:", error);
+      res.status(500).send({
+        success: false,
+        message: "Internal server error",
+      });
     }
-
-    // Handle other exceptions if needed
-    console.error("Unhandled exception:", error);
-    return res.status(500).send({
-      success: false,
-      message: "Internal server error"
-    });
   }
 });
+
 
 router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
   // Prendiamo il gameId

@@ -53,9 +53,10 @@ function Kriegspiel() {
   // Se il secondo giocatore è arrivato - stampiamo qualcosa di diverso se si è ancora in attesa
   const [player2Arrived, setPlayer2Arrived] = useState(false);
 
-  const [umpire, setUmpire] = useState(""); // L'arbitro della partita
-  const [umpireAnswer, setUmpireAnswer] = useState(""); // La risposta dell'arbitro della partita
+  const [umpire, setUmpire] = useState("White to move"); // L'arbitro della partita
+  const [umpireAnswer, setUmpireAnswer] = useState("You didnt ask anything yet!"); // La risposta dell'arbitro della partita
   const [umpireFlag, setUmpireFlag] = useState(false); // Se l'arbitro ha risposto Try! Devi provare una cattura col pedone
+  const [umpireMove, setUmpireMove] = useState(""); // Se la tua mossa è valida o no
   const [lastMoveForCheck, setLastMoveTargetSquare] = useState(null); // L'ultima mossa per il check
   const [lastMoveChessPiece, setLastMoveChessPiece] = useState(null); // L'ultima mossa per il check
   /**
@@ -263,6 +264,11 @@ function Kriegspiel() {
     else if ((chess.get(sourceSquare).type != 'p' && umpireFlag)) {
       return;
     }
+    // se il giocatore sta muovendo il pedone in avanti senza tentare la cattura
+    // e l'umpire ha risposto Try! allora non si può muovere
+    else if (chess.get(sourceSquare).type == 'p' && umpireFlag && sourceSquare.split("")[0] == targetSquare.split("")[0]) {
+      return;
+    }
     // se l'umpire ha risposto Try! e il giocatore ha provato una mossa col pedone
     // allora si può muovere
     else if (chess.get(sourceSquare).type == 'p' && umpireFlag) {
@@ -284,15 +290,16 @@ function Kriegspiel() {
         .then((data) => {
           if (data.success) {
             handleGetGameResponse(data);
-
-
+            setUmpireMove("");
+          } else if(data.message == "A piece is blocking the way") {
+            setUmpireMove("No")
           }
           else {
-            setUmpire("No")
+            setUmpireMove("Hell no")
           }
         })
         .catch(() => {
-          setUmpire("Hell No")
+          setUmpireMove("Hell no")
         });
     } else {
       fetch(`/api/kriegspiel/movePiece/${gameId}`, {
@@ -311,15 +318,16 @@ function Kriegspiel() {
         .then((data) => {
           if (data.success) {
             handleGetGameResponse(data);
-
-
-          }
-          else {
-            setUmpire("No")
+            setUmpireMove("")
+          } else if(data.message === "A piece is blocking the way") {
+            console.log('provano')
+            setUmpireMove("No")
+          } else {
+            setUmpireMove("Hell no")
           }
         })
         .catch(() => {
-          setUmpire("Hell No")
+          setUmpireMove("Hell no")
         });
     }
   };
@@ -595,8 +603,8 @@ function Kriegspiel() {
               playerSide === "w" ? "white" : "black"
             }
             width={"50vh"}
-            onMouseOverSquare={handleMouseOverSquare}
-            onMouseOutSquare={handleMouseOutSquare}
+            //onMouseOverSquare={handleMouseOverSquare}
+            //onMouseOutSquare={handleMouseOutSquare}
             customSquareStyles={{
               ...possibleMoves.reduce(
                 (a, c) => ({
@@ -667,6 +675,9 @@ function Kriegspiel() {
           </Typography>
           <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             {umpire}
+          </Typography>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            {umpireMove}
           </Typography>
         </Box>
 

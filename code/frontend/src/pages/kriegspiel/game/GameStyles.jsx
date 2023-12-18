@@ -71,7 +71,7 @@ const ChessGameStyles = {
         justifyContent: "flex",
         alignItems: "center",
         flexDirection: "column",
-        height: "10vh",
+        height: "11vh",
     },
 }
 

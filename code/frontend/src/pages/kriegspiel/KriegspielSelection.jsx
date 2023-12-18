@@ -136,6 +136,101 @@ function KriegspielSelection() {
           </Button>
         </Box>
         </Paper>
+        <div className="wrapperOfAccordion">
+            <Accordion
+              disableGutters
+              className="custom-accordion"
+              defaultExpanded={true}
+            >
+              <AccordionSummary
+                expandIcon={
+                  <ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />
+                }
+                style={{
+                  flexDirection: "row",
+                  "& .MuiAccordionSummaryExpandIconWrapper.MuiExpanded": {
+                    transform: "rotate(90deg)",
+                  },
+                }}
+              >
+                <Typography
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                    margin: "0px !important",
+                  }}
+                >
+                  <span>Informazioni</span>
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails
+                style={{
+                  borderTop: "1px solid rgba(0, 0, 0, .125)",
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: "0.8em",
+                  }}
+                  component={"span"}
+                >
+                  <b>
+                    Kriegspiel
+                  </b>{" "}
+                  è una variante del gioco degli scacchi, in cui i pezzi del nemico sono invisibili,
+                  
+                  <br />
+                  Il resto del gioco funziona quasi nello stesso modo degli
+                  scacchi normali, l'unica eccezione è che oltre ai 2 giocatori,
+                  c'è un terzo giocate o computer che lavora come "umpire", o arbitro.
+                  L'arbitro ha il compito di controllare che le mosse siano valide e di
+                  comunicare ai giocatori vari eventi.
+                  Gli eventi che l'arbitro comunica sono:
+                  <ul style={{ margin: "0px", paddingLeft: "20px" }}>
+                    <li>
+                      White [or Black] to move.
+                    </li>
+                    <li>
+                      Pawn gone on *square*
+                    </li>
+                    <li>
+                    Piece gone on *square*
+                    </li>
+                    <li>
+                      No/Hell no - quando la mossa è illegale
+                    </li>
+                    <li>
+                      Check on the vertical/horizontal/long diagonal/short diagonal/by a Knight
+                    </li>
+                    <li>
+                      Checkmate
+                    </li>
+                  </ul>
+                  <br />
+                  Il giocatore può inoltre chiedere all'arbitro, premendo il tasto "Any?"
+                  se è possibile una cattura col Pedone. L'arbitro rispondera con:
+                  <ul>
+                    <li>
+                      "Try!" - se la cattura è possibile, in questo caso il giocatore
+                      è obbligato a tentare la cattura. Se fallisce, è libero di muovere 
+                      un altro pezzo.
+                    </li>
+                    <li>
+                      "No!" - se la cattura non è possibile.
+                    </li>
+                    <li>
+                      "Hell no!" - se non ci sono più pedoni del giocatore sulla scacchiera.
+                    </li>
+                  </ul>
+                  Il gioco è stato ideato da Henry Michael Temple nel 1899, basandosi sull'originale
+                  Kriegsspiel del 1812. Su Internet Chess Club, è chiamato Wild 16.
+                  <br /> <br />
+                </Typography>
+              </AccordionDetails>
+            </Accordion>
+            </div>
     </Box>
   )}
   </>)
