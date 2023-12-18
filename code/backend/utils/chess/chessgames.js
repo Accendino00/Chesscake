@@ -43,7 +43,7 @@ module.exports = {
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      values = generateBoard("dailyChallenge", 50);
+      values = generateBoardWithSeed("dailyChallenge", 50);
     } else if (settings.mode == "playerVsPlayerOnline") {
       values = generateBoard("playerVsPlayerOnline", 50);
     } else if (settings.mode == "kriegspiel") {
@@ -108,7 +108,7 @@ module.exports = {
 
       matches: {
         seed: seed, // Seed per generare la board
-        dataOraInizio: new Date(), // Data e ora di inizio della partita
+        dataOraInizio: new Date().toISOString(), // Data e ora di inizio della partita
         dataOraFine: null, // Data e ora di fine della partita
       },
 
@@ -254,23 +254,25 @@ module.exports = {
   movePiece: function (gameId, mossa) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
-
     // Catch nel caso la mossa risulti non valida
+    let check = null;
     let chessMove = null;
     try {
-      chessMove = game.chess.move(mossa);
+      chessMove = new Chess(game.chess.fen());
+      check = chessMove.move(mossa);
+      game.chess = new Chess();
+      game.chess = chessMove;
+      game.chess._header.FEN = chessMove.fen();
       game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
       game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
       game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
-      game.chess._header.FEN = game.chess.fen();
     } catch (error) {
       return false;
     }
-
     // Se la mossa è valida
-    if (chessMove !== null) {
+    if (check !== null) {
       let currentPlayerTurn =
-        chessMove.color === game.player1.side ? "p1" : "p2";
+        chessMove._turn === game.player1.side ? "p1" : "p2";
 
       // Controlla se c'è uno scacco matto
       if (game.chess.isCheckmate()) {
@@ -317,12 +319,21 @@ module.exports = {
           }, 1000);
         }
       }
-
+      chessGames = chessGames.filter((match) => match.gameId !== gameId);
+      chessGames.push(game);
       return true; // Mossa riuscita
     } else {
-      return false; // Mossa non valida
+      return false; // Mossa non valida"
     }
   },
+
+  /**
+   * Funzione che prende i risultati di una partita DailyChallenge e li salva nel database
+   *
+   * @param {string} gameId
+   * @param {string} move
+   * @returns true se la mossa è stata aggiunta, false altrimenti
+   */
 
   saveGame: function (gameId) {
     // Cerca la partita di scacchi
@@ -357,14 +368,14 @@ module.exports = {
         board: generateBoardWithSeed(
           game.matches.seed,
           game.gameSettings.rank
-        ).fen(),
+        ).board._header.FEN,
         gameData: {
           turniBianco: game.chess
             .history()
-            .filter((move, index) => index % 2 === 0).length,
+            .filter((_, index) => index % 2 === 0).length,
           turniNero: game.chess
             .history()
-            .filter((move, index) => index % 2 === 1).length,
+            .filter((_, index) => index % 2 === 1).length,
           rankUsato: game.gameSettings.rank,
           vincitore: game.gameOver.winner,
           tipoVittoria: {
@@ -479,4 +490,5 @@ module.exports = {
       { $set: { rbcCurrentRank: nuovoRankPlayer1 } }
     );
   },
+
 };

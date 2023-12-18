@@ -172,7 +172,8 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
 
   // Imposto il "side" del giocatore che sta cercando di fare la mossa
   let side = null;
-  if (req.user.username === game.player1.username) {
+  const { username } = req.body;
+  if (username === game.player1.username) {
     side = game.player1.side;
   } else {
     side = game.player2.side;
@@ -206,7 +207,6 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
     // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
     if (result) {
       const updatedGame = chessGames.getGame(gameId);
-
       res.status(200).send({
         success: true,
         game: resizeGame(updatedGame),
@@ -287,40 +287,50 @@ router.post(
   nonBlockingAutheticateJWT,
   async (req, res) => {
     // Prendiamo il gameId
-    const { gameId } = req.params;
+    // Prendiamo il gameId
+  const { gameId } = req.params;
 
-    // Prendiamo il game dal database
-    const game = chessGames.getGame(gameId);
+  // Prendiamo il game dal database
 
-    // Se il game non esiste, allora ritorniamo un errore
-    if (!game) {
-      return res.status(404).send({
-        success: false,
-        message: "Game not found",
-      });
-    }
-    // Controlliamo che l'utenza sia corretta
-    if (
-      req.user &&
-      req.user.username !== game.player1.username &&
-      req.user.username !== game.player2.username
-    ) {
-      return res.status(403).send({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
 
-    // Prendiamo il risultato
-    const { result } = req.body;
-
-    // Salviamo i risultati
-    chessGames.saveDailyChallengeResults(gameId);
-
-    // Ritorniamo il game
-    res.status(200).send({
-      success: true,
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
     });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Imposto il "side" del giocatore che sta cercando di fare la mossa
+  let winnerSide = null;
+  if (req.user.username === game.player1.username) {
+    winnerSide = "p2";
+  } else {
+    winnerSide = "p1";
+  }
+
+  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "victory");
+
+  // Ritorniamo il game
+  res.send({
+    success: returnOfGameOver,
+    game: resizeGame(game)
+  });
+    
   }
 );
 
