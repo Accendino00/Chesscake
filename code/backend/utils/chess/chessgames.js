@@ -272,7 +272,8 @@ module.exports = {
     // Se la mossa è valida
     if (check !== null) {
       let currentPlayerTurn =
-        chessMove._turn === game.player1.side ? "p1" : "p2";
+        game.chess._turn === game.player1.side ? "p2" : "p1";
+      let otherPlayerTurn = currentPlayerTurn === "p1" ? "p2" : "p1";
 
       // Controlla se c'è uno scacco matto
       if (game.chess.isCheckmate()) {
@@ -302,7 +303,9 @@ module.exports = {
               clearInterval(game.player1.interval);
 
               // Gestisci il timeout del giocatore 1 (sconfitta)
-              this.handleGameOver(game, "p2", "timeout");
+              if (!game.gameOver.isGameOver) {
+                this.handleGameOver(game, "p1", "timeout");
+              }
             }
           }, 1000);
         } else {
@@ -314,7 +317,9 @@ module.exports = {
               clearInterval(game.player2.interval);
 
               // Gestisci il timeout del giocatore 2 (sconfitta)
-              this.handleGameOver(game, "p1", "timeout");
+              if (!game.gameOver.isGameOver) {
+                this.handleGameOver(game, "p2", "timeout");
+              }
             }
           }, 1000);
         }

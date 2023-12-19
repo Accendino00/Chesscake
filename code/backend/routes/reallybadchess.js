@@ -283,7 +283,7 @@ router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
 
 
 router.post(
-  "/saveDailyChallengeResults/:gameId",
+  "/saveGame/:gameId",
   nonBlockingAutheticateJWT,
   async (req, res) => {
     // Prendiamo il gameId
@@ -316,18 +316,13 @@ router.post(
   }
 
   // Imposto il "side" del giocatore che sta cercando di fare la mossa
-  let winnerSide = null;
-  if (req.user.username === game.player1.username) {
-    winnerSide = "p2";
-  } else {
-    winnerSide = "p1";
-  }
+  let winnerSide = game.gameOver.winner;
 
   let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "checkmate");
 
   // Ritorniamo il game
   res.send({
-    success: returnOfGameOver,
+    success: true,
     game: resizeGame(game)
   });
     

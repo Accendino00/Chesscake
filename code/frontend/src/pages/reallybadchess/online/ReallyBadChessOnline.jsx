@@ -33,7 +33,7 @@ function ReallyBadChessOnline() {
   const [pieceSelected, setPieceSelected] = useState([]); // La pedina selezionata
   const [fen, setFen] = useState(); // Il "fen" della partita
 
-  const [currentTurn, setCurrentTurn] = useState("white"); // Per indicare di chi è il turno attuale
+  const [currentTurn, setCurrentTurn] = useState("w"); // Per indicare di chi è il turno attuale
 
   // Cose inerenti al gameOver
   const [winner, setWinner] = useState(null); // Il vincitore della partita
@@ -63,82 +63,87 @@ function ReallyBadChessOnline() {
     // Dobbiamo aggiornare i nuovi dati
     if (response.success) {
       // Se non ci sono entrambi i player, allora non imposto nulla
-      if (
-        response.game.player1.username === null ||
-        response.game.player2.username === null
-      ) {
-        return;
-      } else {
-        setPlayer2Arrived(true);
-      }
-
-      // Gestione aggiornamento dati permanenti della partita
-      // Imposto i dati sugli utenti se sono diversi da quelli attuali
-      if (response.game.player1.username !== player1) {
-        setPlayer1(response.game.player1.username);
-      }
-      if (response.game.player2.username !== player2) {
-        setPlayer2(response.game.player2.username);
-      }
-      // Imposto il player side se è diverso da quello attuale
-      if (response.game.player1.username === username) {
-        if (response.game.player1.side !== playerSide) {
-          setPlayerSide(response.game.player1.side);
+      if(!gameOver){
+        if (
+          response.game.player1.username === null ||
+          response.game.player2.username === null
+        ) {
+          return;
+        } else {
+          setPlayer2Arrived(true);
         }
-      } else {
-        if (response.game.player2.side !== playerSide) {
-          setPlayerSide(response.game.player2.side);
+
+        // Gestione aggiornamento dati permanenti della partita
+        // Imposto i dati sugli utenti se sono diversi da quelli attuali
+        if (response.game.player1.username !== player1) {
+          setPlayer1(response.game.player1.username);
+        }
+        if (response.game.player2.username !== player2) {
+          setPlayer2(response.game.player2.username);
+        }
+        // Imposto il player side se è diverso da quello attuale
+        if (response.game.player1.username === username) {
+          if (response.game.player1.side !== playerSide) {
+            setPlayerSide(response.game.player1.side);
+          }
+        } else {
+          if (response.game.player2.side !== playerSide) {
+            setPlayerSide(response.game.player2.side);
+          }
+        }
+        
+        // Impostazione dei timer
+        if (response.game.player1.username === username) {
+          if (playerSide === "white") {
+            setTimeBianco(response.game.player1.timer);
+            setTimeNero(response.game.player2.timer);
+          } else {
+            setTimeBianco(response.game.player2.timer);
+            setTimeNero(response.game.player1.timer);
+          }
+        } else {
+          if (playerSide === "white") {
+            setTimeBianco(response.game.player2.timer);
+            setTimeNero(response.game.player1.timer);
+          } else {
+            setTimeBianco(response.game.player1.timer);
+            setTimeNero(response.game.player2.timer);
+          }
+        }
+        
+        
+
+        // Setta il gamedata con response.game
+        setGameData(response.game);
+        let chessTaken = new Chess();
+        chessTaken.load(response.game.chess._header.FEN);
+
+        // Gestione aggiornamento dati temporanei della partita
+        setChess(chessTaken);
+        if(chess)
+          chess.load(chessTaken.fen());
+        
+        // Setta il Fen di setFen con il fen del chess appena creato
+        setFen(chessTaken.fen());
+        checkCheck();
+        setCurrentTurn(response.game.chess._turn);
+        
+
+
+        // Gestione nel caso di gameover
+        if (response.game.gameOver.isGameOver) {
+          setGameOver(true);
+          // if(response.game.gameOver.winner == "p1")
+          handleVictory().then((gameReturned) => {
+            if (gameReturned && gameReturned.game && gameReturned.game.gameOver) {
+              console.log(JSON.stringify(gameReturned.game.gameOver));
+              const winner = gameReturned.game.gameOver.winner === "p1" ? gameData.player1.username : gameData.player2.username;
+              setWinner(winner);
+              setModalIsOpen(true);
+            }
+          });
         }
       }
-      
-      // Impostazione dei timer
-      // if (response.game.player1.username === username) {
-      //   if (playerSide === "white") {
-      //     setTimeBianco(response.game.player1.timer);
-      //     setTimeNero(response.game.player2.timer);
-      //   } else {
-      //     setTimeBianco(response.game.player2.timer);
-      //     setTimeNero(response.game.player1.timer);
-      //   }
-      // } else {
-      //   if (playerSide === "white") {
-      //     setTimeBianco(response.game.player2.timer);
-      //     setTimeNero(response.game.player1.timer);
-      //   } else {
-      //     setTimeBianco(response.game.player1.timer);
-      //     setTimeNero(response.game.player2.timer);
-      //   }
-      // }
-      setTimeBianco(response.game.player1.timer);
-      setTimeNero(response.game.player2.timer);
-      
-      
-
-      // Setta il gamedata con response.game
-      setGameData(response.game);
-      let chessTaken = new Chess();
-      chessTaken.load(response.game.chess._header.FEN);
-
-      // Gestione aggiornamento dati temporanei della partita
-      setChess(chessTaken);
-      if(chess)
-        chess.load(chessTaken.fen());
-      
-      // Setta il Fen di setFen con il fen del chess appena creato
-      setFen(chessTaken.fen());
-      checkCheck();
-      setCurrentTurn(response.game.chess._turn);
-      
-
-
-      // Gestione nel caso di gameover
-      if (response.game.gameOver.isGameOver) {
-        // if(response.game.gameOver.winner == "p1")
-        handleVictory();
-        setWinner(response.game.gameOver.winner === "p1" ? response.game.player1.username : response.game.player2.username);
-        setModalIsOpen(true);
-      }
-
     } else {
       // Non dobbiamo aggiornare dati, dobbiamo ritornare un messaggio di errore
       console.log("Errore nel fetch della partita: ", response.message);
@@ -287,7 +292,7 @@ function ReallyBadChessOnline() {
 
   const handleVictory = async () => {
     try {
-      const response = await fetch(`/api/reallybadchess/saveDailyChallengeResults/${gameId}`, {
+      const response = await fetch(`/api/reallybadchess/saveGame/${gameId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -295,11 +300,12 @@ function ReallyBadChessOnline() {
         },
       });
       const data = await response.json();
-      if (data.success) {
-        console.log("Salvato con successo");
+      if (!response.ok) {
+        throw new Error(data.message || "Errore nella richiesta");
       }
+      return data;
     } catch (err) {
-      console.log(err);
+      return data.message;
     }
   };
     
@@ -421,15 +427,15 @@ function ReallyBadChessOnline() {
           <Timer
             time={timeBianco}
             setTime={setTimeBianco}
-            shouldRun={currentTurn !== playerSide}
-            playerColor={"white"}
+            shouldRun={currentTurn === playerSide}
+            playerColor={playerSide === "w" ? "white" : "black"}
             justForDisplay={true}
           />
           <Timer
             time={timeNero}
             setTime={setTimeNero}
             shouldRun={currentTurn === playerSide}
-            playerColor={"black"}
+            playerColor={playerSide === "w" ? "black" :"white" }
             justForDisplay={true}
           />
         </Box>
