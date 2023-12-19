@@ -65,6 +65,7 @@ function ReallyBadChessLocal() {
   const [pieceSelected, setPieceSelected] = useState([]);
   const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
+  const [selectedSquare, setSelectedSquare] = useState(null);
 
   const [chess, setChess] = useState(cloneChessBoard(startingBoard));
 
@@ -144,6 +145,19 @@ function ReallyBadChessLocal() {
     setPossibleMoves([]);
   };
 
+  const handleSquareClick = (square) => {
+    if (!selectedSquare) {
+      // Seleziona il pezzo sulla casella cliccata
+      const piece = square;
+      if (piece) {
+        setSelectedSquare(square);
+      }
+    } else {
+      handleMove(selectedSquare, square);
+      setSelectedSquare(null);
+    }
+  };
+
   const handleMove = async (sourceSquare, targetSquare) => {
     try {
       if (chess.turn() === 'w') {
@@ -176,16 +190,24 @@ function ReallyBadChessLocal() {
   };
 
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
-    if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
-      setFen(chess.fen());
-      checkCheck();
+    try {
+      if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+        setFen(chess.fen());
+        checkCheck();
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
-
+  
   const handleBlackTurn = (sourceSquare, targetSquare) => {
-    if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
-      setFen(chess.fen());
-      checkCheck();
+    try {
+      if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
+        setFen(chess.fen());
+        checkCheck();
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -264,6 +286,7 @@ function ReallyBadChessLocal() {
         <div style={ChessGameStyles.divChessBoard}>
           <Chessboard
             position={fen}
+            onSquareClick={handleSquareClick}
             onMouseOverSquare={(gameData.mode === 'playerVsComputer' && chess.turn() === 'w')
               || gameData.mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
             onMouseOutSquare={handleMouseOutSquare}
@@ -278,7 +301,7 @@ function ReallyBadChessLocal() {
           <Box sx={ChessGameStyles.boxTurns}>
             {/* Interfaccia che mostra di chi è il turno */}
             <div>
-              <Typography variant="h6"><b>{chess.turn() === 'w' ? gameData.player1 : gameData.player2}'s</b> turn</Typography>
+              <Typography variant="h6" data-cy="player-turn"><b>{chess.turn() === 'w' ? gameData.player1 : gameData.player2}'s</b> turn</Typography>
             </div>
             <Typography variant="h6">Player Vs Player</Typography>
           </Box>

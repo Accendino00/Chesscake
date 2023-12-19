@@ -25,6 +25,7 @@ export default function ConfirmPasswordField({error, password, confirmPassword, 
 
   return (
       <TextField
+        labelId="confirmPasswordRegisterField"
         sx = {styles.ConfirmPasswordTextField}
         error={passwordsMatch == -1 || error}
         variant="filled"

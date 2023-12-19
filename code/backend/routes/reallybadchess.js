@@ -323,7 +323,7 @@ router.post(
     winnerSide = "p1";
   }
 
-  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "victory");
+  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "checkmate");
 
   // Ritorniamo il game
   res.send({

@@ -361,6 +361,7 @@ const ModeSelection = () => {
                   >
                     <TextField
                       label="Player 1"
+                      labelId="player1"
                       value={player1}
                       onChange={(e) => setPlayer1(e.target.value)}
                       sx={{
@@ -369,6 +370,7 @@ const ModeSelection = () => {
                     />
                     <TextField
                       label="Player 2"
+                      labelId="player2"
                       value={player2}
                       onChange={(e) => setPlayer2(e.target.value)}
                       sx={{

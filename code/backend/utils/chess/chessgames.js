@@ -102,7 +102,7 @@ module.exports = {
         elo: eloPlayer2,
       },
 
-      lastMove: null, // "w" o "b" per indicare chi ha mosso per ultimo
+      lastMove: 'b', // "w" o "b" per indicare chi ha mosso per ultimo
       lastMoveTargetSquare: null, // Casella di arrivo dell'ultima mossa
       lastMoveChessPiece: null, // Pezzo che è stato mosso per ultimo
 

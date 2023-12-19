@@ -361,7 +361,6 @@ function generateBoardWithSeed(mode, rank) {
   } else {
     seed = Math.floor(Math.random() * 1000000); // Generazione seed casuale
   }
-  console.log(seed);
   const rng = seedrandom(seed);
   const [playerRank, opponentRank] = calculateRanks(rank, seed);
   const whitePieces = findChessPiecesWithRank(playerRank, seed);
