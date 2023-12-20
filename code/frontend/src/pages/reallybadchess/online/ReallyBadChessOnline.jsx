@@ -314,7 +314,8 @@ function ReallyBadChessOnline() {
       }
       return data;
     } catch (err) {
-      return data.message;
+      console.log(err);
+      return err;
     }
   };
     
@@ -519,6 +520,7 @@ function ReallyBadChessOnline() {
             color="primary"
             disabled={disableSurrender}
             onClick={() => {
+              if(!gameOver){
               setDisableSurrender(true);
 
               // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
@@ -544,6 +546,7 @@ function ReallyBadChessOnline() {
                   console.log(err);
                   setDisableSurrender(false);
                 });
+              }
             }}
           >
             Arrenditi

@@ -103,25 +103,28 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
         // Retrieve the top 10 players by the number of moves in the daily challenge
         const leaderboard = await collection.aggregate([
             {
-              $match: {
-                "matches.mode": "dailyChallenge",
-                "matches.dataOraInizio": { $gte: startOfDay, $lte: endOfDay },
-                "matches.gameData.vincitore": "p1",
-              },
-            },
-            {
-                $group: {
-                    _id: "$Player1.username",
-                    username: { $first: "$Player1.username" },
-                    moves: { $sum: "$matches.gameData.turniBianco" },
+                $match: {
+                  "matches.mode": "dailyChallenge",
+                  "matches.dataOraInizio": { $gte: startOfDay, $lte: endOfDay },
+                  "matches.gameData.vincitore": "p1",
                 },
-            },
-            {
-              $sort: { moves: 1 },
-            },
-            {
-              $limit: 10,
-            },
+              },
+              {
+                $sort: { "matches.gameData.turniBianco": 1 }, // Ordina per numero minimo di turni del bianco
+              },
+              {
+                $group: {
+                  _id: "$Player1.username",
+                  username: { $first: "$Player1.username" },
+                  moves: { $first: "$matches.gameData.turniBianco" }, // Seleziona il numero minimo di turni
+                },
+              },
+              {
+                $sort: { moves: 1 }, // Ordina per numero minimo di turni
+              },
+              {
+                $limit: 10,
+              },
           ]).toArray();
 
 

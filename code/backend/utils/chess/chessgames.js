@@ -43,16 +43,16 @@ module.exports = {
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      values = generateBoardWithSeed("dailyChallenge", null, 50);
+      values = generateBoardWithSeed("dailyChallenge", 18747, 50);
     } else if (settings.mode == "playerVsPlayerOnline") {
-      values = generateBoardWithSeed("playerVsPlayerOnline", null, 50);
+      values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
     } else if (settings.mode == "kriegspiel") {
       values = { board: new Chess(), seed: "nonrandom" };
       values.board.fen();
       values.board._header.FEN = values.board.fen();
     } else{
       // In caso contrario lo generiamo in modo casuale
-      values = generateBoard(null, settings.rank);
+      values = generateBoardWithSeed(null, 0, settings.rank);
     }
 
 
@@ -263,10 +263,31 @@ module.exports = {
     let chessMove = null;
     try {
       chessMove = new Chess(game.chess.fen());
+
+      //Riporto tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
+      chessMove._kings = game.chess._kings;
+      chessMove._turn = game.chess._turn;
+      chessMove._castling = game.chess._castling;
+      chessMove._en_passant = game.chess._en_passant;
+      chessMove._half_moves = game.chess._half_moves;
+      chessMove._move_number = game.chess._move_number;
+      chessMove._history = game.chess._history;
+      
+      // Effettua la mossa
       check = chessMove.move(mossa);
       game.chess = new Chess();
       game.chess = chessMove;
+      //Riporto indietro tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
       game.chess._header.FEN = chessMove.fen();
+      game.chess._kings = chessMove._kings;
+      game.chess._castling = chessMove._castling;
+      game.chess._en_passant = chessMove._en_passant;
+      game.chess._half_moves = chessMove._half_moves;
+      game.chess._move_number = chessMove._move_number;
+      game.chess._history = chessMove._history;
+      game.chess._turn = chessMove._turn;
+      game.chess._board = chessMove._board;
+
       game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
       game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
       game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
@@ -277,8 +298,6 @@ module.exports = {
     if (check !== null) {
       let currentPlayerTurn =
         game.chess._turn === game.player1.side ? "p2" : "p1";
-      let otherPlayerTurn = currentPlayerTurn === "p1" ? "p2" : "p1";
-
       // Controlla se c'è uno scacco matto
       if (game.chess.isCheckmate()) {
         this.handleGameOver(game, currentPlayerTurn, "checkmate");
@@ -351,22 +370,6 @@ module.exports = {
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
     const collection = db.collection("GamesRBC");
-
-    console.log(generateBoardWithSeed(
-      game.matches.seed,
-      game.gameSettings.rank
-    ));
-
-    console.log(generateBoardWithSeed(
-      game.matches.seed,
-      game.gameSettings.rank
-    ));
-
-    console.log(generateBoardWithSeed(
-      game.matches.seed,
-      game.gameSettings.rank
-    ));
-
     collection.insertOne({
       Player1: game.player1,
       Player2: game.player2,
@@ -392,7 +395,7 @@ module.exports = {
         board: generateBoardWithSeed(
           game.gameSettings.mode,
           game.matches.seed,
-          game.gameSettings.rank
+          mode === "dailyChallenge" ? 50 : game.gameSettings.rank
         ).board._header.FEN,
         gameData: {
           turniBianco: game.chess
