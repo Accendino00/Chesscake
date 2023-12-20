@@ -15,6 +15,7 @@ import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
 import { CircularProgress } from "@mui/material";
 import ShareButton from "../../components/ShareButton";
+import seedrandom from "seedrandom";
 
 function ReallyBadChessOnline() {
   // Hook generali e utili
@@ -51,6 +52,9 @@ function ReallyBadChessOnline() {
 
   // Se il secondo giocatore è arrivato - stampiamo qualcosa di diverso se si è ancora in attesa
   const [player2Arrived, setPlayer2Arrived] = useState(false);
+
+  //Funzione di random seedato
+  let rng = null;
 
   /**
    * Funzione che gestisce tutto quello che è interente al game,
@@ -91,7 +95,9 @@ function ReallyBadChessOnline() {
             setPlayerSide(response.game.player2.side);
           }
         }
-        
+        if(rng == null){
+          rng = seedrandom(response.game.matches.seed);
+        }
         // Impostazione dei timer
         if (response.game.player1.username === username) {
           if (playerSide === "white") {
@@ -111,24 +117,20 @@ function ReallyBadChessOnline() {
           }
         }
         
-        
-
-        // Setta il gamedata con response.game
-        setGameData(response.game);
-        let chessTaken = new Chess();
-        chessTaken.load(response.game.chess._header.FEN);
-
-        // Gestione aggiornamento dati temporanei della partita
-        setChess(chessTaken);
-        if(chess)
-          chess.load(chessTaken.fen());
-        
-        // Setta il Fen di setFen con il fen del chess appena creato
-        setFen(chessTaken.fen());
-        checkCheck();
-        setCurrentTurn(response.game.chess._turn);
-        
-
+         // Setta il gamedata con response.game
+         setGameData(response.game);
+         let chessTaken = new Chess();
+         chessTaken.load(response.game.chess._header.FEN);
+ 
+         // Gestione aggiornamento dati temporanei della partita
+         setChess(chessTaken);
+         if(chess)
+           chess.load(chessTaken.fen());
+         
+         // Setta il Fen di setFen con il fen del chess appena creato
+         setFen(chessTaken.fen());
+         checkCheck();
+         setCurrentTurn(response.game.chess._turn);
 
         // Gestione nel caso di gameover
         if (response.game.gameOver.isGameOver) {
@@ -212,11 +214,12 @@ function ReallyBadChessOnline() {
 
   useEffect(() => {
     if (gameData != null) {
-      if (gameData.gameSettings.mode === "dailyChallenge") {
-        if (gameData.chess._turn === gameData.player2.side) {
+      if (gameData.gameSettings.mode === "dailyChallenge"  || gameData.gameSettings.mode === "playerVsComputer") {
+        if ((gameData.chess._turn === gameData.player2.side && gameData.player2.username === "Computer")||(gameData.chess._turn === gameData.player1.side && gameData.player1.username === "Computer")) {
           setTimeout(() => {
             let chosenMove = chess.moves({ verbose: true })[Math.floor(Math.random() * chess.moves().length)];
-            findBestMove(chess.fen(), 2, 0)
+            if(gameData.gameSettings.mode === "playerVsComputer"){
+              findBestMove(chess.fen(), 2, 0)
               .then((Move) => {
                 makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
               })
@@ -224,6 +227,12 @@ function ReallyBadChessOnline() {
                 console.log(err);
                 makeMove(chosenMove.from, chosenMove.to, player2);
               });
+            }
+            else{
+              if(rng!=null)
+                chosenMove = chess.moves({ verbose: true })[Math.floor(rng() * chess.moves().length)];
+              makeMove(chosenMove.from, chosenMove.to, player2);
+            }
           }, 2000);
         }
       }
@@ -262,9 +271,9 @@ function ReallyBadChessOnline() {
     //   gameData.lastMove === playerSide ||
     //   (gameData.lastMove == null && playerSide === "black")
     // ) {
-    if (gameData.lastMove === playerSide) {
-      return;
-    }
+    //if (gameData.lastMove === playerSide) {
+      //return;
+    //}
     await fetch(`/api/reallybadchess/movePiece/${gameId}`, {
       method: "POST",
       headers: {

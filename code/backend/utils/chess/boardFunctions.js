@@ -335,31 +335,34 @@ function generateBoard(mode, rank) {
   return { board : newChess, seed: seed };
 }
 
-function generateBoardWithSeed(mode, rank) {
+function generateBoardWithSeed(mode, seedPassed, rank) {
   const newChess = new Chess();
-
   newChess.clear();
-
   let seed = 0;
-  if (mode === "playerVsPlayerOnline") {
-    seed = Math.floor(Math.random() * 1000000); // Generazione seed casuale
-  }
-  if (mode === "dailyChallenge") {
-    const today = new Date();
-    seed =
-      ((((((today.getFullYear() * 100 +
-        today.getMonth() * 10 +
-        today.getDate()) *
-        214013 +
-        2531011) >>
-        16) &
-        0x7fff) *
-        214013 +
-        2531011) >>
-        16) &
-      0x7fff; // Generazione seed giornaliero attraverso funzione di hashing
-  } else {
-    seed = Math.floor(Math.random() * 1000000); // Generazione seed casuale
+  if(seedPassed!==null) 
+    seed = seedPassed;
+  else
+  {
+    if (mode === "playerVsPlayerOnline") {
+      seed = Math.floor(Math.random() * 1000000); // Generazione seed casuale
+    }
+    if (mode === "dailyChallenge") {
+      const today = new Date();
+      seed =
+        ((((((today.getFullYear() * 100 +
+          today.getMonth() * 10 +
+          today.getDate()) *
+          214013 +
+          2531011) >>
+          16) &
+          0x7fff) *
+          214013 +
+          2531011) >>
+          16) &
+        0x7fff; // Generazione seed giornaliero attraverso funzione di hashing
+    } else {
+      seed = Math.floor(Math.random() * 1000000); // Generazione seed casuale
+    }
   }
   const rng = seedrandom(seed);
   const [playerRank, opponentRank] = calculateRanks(rank, seed);

@@ -43,11 +43,11 @@ module.exports = {
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      values = generateBoardWithSeed("dailyChallenge", 50);
+      values = generateBoardWithSeed("dailyChallenge", null, 50);
     } else if (settings.mode == "playerVsPlayerOnline") {
-      values = generateBoard("playerVsPlayerOnline", 50);
+      values = generateBoardWithSeed("playerVsPlayerOnline", null, 50);
     } else if (settings.mode == "kriegspiel") {
-      values = generateBoard("kriegspiel", 50);
+      values = generateBoardWithSeed("kriegspiel", null, 50);
     } else{
       // In caso contrario lo generiamo in modo casuale
       values = generateBoard(null, settings.rank);
@@ -371,6 +371,7 @@ module.exports = {
         dataOraInizio: game.matches.dataOraInizio,
         moves: game.chess.history(),
         board: generateBoardWithSeed(
+          game.gameSettings.mode,
           game.matches.seed,
           game.gameSettings.rank
         ).board._header.FEN,
