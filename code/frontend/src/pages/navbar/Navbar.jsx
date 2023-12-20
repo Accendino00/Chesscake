@@ -53,11 +53,6 @@ const NavbarData = [
     link: "/play/leaderboard/",
   },
   {
-    title: " Mob Play",
-    icon: "GroupIcon",
-    link: "/play/mob/",
-  },
-  {
     title: " Login",
     icon: "LoginIcon",
     link: "/login/",
@@ -123,6 +118,7 @@ function Navbar({ loginStatus }) {
         {NavbarData.map((item, index) => {
           if ((loginStatus === false && item.title === " Account") ||
             (loginStatus === false && item.title === " Mob Play") ||
+            (loginStatus === false && item.title === " Kriegspiel") ||
             (loginStatus === true && item.title === " Login")) {
             return null;
           }
