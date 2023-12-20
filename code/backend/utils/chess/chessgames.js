@@ -47,11 +47,15 @@ module.exports = {
     } else if (settings.mode == "playerVsPlayerOnline") {
       values = generateBoardWithSeed("playerVsPlayerOnline", null, 50);
     } else if (settings.mode == "kriegspiel") {
-      values = generateBoardWithSeed("kriegspiel", null, 50);
+      values = { board: new Chess(), seed: "nonrandom" };
+      values.board.fen();
+      values.board._header.FEN = values.board.fen();
     } else{
       // In caso contrario lo generiamo in modo casuale
       values = generateBoard(null, settings.rank);
     }
+
+
     board = values.board;
     seed = values.seed;
 
@@ -347,6 +351,21 @@ module.exports = {
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
     const collection = db.collection("GamesRBC");
+
+    console.log(generateBoardWithSeed(
+      game.matches.seed,
+      game.gameSettings.rank
+    ));
+
+    console.log(generateBoardWithSeed(
+      game.matches.seed,
+      game.gameSettings.rank
+    ));
+
+    console.log(generateBoardWithSeed(
+      game.matches.seed,
+      game.gameSettings.rank
+    ));
 
     collection.insertOne({
       Player1: game.player1,
