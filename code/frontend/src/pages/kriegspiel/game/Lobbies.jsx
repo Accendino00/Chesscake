@@ -95,6 +95,8 @@ function Lobbies() {
 
 
   const handleJoinGame = (gameId) => {
+    navigate(`/play/kriegspiel/${gameId}`);
+    /*
     fetch(`/api/kriegspiel/joinGame/${gameId}`, {
       method: 'POST',
       headers: {
@@ -119,6 +121,7 @@ function Lobbies() {
           console.log(data.message);
         }
       });
+      */
   };
 
 

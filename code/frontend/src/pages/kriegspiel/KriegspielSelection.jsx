@@ -38,6 +38,14 @@ function KriegspielSelection() {
 
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [loading, setLoading] = useState(false);
+  
+  React.useEffect(() => {
+    if (!isTokenLoading) {
+        if (!loginStatus) {
+            navigate("/login");
+        }
+    }
+}, [loginStatus, isTokenLoading]);
 
   if (isTokenLoading) {
     return (

@@ -52,6 +52,8 @@ function ReallyBadChessOnline() {
 
   // Se il secondo giocatore è arrivato - stampiamo qualcosa di diverso se si è ancora in attesa
   const [player2Arrived, setPlayer2Arrived] = useState(false);
+  
+  const[gameGottenOnce, setGameGottenOnce] = useState(false);
 
   //Funzione di random seedato
   let rng = null;
@@ -66,6 +68,7 @@ function ReallyBadChessOnline() {
   function handleGetGameResponse(response) {
     // Dobbiamo aggiornare i nuovi dati
     if (response.success) {
+      setGameGottenOnce(true);
       // Se non ci sono entrambi i player, allora non imposto nulla
       if(!gameOver){
         if (
@@ -163,19 +166,29 @@ function ReallyBadChessOnline() {
       } else {
         // Cose da fare se si è loggati, quindi poter giocare alla partita, etc.
         // Fetch iniziale per ottenere la partita
-        fetch(`/api/reallybadchess/getGame/${gameId}`, {
-          method: "GET",
+        fetch(`/api/reallybadchess/joinGame/${gameId}`, {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Cookies.get('token')}`
           },
         })
-          .then((response) => response.json())
-          .then((data) => {
-            handleGetGameResponse(data);
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            console.log('Response Status:', response.status);
+            console.log('Response Headers:', response.headers);
+            return response.json();  // Parse the response as JSON and return the promise
           })
-          .catch((err) => {
-            console.log(err);
+          .then(data => {
+            console.log('Data from server:', data)
+            if (data.success) {
+              navigate(`/play/reallybadchess/${gameId}`);
+            } else {
+              setMessage(data.message);
+              console.log(data.message);
+            }
           });
       }
     }
@@ -356,7 +369,7 @@ function ReallyBadChessOnline() {
   const handleNavigateToPlay = () => navigate("/play/");
   const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
 
-  if (isTokenLoading || loginStatus === undefined) {
+  if (isTokenLoading || loginStatus === undefined || !gameGottenOnce) {
     return (
       <Box
         display="flex"
