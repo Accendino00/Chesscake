@@ -52,8 +52,8 @@ function ReallyBadChessOnline() {
 
   // Se il secondo giocatore è arrivato - stampiamo qualcosa di diverso se si è ancora in attesa
   const [player2Arrived, setPlayer2Arrived] = useState(false);
-  
-  const[gameGottenOnce, setGameGottenOnce] = useState(false);
+
+  const [gameGottenOnce, setGameGottenOnce] = useState(false);
 
   //Funzione di random seedato
   let rng = null;
@@ -70,7 +70,7 @@ function ReallyBadChessOnline() {
     if (response.success) {
       setGameGottenOnce(true);
       // Se non ci sono entrambi i player, allora non imposto nulla
-      if(!gameOver){
+      if (!gameOver) {
         if (
           response.game.player1.username === null ||
           response.game.player2.username === null
@@ -98,7 +98,7 @@ function ReallyBadChessOnline() {
             setPlayerSide(response.game.player2.side);
           }
         }
-        if(rng == null){
+        if (rng == null) {
           rng = seedrandom(response.game.matches.seed);
         }
         // Impostazione dei timer
@@ -119,30 +119,36 @@ function ReallyBadChessOnline() {
             setTimeNero(response.game.player2.timer);
           }
         }
-        
-         // Setta il gamedata con response.game
-         setGameData(response.game);
-         let chessTaken = new Chess();
-         chessTaken.load(response.game.chess._header.FEN);
- 
-         // Gestione aggiornamento dati temporanei della partita
-         setChess(chessTaken);
-         if(chess)
-           chess.load(chessTaken.fen());
-         
-         // Setta il Fen di setFen con il fen del chess appena creato
-         setFen(chessTaken.fen());
-         checkCheck();
-         setCurrentTurn(response.game.chess._turn);
+
+        // Setta il gamedata con response.game
+        setGameData(response.game);
+        let chessTaken = new Chess();
+        chessTaken.load(response.game.chess._header.FEN);
+
+        // Gestione aggiornamento dati temporanei della partita
+        setChess(chessTaken);
+        if (chess) chess.load(chessTaken.fen());
+
+        // Setta il Fen di setFen con il fen del chess appena creato
+        setFen(chessTaken.fen());
+        checkCheck();
+        setCurrentTurn(response.game.chess._turn);
 
         // Gestione nel caso di gameover
         if (response.game.gameOver.isGameOver) {
           setGameOver(true);
           // if(response.game.gameOver.winner == "p1")
           handleVictory().then((gameReturned) => {
-            if (gameReturned && gameReturned.game && gameReturned.game.gameOver) {
+            if (
+              gameReturned &&
+              gameReturned.game &&
+              gameReturned.game.gameOver
+            ) {
               console.log(JSON.stringify(gameReturned.game.gameOver));
-              const winner = gameReturned.game.gameOver.winner === "p1" ? gameData.player1.username : gameData.player2.username;
+              const winner =
+                gameReturned.game.gameOver.winner === "p1"
+                  ? gameData.player1.username
+                  : gameData.player2.username;
               setWinner(winner);
               setModalIsOpen(true);
             }
@@ -167,22 +173,22 @@ function ReallyBadChessOnline() {
         // Cose da fare se si è loggati, quindi poter giocare alla partita, etc.
         // Fetch iniziale per ottenere la partita
         fetch(`/api/reallybadchess/joinGame/${gameId}`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Cookies.get('token')}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
           },
         })
-          .then(response => {
+          .then((response) => {
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            console.log('Response Status:', response.status);
-            console.log('Response Headers:', response.headers);
-            return response.json();  // Parse the response as JSON and return the promise
+            console.log("Response Status:", response.status);
+            console.log("Response Headers:", response.headers);
+            return response.json(); // Parse the response as JSON and return the promise
           })
-          .then(data => {
-            console.log('Data from server:', data)
+          .then((data) => {
+            console.log("Data from server:", data);
             if (data.success) {
               navigate(`/play/reallybadchess/${gameId}`);
             } else {
@@ -227,23 +233,34 @@ function ReallyBadChessOnline() {
 
   useEffect(() => {
     if (gameData != null) {
-      if (gameData.gameSettings.mode === "dailyChallenge"  || gameData.gameSettings.mode === "playerVsComputer") {
-        if ((gameData.chess._turn === gameData.player2.side && gameData.player2.username === "Computer")||(gameData.chess._turn === gameData.player1.side && gameData.player1.username === "Computer")) {
+      if (
+        gameData.gameSettings.mode === "dailyChallenge" ||
+        gameData.gameSettings.mode === "playerVsComputer"
+      ) {
+        if (
+          (gameData.chess._turn === gameData.player2.side &&
+            gameData.player2.username === "Computer") ||
+          (gameData.chess._turn === gameData.player1.side &&
+            gameData.player1.username === "Computer")
+        ) {
           setTimeout(() => {
-            let chosenMove = chess.moves({ verbose: true })[Math.floor(Math.random() * chess.moves().length)];
-            if(gameData.gameSettings.mode === "playerVsComputer"){
+            let chosenMove = chess.moves({ verbose: true })[
+              Math.floor(Math.random() * chess.moves().length)
+            ];
+            if (gameData.gameSettings.mode === "playerVsComputer") {
               findBestMove(chess.fen(), 2, 0)
-              .then((Move) => {
-                makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
-              })
-              .catch((err) => {
-                console.log(err);
-                makeMove(chosenMove.from, chosenMove.to, player2);
-              });
-            }
-            else{
-              if(rng!=null)
-                chosenMove = chess.moves({ verbose: true })[Math.floor(rng() * chess.moves().length)];
+                .then((Move) => {
+                  makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
+                })
+                .catch((err) => {
+                  console.log(err);
+                  makeMove(chosenMove.from, chosenMove.to, player2);
+                });
+            } else {
+              if (rng != null)
+                chosenMove = chess.moves({ verbose: true })[
+                  Math.floor(rng() * chess.moves().length)
+                ];
               makeMove(chosenMove.from, chosenMove.to, player2);
             }
           }, 2000);
@@ -269,10 +286,9 @@ function ReallyBadChessOnline() {
     await makeMove(sourceSquare, targetSquare, username);
   };
 
-  
   /**
    * Fa una mossa nel da inviare a movePiece
-   * 
+   *
    * @param {string} sourceSquare - Square di partenza della mossa.
    * @param {string} targetSquare - Square di arrivo della mossa.
    */
@@ -285,7 +301,7 @@ function ReallyBadChessOnline() {
     //   (gameData.lastMove == null && playerSide === "black")
     // ) {
     //if (gameData.lastMove === playerSide) {
-      //return;
+    //return;
     //}
     await fetch(`/api/reallybadchess/movePiece/${gameId}`, {
       method: "POST",
@@ -309,8 +325,8 @@ function ReallyBadChessOnline() {
       .catch((err) => {
         console.log(err);
       });
-  // };
-}
+    // };
+  };
 
   const handleVictory = async () => {
     try {
@@ -331,11 +347,10 @@ function ReallyBadChessOnline() {
       return err;
     }
   };
-    
+
   // Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
-    
 
     // Se il turno non è del giocatore attuale allora non lo mostro
     if (
@@ -354,16 +369,19 @@ function ReallyBadChessOnline() {
   };
 
   function checkCheck() {
-    if (chess!=null){
+    if (chess != null) {
       if (chess.isCheck()) {
-        setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
+        setPieceSelected(
+          getPiecePosition(chess, {
+            type: "k",
+            color: chess.turn() === "b" ? "b" : "w",
+          })
+        );
       } else {
         setPieceSelected([]);
       }
     }
   }
-
-  
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
@@ -431,13 +449,15 @@ function ReallyBadChessOnline() {
             onClick={() => {
               // Copiare nella clipboard in path
               navigator.clipboard.writeText(
-                `http://localhost:3000/play/reallybadchess/${gameId}`
+                window.location.href
               );
             }}
           >
             Copia il link di invito!{" "}
           </Button>
-          <ShareButton />
+          <ShareButton url={window.location.href} text={
+            "Sfidami su Really Bad Chess! Entra dentro la mia lobby per giocare con me!"
+          }/>
         </Box>
       </Box>
     );
@@ -458,7 +478,7 @@ function ReallyBadChessOnline() {
             time={timeNero}
             setTime={setTimeNero}
             shouldRun={currentTurn === playerSide}
-            playerColor={playerSide === "w" ? "black" :"white" }
+            playerColor={playerSide === "w" ? "black" : "white"}
             justForDisplay={true}
           />
         </Box>
@@ -484,8 +504,33 @@ function ReallyBadChessOnline() {
                 Esci
               </Button>
 
-              <ShareButton />
-              
+              <ShareButton
+                text={
+                  winner == player1 && player1 == username
+                    ? " Ho vinto questa partita in online di Really Bad Chess con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player2
+                    : winner == player2 && player2 == username
+                    ? "Ho vinto questa partita in online di Really Bad Chess con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player1
+                    : player1 == username
+                    ? "Ho perso questa partita in online di Really Bad Chess con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player2
+                    : "Ho perso questa partita in online di Really Bad Chess con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player1
+                }
+                style={{
+                  width: "100%",
+                  height: "40px",
+                }}
+              />
             </Stack>
           </Box>
         </Modal>
@@ -533,32 +578,32 @@ function ReallyBadChessOnline() {
             color="primary"
             disabled={disableSurrender}
             onClick={() => {
-              if(!gameOver){
-              setDisableSurrender(true);
+              if (!gameOver) {
+                setDisableSurrender(true);
 
-              // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
-              // se ritorna success == true, allora ho arreso con successo
+                // Invio la fetch in POST a "/api/reallybadchess/surrender/:gameid"
+                // se ritorna success == true, allora ho arreso con successo
 
-              fetch(`/api/reallybadchess/surrender/${gameId}`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${Cookies.get("token")}`,
-                },
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    setWinner(data.winner);
-                    setModalIsOpen(true);
-                  } else {
-                    setDisableSurrender(false);
-                  }
+                fetch(`/api/reallybadchess/surrender/${gameId}`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${Cookies.get("token")}`,
+                  },
                 })
-                .catch((err) => {
-                  console.log(err);
-                  setDisableSurrender(false);
-                });
+                  .then((response) => response.json())
+                  .then((data) => {
+                    if (data.success) {
+                      setWinner(data.winner);
+                      setModalIsOpen(true);
+                    } else {
+                      setDisableSurrender(false);
+                    }
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    setDisableSurrender(false);
+                  });
               }
             }}
           >

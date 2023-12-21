@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import ShareButton from '../components/ShareButton.jsx';
 
 
-function ELOLeaderBoard() {
+function KriegspielLeaderBoard() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,12 +18,12 @@ function ELOLeaderBoard() {
         const fetchLeaderboard = async () => {
             let response, data;
             if (token) {
-                response = await fetch('/api/leaderboard/elo', {
+                response = await fetch('/api/leaderboard/eloKriegspiel', {
                     method: 'GET',
                     headers: { "Authorization": `Bearer ${token}` }
                 });
             } else {
-                response = await fetch('/api/leaderboard/elo', {
+                response = await fetch('/api/leaderboard/eloKriegspiel', {
                     method: 'GET'
                 });
             }
@@ -89,7 +89,7 @@ function ELOLeaderBoard() {
                         <ShareButton 
                             width="20px"
                             height="20px"
-                            text={"Ho raggiunto " + (loading ? "" : leaderboardData.userPlace.elo) + " di ELO su Really Bad Chess! Provalo anche tu sul sito di Chess Cake!"}
+                            text={"Ho raggiunto " + (loading ? "" : leaderboardData.userPlace.elo) + " di ELO su Kriegspiel! Provalo anche tu sul sito di Chess Cake!"}
                             style={{
                                 marginLeft: "10px",
                                 width: "30px",
@@ -104,7 +104,6 @@ function ELOLeaderBoard() {
                         <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
                     ) : (
                         <LeaderBoardRecord rank={leaderboardData.userPlace.place} username={leaderboardData.userPlace.username} value={leaderboardData.userPlace.elo} />
-                        
                     )}
                 </>
             )}
@@ -114,4 +113,4 @@ function ELOLeaderBoard() {
 
 }
 
-export default ELOLeaderBoard;
+export default KriegspielLeaderBoard;

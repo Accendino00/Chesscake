@@ -98,8 +98,9 @@ function LoginComponent(props) {
       // Se i dati sono un json del tipo {"successo" : true},
       // allora passa a "/"
       if (data.success) {
-        var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
-        await Cookies.set('token', data.token, { expires: inFifteenMinutes }); // Expires in 7 days
+        //var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+        var inTwoDays = new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000);
+        await Cookies.set('token', data.token, { expires: inTwoDays }); // Expires in 7 days
 
         setLoading(false);
         window.location.pathname = "/play";

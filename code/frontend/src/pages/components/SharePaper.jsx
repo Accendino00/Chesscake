@@ -3,7 +3,7 @@ import { Modal, Paper, TextField } from "@mui/material";
 import ShareAppList from "./ShareAppList";
 import { Typography } from "@mui/material";
 
-const SharePaper = ({ text, onClose }) => {
+const SharePaper = ({ text, onClose, url }) => {
   return (
     <Modal
       sx={{
@@ -32,7 +32,7 @@ const SharePaper = ({ text, onClose }) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "space-evenly",
-          width: "350px",
+          width: "550px",
           height: "350px",
         }}
       >
@@ -64,6 +64,7 @@ const SharePaper = ({ text, onClose }) => {
         </fieldset>
         <ShareAppList 
             sharedText={text}
+            url={url}
         />
       </Paper>
     </Modal>

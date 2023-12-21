@@ -31,6 +31,7 @@ function registerUser(username, password) {
                             rbcELO: config.DEFAULT_ELO_RBC, 
                             rbcCurrentRank: config.STARTING_RANK_RBC,
                             rbcMaxRank: config.STARTING_RANK_RBC,
+                            kriELO: config.DEFAULT_ELO_KRI,
                         };
                         usersCollection.insertOne(newUser)
                         .then(() => {

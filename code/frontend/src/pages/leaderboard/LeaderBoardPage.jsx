@@ -11,6 +11,7 @@ import Tab from '@mui/material/Tab';
 import ELOLeaderBoard from './ELOLeaderBoard.jsx';
 import RankLeaderBoard from './RankLeaderBoard.jsx';
 import DailyLeaderBoard from './DailyLeaderBoard.jsx';
+import KriegspielLeaderBoard from './KriegspielLeaderBoard.jsx';
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -88,6 +89,7 @@ function LeaderBoardPage() {
                     <Tab label="ELO" {...a11yProps(0)} />
                     <Tab label="Rank" {...a11yProps(1)} />
                     <Tab label="Daily" {...a11yProps(2)} />
+                    <Tab label="ELO Kriegspiel" {...a11yProps(3)} />
                 </Tabs>
                 <CustomTabPanel value={currentLeaderboard} index={0} >
                     <ELOLeaderBoard />
@@ -99,19 +101,8 @@ function LeaderBoardPage() {
                     <DailyLeaderBoard />
                 </CustomTabPanel >
                 <CustomTabPanel value={currentLeaderboard} index={3}>
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                    <Skeleton variant="text" width={700} height={30} />
-                </CustomTabPanel >
+                    <KriegspielLeaderBoard />
+                </CustomTabPanel>
             </Box>
         </Box>
     );

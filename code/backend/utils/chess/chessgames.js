@@ -62,7 +62,7 @@ module.exports = {
     // Prendi l'elo dei giocatori dal backend
     let eloPlayer1 = 0;
     let eloPlayer2 = 0;
-    if (settings.mode === "playerVsPlayerOnline") {
+    if (settings.mode === "playerVsPlayerOnline" || settings.mode === "kriegspiel") {
       const db = clientMDB.db("ChessCake");
       const collection = db.collection("Users");
 
@@ -72,7 +72,7 @@ module.exports = {
         .limit(1)
         .toArray();
 
-      eloPlayer1 = eloPlayer1.length == 1 ? eloPlayer1[0].rbcELO : 400;
+      eloPlayer1 = eloPlayer1.length == 1 ? (settings.mode === "kriegspiel" ? eloPlayer1[0].kriELO : eloPlayer1[0].rbcELO) : 400;
 
       // Prendiamo l'elo del giocatore 2
       eloPlayer2 = await collection
@@ -80,7 +80,7 @@ module.exports = {
         .limit(1)
         .toArray();
 
-      eloPlayer2 = eloPlayer2.length == 1 ? eloPlayer2[0].rbcELO : eloPlayer1;
+      eloPlayer2 = eloPlayer2.length == 1 ? (settings.mode === "kriegspiel" ? eloPlayer1[0].kriELO : eloPlayer1[0].rbcELO) : eloPlayer1;
     }
 
     let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
@@ -134,6 +134,7 @@ module.exports = {
       gameId: gameId,
     };
   },
+
   joinGame: async function (gameId, player2) {
     // Cerca la partita di scacchi
     var game = chessGames.find((game) => game.gameId == gameId);
@@ -151,7 +152,7 @@ module.exports = {
       .limit(1)
       .toArray();
 
-    eloPlayer2 = eloPlayer2.length == 1 ? eloPlayer2[0].rbcELO : 400;
+    eloPlayer2 = eloPlayer2.length == 1 ? (game.gameSettings.mode === "kriegspiel" ? eloPlayer2[0].kriELO : eloPlayer2[0].rbcELO) : 400;
 
     game.player2.elo = eloPlayer2;
   },
@@ -236,6 +237,9 @@ module.exports = {
           game.gameSettings.rank,
           winner
         );
+        returnValue = this.saveGame(game.gameId);
+      } else if (game.gameSettings.mode === "kriegspiel" ) {
+        returnValue = this.changeEloKriegspiel(game.player1, game.player2, winner);
         returnValue = this.saveGame(game.gameId);
       }
     }
@@ -369,7 +373,7 @@ module.exports = {
 
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
-    const collection = db.collection("GamesRBC");
+    const collection = db.collection("Games");
     collection.insertOne({
       Player1: game.player1,
       Player2: game.player2,
@@ -395,7 +399,7 @@ module.exports = {
         board: generateBoardWithSeed(
           game.gameSettings.mode,
           game.matches.seed,
-          mode === "dailyChallenge" ? 50 : game.gameSettings.rank
+          game.gameSettings.mode === "dailyChallenge" ? 50 : game.gameSettings.rank
         ).board._header.FEN,
         gameData: {
           turniBianco: game.chess
@@ -480,6 +484,34 @@ module.exports = {
     collection.updateOne(
       { username: player2.username },
       { $set: { rbcELO: nuovoEloPlayer2 } }
+    );
+  },
+
+  changeEloKriegspiel (player1, player2, outcome) {
+    let nuovoEloPlayer1 = 0;
+    let nuovoEloPlayer2 = 0;
+    if (outcome === "p1") {
+      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p1"));
+      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p2"));
+    } else {
+      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p2"));
+      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p1"));
+    }
+
+    // Aggiorniamo i valori nel database
+    const db = clientMDB.db("ChessCake");
+    const collection = db.collection("Users");
+
+    // Aggiorniamo il giocatore 1
+    collection.updateOne(
+      { username: player1.username },
+      { $set: { kriELO: nuovoEloPlayer1 } }
+    );
+
+    // Aggiorniamo il giocatore 2
+    collection.updateOne(
+      { username: player2.username },
+      { $set: { kriELO: nuovoEloPlayer2 } }
     );
   },
 

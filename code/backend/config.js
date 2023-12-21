@@ -15,6 +15,7 @@ let configData = {
     // Dati per gli account
     DEFAULT_ELO_RBC: 400,
     STARTING_RANK_RBC: 10,
+    DEFAULT_ELO_KRI: 400,
 }
 
 

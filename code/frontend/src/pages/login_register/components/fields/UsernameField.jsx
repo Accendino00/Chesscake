@@ -6,7 +6,6 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 export default function UsernameField({username, setUsername, error})  {
     return (
         <TextField
-            labelId="usernameRegisterField"
             sx = {styles.usernameTextField}
             variant="filled"
             label="Username"

@@ -96,32 +96,6 @@ function Lobbies() {
 
   const handleJoinGame = (gameId) => {
     navigate(`/play/kriegspiel/${gameId}`);
-    /*
-    fetch(`/api/kriegspiel/joinGame/${gameId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Cookies.get('token')}`
-      },
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        console.log('Response Status:', response.status);
-        console.log('Response Headers:', response.headers);
-        return response.json();  // Parse the response as JSON and return the promise
-      })
-      .then(data => {
-        console.log('Data from server:', data)
-        if (data.success) {
-          navigate(`/play/kriegspiel/${gameId}`);
-        } else {
-          setMessage(data.message);
-          console.log(data.message);
-        }
-      });
-      */
   };
 
 

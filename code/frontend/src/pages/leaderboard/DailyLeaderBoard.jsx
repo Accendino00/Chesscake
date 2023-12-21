@@ -5,6 +5,7 @@ import LeaderBoardRecord from './LeaderBoardRecord.jsx';
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
 
+import ShareButton from '../components/ShareButton.jsx';
 
 function DailyLeaderBoard() {
     const [leaderboardData, setLeaderboardData] = useState([]);
@@ -61,6 +62,18 @@ function DailyLeaderBoard() {
                     <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
                     <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
                 </>) : (
+
+                    leaderboardData.leaderboard.length === 0 ? (
+                        <Typography variant="h6" sx={{
+                            fontSize: "15px",
+                            fontWeight: "bold",
+                            color: "#1976d2",
+                            marginTop: "20px",
+                            marginBottom: "10px"
+                        }}>
+                            Nessun record da mostrare
+                        </Typography>
+                    ) :
                     <>
                         {leaderboardData.leaderboard.map((record, index, array) => {
                             return (
@@ -84,6 +97,19 @@ function DailyLeaderBoard() {
                         marginBottom: "10px",
                     }}>
                         Il tuo profilo
+                        <ShareButton 
+                            width="20px"
+                            height="20px"
+                            text={"Ho battuto la daily challenge di Really Bad Chess di oggi con " + (loading ? "" : leaderboardData.userPlace.moves) + "! Provalo anche tu sul sito di Chess Cake!"}
+                            style={{
+                                marginLeft: "10px",
+                                width: "30px",
+                                minWidth: "30px",
+                                height: "30px",
+                            }}
+
+                            disabled={loading}
+                        />
                     </Typography>
                     {loading ? (
                         <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />

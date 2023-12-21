@@ -4,7 +4,7 @@ const styles = {
     padding: '20px',
     backgroundColor: '#FFFFFF',
     boxShadow: '0px 0px 10px 0px rgba(0,0,0,0.5)',
-    width: "700px",
+    width: "900px",
     marginTop: "30px",
     display: "flex",
     flexDirection: "row",
@@ -28,7 +28,7 @@ const styles = {
     alignItems: "center",
     alignContent: "center",
     flexWrap: "nowrap",
-    width: "68%",
+    width: "75%",
   },
 
   BoxGeneralUltimePartite: {

@@ -8,7 +8,7 @@ import {
 import { Button, Box } from "@mui/material/";
 import { Facebook, Reddit } from "@mui/icons-material/";
 
-const ShareAppList = ({ sharedText }) => {
+const ShareAppList = ({ sharedText, url }) => {
   return (
     <Box
       sx={{
@@ -20,7 +20,7 @@ const ShareAppList = ({ sharedText }) => {
       }}
     >
       <FacebookShareButton
-        url={"https://site222341.cs.unibo.it/"}
+        url={url}
         hashtag="#chesscake"
         style={{
           display: "flex",
@@ -39,7 +39,7 @@ const ShareAppList = ({ sharedText }) => {
         Condividi
       </FacebookShareButton>
       <TwitterShareButton
-        url={"https://site222341.cs.unibo.it/"}
+        url={url}
         title={sharedText}
         hashtags={["chesscake", "veryfun"]}
         style={{
@@ -64,7 +64,7 @@ const ShareAppList = ({ sharedText }) => {
         Condividi
       </TwitterShareButton>
       <RedditShareButton
-        url={"https://site222341.cs.unibo.it/"}
+        url={url}
         title={sharedText}
         style={{
           display: "flex",

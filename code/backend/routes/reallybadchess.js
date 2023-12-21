@@ -264,8 +264,13 @@ router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
     });
   }
 
-  // Imposto il "side" del giocatore che sta cercando di fare la mossa
-  let winnerSide = game.gameOver.winner;
+  // Imposto il "side" del giocatore opposto a colui che sta cercando di fare la mossa
+  let winnerSide = "";
+  if (req.user.username === game.player1.username) {
+    winnerSide = "p2";
+  } else {
+    winnerSide = "p1";
+  }
 
   let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "surrender");
 

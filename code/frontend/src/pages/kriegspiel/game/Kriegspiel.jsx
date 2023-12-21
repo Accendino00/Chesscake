@@ -545,13 +545,16 @@ function Kriegspiel() {
             onClick={() => {
               // Copiare nella clipboard in path
               navigator.clipboard.writeText(
-                `http://localhost:3000/play/kriegspiel/${gameId}`
+                window.location.href
               );
             }}
           >
             Copia il link di invito!{" "}
           </Button>
-          <ShareButton />
+          <ShareButton 
+            url={window.location.href}
+            text={"Sfidami su Kriegspiel! Entra dentro la mia lobby per giocare con me!"}
+          />
         </Box>
       </Box>
     );
@@ -597,8 +600,33 @@ function Kriegspiel() {
               >
                 Esci
               </Button>
-
-              <ShareButton />
+              <ShareButton
+                text={
+                  winner == player1 && player1 == username
+                    ? " Ho vinto questa partita in online di Kriegspiel con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player2
+                    : winner == player2 && player2 == username
+                    ? "Ho vinto questa partita in online di Kriegspiel con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player1
+                    : player1 == username
+                    ? "Ho perso questa partita in online di Kriegspiel con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player2
+                    : "Ho perso questa partita in online di Kriegspiel con " +
+                      chess.moveNumber() +
+                      " mosse contro " +
+                      player1
+                }
+                style={{
+                  width: "100%",
+                  height: "40px",
+                }}
+              />
 
             </Stack>
           </Box>

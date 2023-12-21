@@ -63,20 +63,118 @@ function getAccountData(username, res) {
           message: "Utente non trovato",
         });
       } else {
-        res.status(200).send({
-          success: true,
-          message: "Informazioni prese con successo",
-          accountData: {
-            username: user.username,
-            elo: user.rbcELO,
-            winrate: 0.5, // Da fare usando una query
-            currentRank: user.rbcCurrentRank,
-            maxRank: user.rbcMaxRank,
-            currentDailyRecord: "", // Da fare usando una query
-            maxDailyRecord: 3, // Da fare usando una query
-          },
-          playerRequesting: username,
-        });
+        // Prendo il numero di partite giocate per il calcolo del winrate in playerVsPlayerOnline
+        const gamesCollection = clientMDB
+          .db("ChessCake")
+          .collection("Games");
+        gamesCollection
+          .find({
+            $or: [
+              { "Player1.username": username },
+              { "Player2.username": username },
+            ],
+          })
+          .toArray()
+          .then((games) => {
+            let winrate = 0;
+            let gamesPlayed = 0;
+            let gamesWon = 0;
+
+            let kriWinrate = 0;
+            let k_gamesPlayed = 0;
+            let k_gamesWon = 0;
+            games.forEach((game) => {
+              if (game.matches.mode == "playerVsPlayerOnline") {
+                if (
+                  (game.Player1.username == username &&
+                    game.matches.gameData.vincitore == "p1") ||
+                  (game.Player2.username == username &&
+                    game.matches.gameData.vincitore == "p2")
+                ) {
+                  gamesWon++;
+                }
+                gamesPlayed++;
+              } else if (game.matches.mode == "kriegspiel") {
+                if (
+                  (game.Player1.username == username &&
+                    game.matches.gameData.vincitore == "p1") ||
+                  (game.Player2.username == username &&
+                    game.matches.gameData.vincitore == "p2")
+                ) {
+                  k_gamesWon++;
+                }
+                k_gamesPlayed++;
+              }
+            });
+            winrate = gamesWon / gamesPlayed;
+            kriWinrate = k_gamesWon / k_gamesPlayed;
+
+            // Prendo l'elenco di partite delle daily (vinte)
+            // La migliore partita di oggi è quella con il numero minimo di turni
+            // E prendo la partita con il minor numero di turni in generale
+            let today = new Date();
+            let minTurns = null;
+            let turniDaily = null;
+
+            games.forEach((game) => {
+              if (game.matches.mode == "dailyChallenge") {
+                // Vedo se ho vinto la partita
+                // potrei essere sia il player 1 che il player 2, quindi devo controllare (username del palyer "Player1.username")
+                // quale player sono e poi controllare se ho vinto in matches.gameData.vincitore
+                if (
+                  (game.Player1.username == username &&
+                    game.matches.gameData.vincitore == "p1") ||
+                  (game.Player2.username == username &&
+                    game.matches.gameData.vincitore == "p2")
+                ) {
+                  // prendo i turni usati
+                  let side =
+                    game.Player1.username == username
+                      ? game.Player1.side
+                      : game.Player2.side;
+                  let turni =
+                    side == "w"
+                      ? game.matches.gameData.turniBianco
+                      : game.matches.gameData.turniNero;
+
+                  if (minTurns) {
+                    if (turni < minTurns) {
+                      minTurns = turni;
+                    }
+                  } else {
+                    minTurns = turni;
+                  }
+
+                  // Se la partita è di oggi, prendo i turni usati
+                  let dataOraInizio = new Date(game.matches.dataOraInizio);
+                  if (
+                    dataOraInizio.getDate() == today.getDate() &&
+                    dataOraInizio.getMonth() == today.getMonth() &&
+                    dataOraInizio.getFullYear() == today.getFullYear()
+                  ) {
+                    turniDaily = turni;
+                  }
+                }
+              }
+            });
+
+            res.status(200).send({
+              success: true,
+              message: "Informazioni prese con successo",
+              accountData: {
+                username: user.username,
+                elo: user.rbcELO,
+                kriELO: user.kriELO,
+                winrate: winrate,
+                kriWinrate: kriWinrate,
+                currentRank: user.rbcCurrentRank,
+                maxRank: user.rbcMaxRank,
+                currentDailyRecord: turniDaily ? turniDaily : "",
+                maxDailyRecord: minTurns ? minTurns : "",
+              },
+              playerRequesting: username,
+            });
+          });
       }
     })
     .catch((error) => {
@@ -90,7 +188,7 @@ function getAccountData(username, res) {
 router.get("/getLastGames/:username", async function (req, res) {
   const { ObjectId } = require("mongodb");
   const users = clientMDB.db("ChessCake").collection("Users");
-  const games = clientMDB.db("ChessCake").collection("GamesRBC");
+  const games = clientMDB.db("ChessCake").collection("Games");
   // Get the username from the URL
   const username = req.params.username;
 

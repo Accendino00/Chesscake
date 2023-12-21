@@ -12,7 +12,7 @@ let dbs = ["ChessCake"];
 let collections = {
   "ChessCake": [
     "Users", 
-    "GamesRBC",
+    "Games",
   ]
 };
 
@@ -119,7 +119,8 @@ async function checkAndCreateComputerUser() {
         password: "ThisPasswordIsNotHashed",
         rbcELO: 1600,
         rbcCurrentRank: 100,
-        rbcMaxRank: 100
+        rbcMaxRank: 100,
+        kriELO: 1000,
       };
       await collection.insertOne(newUser);
       console.log(`Utente ${username} creato.`);

@@ -7,6 +7,8 @@ import ChessGameStyles from '../ChessGameStyles';
 import { generateBoard, getPiecePosition, cloneChessBoard} from './boardFunctions';
 import { findBestMove } from './movesFunctions';
 
+import ShareButton from "../../components/ShareButton";
+
 function ReallyBadChessLocalFreeplay() {
   const navigate = useNavigate();
 
@@ -312,9 +314,23 @@ function ReallyBadChessLocalFreeplay() {
               <Button variant="outlined" onClick={handleRestart}>
                 Ricomincia
               </Button>
-              <Button variant="text" disabled>
-                Condividi su Facebook
-              </Button>
+              
+              <ShareButton
+                text={
+                  winner == chess.player1
+                    ? " Ho vinto questa partita in locale contro il computer con " +
+                      chess.moveNumber() +
+                      " mosse"
+                    : "Ho perso questa partita in locale contro il computer con " +
+                      chess.moveNumber() +
+                      " mosse"
+                }
+
+                style={{
+                  width: "100%",
+                  height: "40px",
+                }}
+              />
             </Stack>
           </Box>
         </Modal>

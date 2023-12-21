@@ -5,6 +5,8 @@ import LeaderBoardRecord from './LeaderBoardRecord.jsx';
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
 
+import ShareButton from '../components/ShareButton.jsx';
+
 
 function RankLeaderBoard() {
     const [leaderboardData, setLeaderboardData] = useState([]);
@@ -84,6 +86,19 @@ function RankLeaderBoard() {
                         marginBottom: "10px",
                     }}>
                         Il tuo profilo
+                        <ShareButton 
+                            width="20px"
+                            height="20px"
+                            text={"Ho raggiunto " + (loading ? "" : leaderboardData.userPlace.elo) + " di rank su Really Bad Chess! Provalo anche tu sul sito di Chess Cake!"}
+                            style={{
+                                marginLeft: "10px",
+                                width: "30px",
+                                minWidth: "30px",
+                                height: "30px",
+                            }}
+
+                            disabled={loading}
+                        />
                     </Typography>
                     {loading ? (
                         <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />

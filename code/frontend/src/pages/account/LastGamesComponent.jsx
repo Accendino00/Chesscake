@@ -15,6 +15,7 @@ import {
   Event,
   SportsKabaddi,
   Replay,
+  VisibilityOff,
 } from "@mui/icons-material";
 import styles from "./AccountPageStyles";
 import ReplayComponent from "../replay/Replay.jsx";
@@ -117,26 +118,25 @@ function LastGamesComponent({ username }) {
                     playerRequesting === game.Player1.username ? (
                       <>
                         <CheckCircle color="success" />
-                        <Typography>Won 2</Typography>
+                        <Typography>Won</Typography>
                       </>
                     ) : (
                       <>
                         <Error color="error" />
-                        <Typography>Los 3t</Typography>
+                        <Typography>Lost</Typography>
                       </>
                     )
-                  ) : (playerRequesting ===
-                    game.Player2.username ? (
+                  ) : playerRequesting === game.Player2.username ? (
                     <>
                       <CheckCircle color="success" />
-                      <Typography>Won 1</Typography>
+                      <Typography>Won</Typography>
                     </>
                   ) : (
                     <>
                       <Error color="error" />
                       <Typography>Lost</Typography>
                     </>
-                  ))}
+                  )}
                 </Box>
               </Grid>
               <Grid item xs={5}>
@@ -178,12 +178,20 @@ function LastGamesComponent({ username }) {
                     <PlayerVsPlayerIcon />
                   ) : game.matches.mode === "playerVsComputer" ? (
                     <PlayerVsComputerIcon />
-                  ) : (
+                  ) : game.matches.mode === "dailyChallenge" ? (
                     <DailyChallengeIcon />
+                  ) : (
+                    <VisibilityOff style={{
+                      width : "24px",
+                      height : "24px",
+                      marginTop : "auto",
+                      marginBottom : "auto",
+                    }} />
                   )}
                   <IconButton
                     component={Link}
                     to={`/replay/${username}:${index}`}
+                    disabled={game.matches.mode === "kriegspiel"}
                   >
                     <Replay />
                   </IconButton>

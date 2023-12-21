@@ -234,7 +234,6 @@ function KriegspielSelection() {
                   </ul>
                   Il gioco è stato ideato da Henry Michael Temple nel 1899, basandosi sull'originale
                   Kriegsspiel del 1812. Su Internet Chess Club, è chiamato Wild 16.
-                  <br /> <br />
                 </Typography>
               </AccordionDetails>
             </Accordion>

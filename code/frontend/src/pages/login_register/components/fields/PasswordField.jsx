@@ -13,7 +13,6 @@ export default function PasswordField({password, setPassword, error, confirmPass
 
   return (
       <TextField
-        labelId="passwordRegisterField"
         sx = {styles.passwordTextField}
         variant="filled"
         error={error}
