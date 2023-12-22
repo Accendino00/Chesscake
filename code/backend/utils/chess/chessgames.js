@@ -43,7 +43,7 @@ module.exports = {
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
-      values = generateBoardWithSeed("dailyChallenge", 18747, 50);
+      values = generateBoardWithSeed("dailyChallenge", 0, 50);
     } else if (settings.mode == "playerVsPlayerOnline") {
       values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
     } else if (settings.mode == "kriegspiel") {
@@ -393,14 +393,9 @@ module.exports = {
         ) - game.player2.elo,
       matches: {
         mode: game.gameSettings.mode,
-        seed: game.matches.seed,
         dataOraInizio: game.matches.dataOraInizio,
         moves: game.chess.history(),
-        board: generateBoardWithSeed(
-          game.gameSettings.mode,
-          game.matches.seed,
-          game.gameSettings.mode === "dailyChallenge" ? 50 : game.gameSettings.rank
-        ).board._header.FEN,
+        board: game.chess.history().length === 0 ? game.chess.fen() : game.chess.history({verbose: true})[0].before,
         gameData: {
           turniBianco: game.chess
             .history()
