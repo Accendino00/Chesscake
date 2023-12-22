@@ -6,8 +6,10 @@ var {
   getPiecePosition,
   cloneChessBoard,
   generateBoardWithSeed,
+  rng,
 } = require("./boardFunctions");
 var { clientMDB } = require("../dbmanagement");
+var { findBestMove } = require("./movesFunctions");
 
 var chessGames = [];
 
@@ -34,7 +36,7 @@ module.exports = {
     let gameId =
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
-    
+
     let board = new Chess();
     let seed = 0;
     board.clear();
@@ -52,12 +54,11 @@ module.exports = {
       values = { board: new Chess(), seed: "nonrandom" };
       values.board.fen();
       values.board._header.FEN = values.board.fen();
-    } else{
+    } else {
       // In caso contrario lo generiamo in modo casuale
       values = generateBoardWithSeed(null, 0, settings.rank);
       sidePlayer1 = "w";
     }
-
 
     board = values.board;
     seed = values.seed;
@@ -65,7 +66,10 @@ module.exports = {
     // Prendi l'elo dei giocatori dal backend
     let eloPlayer1 = 0;
     let eloPlayer2 = 0;
-    if (settings.mode === "playerVsPlayerOnline" || settings.mode === "kriegspiel") {
+    if (
+      settings.mode === "playerVsPlayerOnline" ||
+      settings.mode === "kriegspiel"
+    ) {
       const db = clientMDB.db("ChessCake");
       const collection = db.collection("Users");
 
@@ -75,7 +79,12 @@ module.exports = {
         .limit(1)
         .toArray();
 
-      eloPlayer1 = eloPlayer1.length == 1 ? (settings.mode === "kriegspiel" ? eloPlayer1[0].kriELO : eloPlayer1[0].rbcELO) : 400;
+      eloPlayer1 =
+        eloPlayer1.length == 1
+          ? settings.mode === "kriegspiel"
+            ? eloPlayer1[0].kriELO
+            : eloPlayer1[0].rbcELO
+          : 400;
 
       // Prendiamo l'elo del giocatore 2
       eloPlayer2 = await collection
@@ -83,7 +92,12 @@ module.exports = {
         .limit(1)
         .toArray();
 
-      eloPlayer2 = eloPlayer2.length == 1 ? (settings.mode === "kriegspiel" ? eloPlayer1[0].kriELO : eloPlayer1[0].rbcELO) : eloPlayer1;
+      eloPlayer2 =
+        eloPlayer2.length == 1
+          ? settings.mode === "kriegspiel"
+            ? eloPlayer1[0].kriELO
+            : eloPlayer1[0].rbcELO
+          : eloPlayer1;
     }
 
     // Aggiungiamo la partita di scacchi
@@ -108,7 +122,7 @@ module.exports = {
         elo: eloPlayer2,
       },
 
-      lastMove: 'b', // "w" o "b" per indicare chi ha mosso per ultimo
+      lastMove: "b", // "w" o "b" per indicare chi ha mosso per ultimo
       lastMoveTargetSquare: null, // Casella di arrivo dell'ultima mossa
       lastMoveChessPiece: null, // Pezzo che è stato mosso per ultimo
 
@@ -157,7 +171,12 @@ module.exports = {
       .limit(1)
       .toArray();
 
-    eloPlayer2 = eloPlayer2.length == 1 ? (game.gameSettings.mode === "kriegspiel" ? eloPlayer2[0].kriELO : eloPlayer2[0].rbcELO) : 400;
+    eloPlayer2 =
+      eloPlayer2.length == 1
+        ? game.gameSettings.mode === "kriegspiel"
+          ? eloPlayer2[0].kriELO
+          : eloPlayer2[0].rbcELO
+        : 400;
 
     game.player2.elo = eloPlayer2;
   },
@@ -209,7 +228,7 @@ module.exports = {
    * @param {string} move
    * @returns true se la mossa è stata aggiunta, false altrimenti
    */
-  
+
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -223,10 +242,10 @@ module.exports = {
     if (game.player2.interval !== null) clearInterval(game.player2.interval);
 
     // Impostiamo il game over
-    
-      game.gameOver.isGameOver = true;
-      game.gameOver.winner = winner;
-      game.gameOver.reason = reason;
+
+    game.gameOver.isGameOver = true;
+    game.gameOver.winner = winner;
+    game.gameOver.reason = reason;
 
     let returnValue = false;
 
@@ -244,8 +263,12 @@ module.exports = {
           winner
         );
         returnValue = this.saveGame(game.gameId);
-      } else if (game.gameSettings.mode === "kriegspiel" ) {
-        returnValue = this.changeEloKriegspiel(game.player1, game.player2, winner);
+      } else if (game.gameSettings.mode === "kriegspiel") {
+        returnValue = this.changeEloKriegspiel(
+          game.player1,
+          game.player2,
+          winner
+        );
         returnValue = this.saveGame(game.gameId);
       }
     }
@@ -262,26 +285,26 @@ module.exports = {
     const fenRegex = /^([^\s]+ [wb] [KQkq-]+) /; // Regular expression to accurately capture piece positions, active color, and castling availability
 
     for (const move of history) {
-        // Extract the relevant part of the FEN string
-        const match = fenRegex.exec(move.before);
-        if (match) {
-            let fenKey = match[1]; // match[1] contains the specific matched string
+      // Extract the relevant part of the FEN string
+      const match = fenRegex.exec(move.before);
+      if (match) {
+        let fenKey = match[1]; // match[1] contains the specific matched string
 
-            // Count occurrences of each FEN string
-            fenCounts[fenKey] = (fenCounts[fenKey] || 0) + 1;
+        // Count occurrences of each FEN string
+        fenCounts[fenKey] = (fenCounts[fenKey] || 0) + 1;
 
-            // Check for threefold repetition
-            if (fenCounts[fenKey] >= 3) {
-                return true;
-            }
+        // Check for threefold repetition
+        if (fenCounts[fenKey] >= 3) {
+          return true;
         }
+      }
     }
 
     return false;
   },
   checkFiftyMoveRule: function checkFiftyMoveRule(history) {
     let fiftyMoveRule = false;
-    if(history.length < 50) return false;
+    if (history.length < 50) return false;
     for (let i = 0; i < history.length; i++) {
       if (history[i].flags === 2 || history[i].piece === "p") {
         fiftyMoveRule = false;
@@ -316,7 +339,7 @@ module.exports = {
       chessMove._half_moves = game.chess._half_moves;
       chessMove._move_number = game.chess._move_number;
       chessMove._history = game.chess._history;
-      
+
       // Effettua la mossa
       check = chessMove.move(mossa);
       game.chess = new Chess();
@@ -347,16 +370,65 @@ module.exports = {
     // Se la mossa è valida
     if (check !== null) {
       let currentPlayerTurn =
-        game.chess._turn === game.player1.side ? "p2" : "p1";
+        game.chess._turn === game.player1.side ? "p1" : "p2";
+      let possibleWinnerTurn = currentPlayerTurn === "p1"  ? "p2" : "p1";
+      
       // Controlla se c'è uno scacco matto
-      console.log(this.checkThreefoldRepetition(game.chess.history({verbose: true})));
       if (game.chess.isCheckmate()) {
-        this.handleGameOver(game, currentPlayerTurn, "checkmate");
-      } else if (game.chess.isStalemate()){
-        this.handleGameOver(game, currentPlayerTurn, "stalemate");
-      } else if(game.chess.isInsufficientMaterial()){
-        this.handleGameOver(game, currentPlayerTurn, "insufficient_material");
+        this.handleGameOver(game, possibleWinnerTurn, "checkmate");
+      } else if (game.chess.isStalemate()) {
+        this.handleGameOver(game, possibleWinnerTurn, "stalemate");
+      } else if (game.chess.isInsufficientMaterial()) {
+        this.handleGameOver(game, possibleWinnerTurn, "insufficient_material");
       } else {
+        // Se non ci sono gameover
+        // Se sono in una modalità PvE, allora creo un timer che fa muovere il computer
+        // dopo 2 secondi, solo nel caso in cui il computer non abbia già mosso
+        if (
+          (game.gameSettings.mode === "playerVsComputer" ||
+            game.gameSettings.mode === "dailyChallenge") &&
+          // Check che non sia il turno del computer, ma che sia il turno del giocatore
+          (game.player1.username === "Computer"
+            ? // Se il computer è il player 1
+              currentPlayerTurn === "p1"
+            : // Se il computer è il player 2
+              currentPlayerTurn === "p2")
+        ) {
+          setTimeout(() => {
+            let chosenMove = game.chess.moves({ verbose: true })[
+              Math.floor(Math.random() * game.chess.moves().length)
+            ];
+            if (game.gameSettings.mode === "playerVsComputer") {
+              findBestMove(game.chess.fen(), 1, 0)
+                .then((Move) => {
+                    this.movePiece(game.gameId, {
+                      from: Move.slice(0, 2),
+                      to: Move.slice(2, 4),
+                      promotion: "q",
+                    });
+                })
+                .catch((err) => {
+                  console.log(err);
+                    this.movePiece(game.gameId, {
+                      from: chosenMove.from,
+                      to: chosenMove.to,
+                      promotion: "q",
+                    });
+                });
+            } else {
+              if (rng != null)
+                chosenMove = game.chess.moves({ verbose: true })[
+                  Math.floor(rng() * chess.moves().length)
+                ];
+                this.movePiece(game.gameId, {
+                  from: chosenMove.from,
+                  to: chosenMove.to,
+                  promotion: "q",
+                });
+            }
+          }, 3000);
+        }
+
         // Aggiorna il timer per interrompere l'ultimo intervallo
         // e avviare l'intervallo per il giocatore che deve muovere
         // Se sono definiti
@@ -403,7 +475,7 @@ module.exports = {
     }
   },
 
-  undoMove(gameId, username) {
+  undoMove(gameId) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
     let returnVal = false;
@@ -411,13 +483,43 @@ module.exports = {
     // Se il game non è kriegspiel
     if (game.gameSettings.mode !== "kriegspiel") {
       // Capiamo se si può fare l'undo
-      if (game.chess.history().length >= game.lastUndoMove && game.undoEnabled
-        && (game.chess.turn() === game.player1.side && username === game.player1.username
-          || game.chess.turn() === game.player2.side && username === game.player2.username)) {
-        game.chess.undo();
-        game.chess.undo();
+      if (
+        game.chess.history().length >= game.lastUndoMove &&
+        game.undoEnabled
+      ) {
         game.undoEnabled = false;
         game.lastUndoMove = game.chess.history().length + 1;
+        
+        let chessMove = new Chess(game.chess.fen());
+        
+        chessMove = game.chess;
+        //Riporto indietro tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
+        chessMove._header.FEN = game.chess.fen();
+        chessMove._kings = game.chess._kings;
+        chessMove._castling = game.chess._castling;
+        chessMove._en_passant = game.chess._en_passant;
+        chessMove._half_moves = game.chess._half_moves;
+        chessMove._move_number = game.chess._move_number;
+        chessMove._history = game.chess._history;
+        chessMove._turn = game.chess._turn;
+        chessMove._board = game.chess._board;
+
+        chessMove.undo();
+        chessMove.undo();
+
+
+        game.chess = new Chess();
+        game.chess = chessMove;
+        //Riporto indietro tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
+        game.chess._header.FEN = chessMove.fen();
+        game.chess._kings = chessMove._kings;
+        game.chess._castling = chessMove._castling;
+        game.chess._en_passant = chessMove._en_passant;
+        game.chess._half_moves = chessMove._half_moves;
+        game.chess._move_number = chessMove._move_number;
+        game.chess._history = chessMove._history;
+        game.chess._turn = chessMove._turn;
+        game.chess._board = chessMove._board;  
 
         returnVal = true;
       }
@@ -462,14 +564,16 @@ module.exports = {
         mode: game.gameSettings.mode,
         dataOraInizio: game.matches.dataOraInizio,
         moves: game.chess.history(),
-        board: game.chess.history().length === 0 ? game.chess.fen() : game.chess.history({verbose: true})[0].before,
+        board:
+          game.chess.history().length === 0
+            ? game.chess.fen()
+            : game.chess.history({ verbose: true })[0].before,
         gameData: {
           turniBianco: game.chess
             .history()
             .filter((_, index) => index % 2 === 0).length,
-          turniNero: game.chess
-            .history()
-            .filter((_, index) => index % 2 === 1).length,
+          turniNero: game.chess.history().filter((_, index) => index % 2 === 1)
+            .length,
           rankUsato: game.gameSettings.rank,
           vincitore: game.gameOver.winner,
           tipoVittoria: {
@@ -525,11 +629,19 @@ module.exports = {
     let nuovoEloPlayer1 = 0;
     let nuovoEloPlayer2 = 0;
     if (outcome === "p1") {
-      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p1"));
-      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p2"));
+      nuovoEloPlayer1 = Math.round(
+        this.calculateEloChange(player1.elo, player2.elo, "p1")
+      );
+      nuovoEloPlayer2 = Math.round(
+        this.calculateEloChange(player2.elo, player1.elo, "p2")
+      );
     } else {
-      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p2"));
-      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p1"));
+      nuovoEloPlayer1 = Math.round(
+        this.calculateEloChange(player1.elo, player2.elo, "p2")
+      );
+      nuovoEloPlayer2 = Math.round(
+        this.calculateEloChange(player2.elo, player1.elo, "p1")
+      );
     }
 
     // Aggiorniamo i valori nel database
@@ -549,15 +661,23 @@ module.exports = {
     );
   },
 
-  changeEloKriegspiel (player1, player2, outcome) {
+  changeEloKriegspiel(player1, player2, outcome) {
     let nuovoEloPlayer1 = 0;
     let nuovoEloPlayer2 = 0;
     if (outcome === "p1") {
-      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p1"));
-      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p2"));
+      nuovoEloPlayer1 = Math.round(
+        this.calculateEloChange(player1.elo, player2.elo, "p1")
+      );
+      nuovoEloPlayer2 = Math.round(
+        this.calculateEloChange(player2.elo, player1.elo, "p2")
+      );
     } else {
-      nuovoEloPlayer1 = Math.round(this.calculateEloChange(player1.elo, player2.elo, "p2"));
-      nuovoEloPlayer2 = Math.round(this.calculateEloChange(player2.elo, player1.elo, "p1"));
+      nuovoEloPlayer1 = Math.round(
+        this.calculateEloChange(player1.elo, player2.elo, "p2")
+      );
+      nuovoEloPlayer2 = Math.round(
+        this.calculateEloChange(player2.elo, player1.elo, "p1")
+      );
     }
 
     // Aggiorniamo i valori nel database
@@ -612,5 +732,4 @@ module.exports = {
       { $set: { rbcCurrentRank: nuovoRankPlayer1 } }
     );
   },
-
 };

@@ -139,27 +139,20 @@ function Kriegspiel() {
 
       // Impostazione dei timer
       if (response.game.player1.username === username) {
-        if (playerSide === "white") {
+        if (playerSide === "w") {
           setTimeBianco(response.game.player1.timer);
           setTimeNero(response.game.player2.timer);
-
         } else {
           setTimeBianco(response.game.player2.timer);
           setTimeNero(response.game.player1.timer);
-
-
         }
       } else {
-        if (playerSide === "white") {
+        if (playerSide === "w") {
           setTimeBianco(response.game.player2.timer);
           setTimeNero(response.game.player1.timer);
-
-
         } else {
           setTimeBianco(response.game.player1.timer);
           setTimeNero(response.game.player2.timer);
-
-
         }
       }
       
@@ -698,15 +691,15 @@ function Kriegspiel() {
       <Box sx={GameStyles.backgroundWrapper}>
         <Box sx={GameStyles.boxTimer}>
           <Timer
-            time={timeBianco}
-            setTime={setTimeBianco}
+            time={playerSide === "w" ? timeBianco : timeNero}
+            setTime={playerSide === "w" ? setTimeBianco : setTimeNero}
             shouldRun={gameData.lastMove !== playerSide}
             playerColor={playerSide === "w" ? "white" : "black"}
             justForDisplay={true}
           />
           <Timer
-            time={timeNero}
-            setTime={setTimeNero}
+            time={playerSide !== "w" ? timeBianco : timeNero}
+            setTime={playerSide !== "w" ? setTimeBianco : setTimeNero}
             shouldRun={gameData.lastMove === playerSide}
             playerColor={playerSide === "w" ? "black" : "white"}
             justForDisplay={true}

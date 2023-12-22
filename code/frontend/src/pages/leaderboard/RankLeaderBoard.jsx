@@ -164,7 +164,7 @@ function RankLeaderBoard() {
               height="20px"
               text={
                 "Ho raggiunto " +
-                (loading ? "" : leaderboardData.userPlace.elo) +
+                (loading ? "" : leaderboardData.userPlace.rank) +
                 " di rank su Really Bad Chess! Provalo anche tu sul sito di Chess Cake!"
               }
               style={{

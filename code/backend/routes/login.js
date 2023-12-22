@@ -23,7 +23,7 @@ function logUser(username, password) {
                             if (!result) {
                                 reject({ message: "Password errata", status: 403, returnBody: { success: false } });
                             } else {
-                                const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '2h' });
+                                const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '7d' });
                                 resolve({ message: "Login completato", status: 200, returnBody: { success: true, token: token } });
                             }
                         },

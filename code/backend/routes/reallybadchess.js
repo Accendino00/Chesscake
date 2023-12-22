@@ -174,7 +174,7 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
 
   // Imposto il "side" del giocatore che sta cercando di fare la mossa
   let side = null;
-  const { username } = req.body ? req.body : { username: req.user.username };
+  const username = req.user.username;
   if (username === game.player1.username) {
     side = game.player1.side;
   } else {
@@ -264,9 +264,10 @@ router.post("/undoMove/:gameId", authenticateJWT, (req, res) => {
     });
   }
 
+
   // Imposto il "side" del giocatore che sta cercando di fare la l'undo
   let side = null;
-  const { username } = req.body ? req.body : { username: req.user.username };
+  const username = req.user.username;
   if (username === game.player1.username) {
     side = game.player1.side;
   } else {

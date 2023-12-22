@@ -104,7 +104,7 @@ function ReallyBadChessOnline() {
         }
         // Impostazione dei timer
         if (response.game.player1.username === username) {
-          if (playerSide === "white") {
+          if (playerSide === "w") {
             setTimeBianco(response.game.player1.timer);
             setTimeNero(response.game.player2.timer);
           } else {
@@ -112,7 +112,7 @@ function ReallyBadChessOnline() {
             setTimeNero(response.game.player1.timer);
           }
         } else {
-          if (playerSide === "white") {
+          if (playerSide === "w") {
             setTimeBianco(response.game.player2.timer);
             setTimeNero(response.game.player1.timer);
           } else {
@@ -239,43 +239,43 @@ function ReallyBadChessOnline() {
     return () => clearInterval(interval);
   }, [gameData, isTokenLoading, loginStatus, gameId, username]);
 
-  useEffect(() => {
-    if (gameData != null) {
-      if (
-        gameData.gameSettings.mode === "dailyChallenge" ||
-        gameData.gameSettings.mode === "playerVsComputer"
-      ) {
-        if (
-          (gameData.chess._turn === gameData.player2.side &&
-            gameData.player2.username === "Computer") ||
-          (gameData.chess._turn === gameData.player1.side &&
-            gameData.player1.username === "Computer")
-        ) {
-          setTimeout(() => {
-            let chosenMove = chess.moves({ verbose: true })[
-              Math.floor(Math.random() * chess.moves().length)
-            ];
-            if (gameData.gameSettings.mode === "playerVsComputer") {
-              findBestMove(chess.fen(), 2, 0)
-                .then((Move) => {
-                  makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
-                })
-                .catch((err) => {
-                  console.log(err);
-                  makeMove(chosenMove.from, chosenMove.to, player2);
-                });
-            } else {
-              if (rng != null)
-                chosenMove = chess.moves({ verbose: true })[
-                  Math.floor(rng() * chess.moves().length)
-                ];
-              makeMove(chosenMove.from, chosenMove.to, player2);
-            }
-          }, 2000);
-        }
-      }
-    }
-  }, [currentTurn != playerSide]);
+  // useEffect(() => {
+  //   if (gameData != null) {
+  //     if (
+  //       gameData.gameSettings.mode === "dailyChallenge" ||
+  //       gameData.gameSettings.mode === "playerVsComputer"
+  //     ) {
+  //       if (
+  //         (gameData.chess._turn === gameData.player2.side &&
+  //           gameData.player2.username === "Computer") ||
+  //         (gameData.chess._turn === gameData.player1.side &&
+  //           gameData.player1.username === "Computer")
+  //       ) {
+  //         setTimeout(() => {
+  //           let chosenMove = chess.moves({ verbose: true })[
+  //             Math.floor(Math.random() * chess.moves().length)
+  //           ];
+  //           if (gameData.gameSettings.mode === "playerVsComputer") {
+  //             findBestMove(chess.fen(), 2, 0)
+  //               .then((Move) => {
+  //                 makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
+  //               })
+  //               .catch((err) => {
+  //                 console.log(err);
+  //                 makeMove(chosenMove.from, chosenMove.to, player2);
+  //               });
+  //           } else {
+  //             if (rng != null)
+  //               chosenMove = chess.moves({ verbose: true })[
+  //                 Math.floor(rng() * chess.moves().length)
+  //               ];
+  //             makeMove(chosenMove.from, chosenMove.to, player2);
+  //           }
+  //         }, 2000);
+  //       }
+  //     }
+  //   }
+  // }, [currentTurn != playerSide]);
 
   const handleUndo = async () => {
     if (undoEnabled) {
@@ -386,7 +386,7 @@ function ReallyBadChessOnline() {
     // Se il turno non è del giocatore attuale allora non lo mostro
     if (
       gameData.lastMove === playerSide ||
-      (gameData.lastMove === null && playerSide === "black")
+      (gameData.lastMove === null && playerSide === "b")
     ) {
       return;
     }
@@ -499,16 +499,16 @@ function ReallyBadChessOnline() {
       <Box sx={ChessGameStyles.backgroundWrapper}>
         <Box sx={ChessGameStyles.boxTimer}>
           <Timer
-            time={timeBianco}
-            setTime={setTimeBianco}
-            shouldRun={currentTurn === playerSide}
+            time={playerSide === "w" ? timeBianco : timeNero}
+            setTime={playerSide === "w" ? setTimeBianco : setTimeNero}
+            shouldRun={currentTurn === playerSide }
             playerColor={playerSide === "w" ? "white" : "black"}
             justForDisplay={true}
           />
           <Timer
-            time={timeNero}
-            setTime={setTimeNero}
-            shouldRun={currentTurn === playerSide}
+            time={playerSide !== "w" ? timeBianco : timeNero}
+            setTime={playerSide !== "w" ? setTimeBianco : setTimeNero}
+            shouldRun={currentTurn !== playerSide }
             playerColor={playerSide === "w" ? "black" : "white"}
             justForDisplay={true}
           />
