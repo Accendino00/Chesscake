@@ -1,58 +1,59 @@
 // Replay.jsx
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@mui/material";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
-import ChessGameStyles from "../chessboard/ChessGameStyles.jsx";
+import ChessGameStyles from "../reallybadchess/ChessGameStyles.jsx";
 import { useNavigate } from "react-router-dom";
+let chess = new Chess();
 
-const Replay = ({ gameHistory = "" }) => {
+const Replay = () => {
+  const location = useLocation();
+  const gameHistory = location.state.gameHistory;
+  const initialState = location.state.initialState;
   const navigate = useNavigate();
-
-  const [fen, setFen] = useState("start");
+  const [fen, setFen] = useState(initialState);
   const [currentMove, setCurrentMove] = useState(0);
-  const chess = new Chess();
-  let isNextMoveAvailable = currentMove + 1 < gameHistory.length;
+  const currentPlayer = chess.turn();
+  console.log(currentPlayer); // logs 'w' or 'b'
+  console.log("currentMove: " + currentMove);
+  let isNextMoveAvailable = currentMove + 1 <= gameHistory.length;
   let isPreviousMoveAvailable = currentMove - 1 >= 0;
-
   useEffect(() => {
     replayGame();
   }, []);
-
+  
   const replayGame = () => {
-    console.log("Rendering Replay component");
     // Set the current move to the first move
     setCurrentMove(0);
-    const moves = gameHistory.split(" ").filter((move) => isNaN(move));
-    moves.forEach((move) => {
-      chess.move(move, { sloppy: true });
-    });
-    const newFen = chess.fen();
-    setFen(newFen);
-  };
-
-  const loadGameState = (fen) => {
-    setFen(fen);
     chess.load(fen);
   };
 
   const handleNextMove = () => {
     if (isNextMoveAvailable) {
-      const newMove = currentMove + 1;
-      setCurrentMove(newMove);
-      const newFen = gameHistory[newMove];
-      console.log(newFen); // log the new FEN string to the console
-      loadGameState(newFen);
+      const newMove = currentMove;
+      const sanMove = gameHistory[newMove];
+      console.log(sanMove); // log the new SAN move to the console
+      // Check if the move is valid
+      const validMoves = chess.moves();
+      if (validMoves.includes(sanMove)) {
+        chess.move(sanMove);
+        setFen(chess.fen());
+        setCurrentMove(newMove + 1);
+      } else {
+        console.error(`Invalid move: ${sanMove}`);
+      }
     }
   };
 
   const handlePreviousMove = () => {
-    if (isPreviousMoveAvailable) {
-      const newMove = currentMove - 1;
-      setCurrentMove(newMove);
-      const newFen = gameHistory[newMove];
-      console.log(newFen); // log the new FEN string to the console
-      loadGameState(newFen);
+    if (currentMove > 0) {
+      chess.undo();
+      setFen(chess.fen());
+      setCurrentMove(currentMove - 1);
+    } else {
+      console.error("No previous move to undo");
     }
   };
 
@@ -68,7 +69,7 @@ const Replay = ({ gameHistory = "" }) => {
       }}
     >
       <div style={ChessGameStyles.divChessBoard}>
-        <Chessboard position={fen} boardOrientation="white" width={"50vh"} />
+        <Chessboard position={fen} width={"50vh"} />
       </div>
       <div
         style={{

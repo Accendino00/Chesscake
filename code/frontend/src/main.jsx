@@ -42,7 +42,7 @@ function App() {
       element: <LoginPage />,
     },
     {
-      path: "/replay/:gameId",
+      path: "/replay/:username/:index",
       element: <Replay />,
     },
     // Routes with a navbar on the side

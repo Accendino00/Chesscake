@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   IconButton,
@@ -39,8 +39,17 @@ function LastGamesComponent({ username }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [accountFound, setAccountFound] = React.useState(false);
   const [replayGameIndex, setReplayGameIndex] = useState(null);
-
+  const [gameHistory, setGameHistory] = useState(null);
+  const [initialState, setInitialState] = useState(null);
+  const navigate = useNavigate();
   let token = Cookies.get("token");
+
+  useEffect(() => {
+    if (replayGameIndex !== null) {
+      setGameHistory(lastGamesData[replayGameIndex].matches.moves);
+      setInitialState(lastGamesData[replayGameIndex].matches.board);
+    }
+  }, [replayGameIndex]);
 
   React.useEffect(() => {
     if (username) {
@@ -96,9 +105,9 @@ function LastGamesComponent({ username }) {
   }
 
   if (replayGameIndex !== null) {
-    console.log(lastGamesData[replayGameIndex].matches.board);
+    console.log("matches" + lastGamesData[replayGameIndex].matches);
     return (
-      <ReplayComponent game={lastGamesData[replayGameIndex].matches.moves} />
+      <ReplayComponent gameHistory={gameHistory} initialState={initialState} />
     );
   }
   // Placeholder
@@ -189,9 +198,12 @@ function LastGamesComponent({ username }) {
                     }} />
                   )}
                   <IconButton
-                    component={Link}
-                    to={`/replay/${username}:${index}`}
                     disabled={game.matches.mode === "kriegspiel"}
+                    onClick={() => {
+                      const gameHistory = lastGamesData[index].matches.moves;
+                      const initialState = lastGamesData[index].matches.board;
+                      navigate(`/replay/${username}/${index}`, { state: { gameHistory, initialState } });
+                    }}
                   >
                     <Replay />
                   </IconButton>
