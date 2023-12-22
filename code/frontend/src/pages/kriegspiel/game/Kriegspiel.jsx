@@ -61,6 +61,7 @@ function Kriegspiel() {
   const [umpireMove, setUmpireMove] = useState(""); // Se la tua mossa è valida o no
   const [lastMoveForCheck, setLastMoveTargetSquare] = useState(null); // L'ultima mossa per il check
   const [lastMoveChessPiece, setLastMoveChessPiece] = useState(null); // L'ultima mossa per il check
+  const [enPassant, setEnPassant] = useState(false);
   /**
    * Funzione che gestisce tutto quello che è interente al game,
    * usando i dati che vengono ritornati da "api/kriegspiel/getGame/:gameid"
@@ -163,26 +164,58 @@ function Kriegspiel() {
         
         if (lastMove.move.captured !== undefined) {
           let piecePosition = response.game.lastMoveTargetSquare;
-          
-          // if there is no check then the umpire says "Piece gone on " + piecePosition
-          if (lastMove.move.captured === 'p' && !checkCheck()) {
-            setUmpire("Pawn gone on " + piecePosition);
-          } else if (lastMove.move.captured !== 'p' && !checkCheck()){
-            setUmpire("Piece gone on " + piecePosition);
+          if(!(lastMove.move.flags.includes('e'))){
+            setEnPassant(false)
           }
-          // if there is check then the umpire says "Piece gone on " + piecePosition + " and " + checkCheck()
+          // if there is no check then the umpire says "Piece gone on " + piecePosition
+          if(lastMove.move.flags.includes('e')){
+            if (lastMove.move.color == "b"){
+              setUmpire("Black has taken en passant on " + piecePosition);
+              setEnPassant(true);
+            } else if(lastMove.move.color == "w"){
+              setUmpire("White has taken en passant on " + piecePosition);
+              setEnPassant(true);
+            }
+          } else { 
+            // if there is check then the umpire says "Piece gone on " + piecePosition + " and " + checkCheck()
           // since its important to know where the piece was captured and what kind of check it is
-          else if (lastMove.move.captured === 'p' && checkCheck()) {
-            setUmpire("Pawn gone on " + piecePosition + " and " + checkCheck());
-          } else if (lastMove.move.captured !== 'p' && checkCheck()){
-            setUmpire("Piece gone on " + piecePosition + " and " + checkCheck());
+            if (lastMove.move.captured === 'p' && !checkCheck() && !enPassant) {
+              setUmpire("Pawn gone on " + piecePosition);
+            } else if (lastMove.move.captured !== 'p' && !checkCheck() && !enPassant){
+              setUmpire("Piece gone on " + piecePosition);
+            } else if (lastMove.move.captured === 'p' && checkCheck() && !enPassant) {
+              setUmpire("Pawn gone on " + piecePosition + " and " + checkCheck());
+            } else if (lastMove.move.captured !== 'p' && checkCheck() && !enPassant){
+              setUmpire("Piece gone on " + piecePosition + " and " + checkCheck());
+            } else if (lastMove.move.captured !== 'p' && checkCheck() && enPassant == false && enPassant && lastMove.move.color == 'b'){
+              setUmpire("Black has taken en passant on " + piecePosition + " and " + checkCheck());
+            } else if (lastMove.move.captured !== 'p' && checkCheck() && enPassant == false && enPassant && lastMove.move.color == 'w'){
+              setUmpire("White has taken en passant on " + piecePosition + " and " + checkCheck());
+            }
           }
         }
       }
       // Gestione nel caso di gameover
       if (response.game.gameOver.isGameOver) {
         setWinner(response.game.gameOver.winner == "p1" ? player1 : player2);
-        setUmpire("Checkmate");
+        if(response.game.gameOver.reason === "checkmate" || response.game.chess.isCheckmate()){
+          setUmpire("Checkmate");
+        }
+        else if(response.gameOver.reason === "stalemate" || response.game.chess.isStalemate()){
+          setUmpire("Stalemate");
+        }
+        else if(response.gameOver.reason === "timeout"){
+          setUmpire("Timeout");
+        }
+        else if(response.gameOver.reason === "threefold_repetition" || response.game.chess.isThreefoldRepetition()){
+          setUmpire("Draw by Repetition");
+        }
+        else if(response.gameOver.reason === "insufficient_material" || response.game.chess.isInsufficientMaterial()){
+          setUmpire("Draw by insufficient force");
+        }
+        else if(response.gameOver.reason === "50_move_rule"|| (response.game.chess.isDraw() && !(response.game.chess.isInsufficientMaterial()))){
+          setUmpire("50-move draw");
+        }
         setModalIsOpen(true);
       }
     } else {
@@ -591,7 +624,7 @@ function Kriegspiel() {
               >
                 {winner === "Nessuno"
                   ? "Partita finita."
-                  : `${winner} ha vinto!`}
+                  : `${winner} ha vinto per ${umpire}!`}
               </Typography>
               <Button
                 variant="contained"

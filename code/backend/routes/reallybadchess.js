@@ -30,6 +30,8 @@ function resizeGame (game) {
     matches: game.matches,
     gameOver: game.gameOver,
 
+    undoEnabled: game.undoEnabled,
+
     gameId: game.gameId,
     chess: game.chess,
   }
@@ -172,7 +174,7 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
 
   // Imposto il "side" del giocatore che sta cercando di fare la mossa
   let side = null;
-  const { username } = req.body;
+  const { username } = req.body ? req.body : { username: req.user.username };
   if (username === game.player1.username) {
     side = game.player1.side;
   } else {
@@ -231,6 +233,78 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
     return res.status(500).send({
       success: false,
       message: "Internal server error"
+    });
+  }
+});
+
+router.post("/undoMove/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+  // Imposto il "side" del giocatore che sta cercando di fare la l'undo
+  let side = null;
+  const { username } = req.body ? req.body : { username: req.user.username };
+  if (username === game.player1.username) {
+    side = game.player1.side;
+  } else {
+    side = game.player2.side;
+  }
+
+  // controllo in modo che il giocatore nero non possa
+  // muovere pedine bianche e nere
+  if (
+    // Se il giocatore bianco prova a fare una mossa quando l'ultimo turno era suo
+    (game.lastMove === "w" && side === "w") ||
+    // Se il giocatore nero prova a fare una mossa quando l'ultimo turno era suo
+    (game.lastMove === "b" && side === "b") ||
+    // Se il giocatore nero prova a fare una mossa quando non c'è ancora stato nessun turno
+    (game.lastMove === null && side === "b")
+  ) {
+    return res.status(400).send({
+      success: false,
+      game: resizeGame(game),
+      message: "Its not your turn",
+    });
+  }
+
+  // Facciamo la mossa
+  const result = chessGames.undoMove(gameId);
+
+  // Dopo la mossa, otteniamo l'aggiornamento dello stato del gioco
+  // Includiamo le informazioni aggiuntive come il turno di ciascun giocatore
+  if (result) {
+    const updatedGame = chessGames.getGame(gameId);
+    res.status(200).send({
+      success: true,
+      game: resizeGame(updatedGame),
+    });
+  } else {
+    res.status(200).send({
+      success: false,
+      game: resizeGame(game),
     });
   }
 });

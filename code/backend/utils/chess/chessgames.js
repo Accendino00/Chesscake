@@ -40,10 +40,12 @@ module.exports = {
     board.clear();
 
     let values = {};
+    let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
     if (settings.mode == "dailyChallenge") {
       values = generateBoardWithSeed("dailyChallenge", 0, 50);
+      sidePlayer1 = "w";
     } else if (settings.mode == "playerVsPlayerOnline") {
       values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
     } else if (settings.mode == "kriegspiel") {
@@ -53,6 +55,7 @@ module.exports = {
     } else{
       // In caso contrario lo generiamo in modo casuale
       values = generateBoardWithSeed(null, 0, settings.rank);
+      sidePlayer1 = "w";
     }
 
 
@@ -83,7 +86,6 @@ module.exports = {
       eloPlayer2 = eloPlayer2.length == 1 ? (settings.mode === "kriegspiel" ? eloPlayer1[0].kriELO : eloPlayer1[0].rbcELO) : eloPlayer1;
     }
 
-    let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
     // Aggiungiamo la partita di scacchi
     chessGames.push({
       gameSettings: {
@@ -95,20 +97,23 @@ module.exports = {
         username: player1,
         timer: settings.duration * 60,
         interval: null,
-        side: "b",
+        side: sidePlayer1,
         elo: eloPlayer1,
       },
       player2: {
         username: player2,
         timer: settings.duration * 60,
         interval: null,
-        side: "w",
+        side: sidePlayer1 === "w" ? "b" : "w",
         elo: eloPlayer2,
       },
 
       lastMove: 'b', // "w" o "b" per indicare chi ha mosso per ultimo
       lastMoveTargetSquare: null, // Casella di arrivo dell'ultima mossa
       lastMoveChessPiece: null, // Pezzo che è stato mosso per ultimo
+
+      undoEnabled: false, // Se è possibile fare l'undo
+      lastUndoMove: 2, // Numero minimo di mosse per poter fare l'undo (cambia man mano che vengono fatti)
 
       matches: {
         seed: seed, // Seed per generare la board
@@ -295,6 +300,12 @@ module.exports = {
       game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
       game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
       game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
+
+      // Visto che è stata fatta una mossa con successo, possiamo fare l'undo
+      // Solo se siamo oltre il numero minimo di mosse
+      if (game.chess.history().length >= game.lastUndoMove) {
+        game.undoEnabled = true;
+      }
     } catch (error) {
       return false;
     }
@@ -357,6 +368,29 @@ module.exports = {
     } else {
       return false; // Mossa non valida"
     }
+  },
+
+  undoMove(gameId, username) {
+    // Trova la partita di scacchi
+    let game = chessGames.find((game) => game.gameId == gameId);
+    let returnVal = false;
+
+    // Se il game non è kriegspiel
+    if (game.gameSettings.mode !== "kriegspiel") {
+      // Capiamo se si può fare l'undo
+      if (game.chess.history().length >= game.lastUndoMove && game.undoEnabled
+        && (game.chess.turn() === game.player1.side && username === game.player1.username
+          || game.chess.turn() === game.player2.side && username === game.player2.username)) {
+        game.chess.undo();
+        game.chess.undo();
+        game.undoEnabled = false;
+        game.lastUndoMove = game.chess.history().length + 1;
+
+        returnVal = true;
+      }
+    }
+
+    return returnVal;
   },
 
   /**

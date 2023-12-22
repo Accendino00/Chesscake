@@ -42,6 +42,7 @@ function ReallyBadChessOnline() {
   const [gameOver, setGameOver] = useState(false); // Se la partita è finita o no
   const [modalIsOpen, setModalIsOpen] = useState(false); // Se il modal di gameOver è aperto o no
   const [disableSurrender, setDisableSurrender] = useState(false); // Se il bottone di arrendersi è disabilitato o no
+  const [undoEnabled, setUndoEnabled] = useState(false); // Se posso fare un undo o no
 
   // Nomi dei giocatori
   const [player1, setPlayer1] = useState("");
@@ -133,6 +134,13 @@ function ReallyBadChessOnline() {
         setFen(chessTaken.fen());
         checkCheck();
         setCurrentTurn(response.game.chess._turn);
+
+        // Se l'undo è enabled e il turno e mio, imposto "undoEnabled" a true
+        if (response.game.chess._turn === playerSide) {
+          setUndoEnabled(response.game.undoEnabled);
+        }
+
+        console.log(response.game.chess._turn, playerSide, response.game.undoEnabled)
 
         // Gestione nel caso di gameover
         if (response.game.gameOver.isGameOver) {
@@ -268,6 +276,29 @@ function ReallyBadChessOnline() {
       }
     }
   }, [currentTurn != playerSide]);
+
+  const handleUndo = async () => {
+    if (undoEnabled) {
+      setUndoEnabled(false);
+
+      await fetch(`/api/reallybadchess/undoMove/${gameId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            handleGetGameResponse(data);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  };
 
   const handleSquareClick = (square) => {
     if (!selectedSquare) {
@@ -609,6 +640,7 @@ function ReallyBadChessOnline() {
           >
             Arrenditi
           </Button>
+          <Button variant="contained" color="primary" onClick={handleUndo} disabled={!undoEnabled}>Undo</Button>
         </Box>
       </Box>
     </Box>
