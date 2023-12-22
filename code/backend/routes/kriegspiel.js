@@ -285,6 +285,84 @@ router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
   });
 });  
 
+router.post("/isDrawable/:gameId", authenticateJWT, (req, res) => {
+  const { gameId } = req.params;
+  const game = chessGames.getGame(gameId);
+
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  if (req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+  if(chessGames.checkThreefoldRepetition(game.chess.history({verbose: true}))){
+    res.status(200).send({
+      success: true,
+      game: resizeGame(game),
+      message: "Threefold repetition"
+    });
+  } else if(chessGames.checkFiftyMoveRule(game.chess.history({verbose: true}))){
+      res.status(200).send({
+        success: true,
+        game: resizeGame(game),
+        message: "Fifty move rule"
+      });
+  }
+
+  else {
+    res.status(200).send({
+      success: false,
+      game: resizeGame(game),
+    });
+  }
+
+});
+
+router.post("/draw/:gameId", authenticateJWT, (req, res) => {
+  // Prendiamo il gameId
+  const { gameId } = req.params;
+
+  // Prendiamo il game dal database
+  const game = chessGames.getGame(gameId);
+
+  // Se il game non esiste, allora ritorniamo un errore
+  if (!game) {
+    return res.status(404).send({
+      success: false,
+      message: "Game not found",
+    });
+  }
+
+  // Controlliamo che l'utenza sia corretta
+  if (
+    req.user &&
+    req.user.username !== game.player1.username &&
+    req.user.username !== game.player2.username
+  ) {
+    return res.status(403).send({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
+
+  let returnOfGameOver = chessGames.handleGameOver(game, "No one", "draw");
+
+  // Ritorniamo il game
+  res.send({
+    success: returnOfGameOver,
+    game: resizeGame(game)
+  });
+});
 
 
 router.post("/setBoard/:gameId", authenticateJWT, (req, res) => {

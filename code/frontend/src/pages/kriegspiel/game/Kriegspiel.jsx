@@ -62,6 +62,12 @@ function Kriegspiel() {
   const [lastMoveForCheck, setLastMoveTargetSquare] = useState(null); // L'ultima mossa per il check
   const [lastMoveChessPiece, setLastMoveChessPiece] = useState(null); // L'ultima mossa per il check
   const [enPassant, setEnPassant] = useState(false);
+
+  const [isDrawButtonActive, setIsDrawButtonActive] = useState(false); // Se il bottone di arrendersi è attivo o no
+  const [fiftyMoveRule, setFiftyMoveRule] = useState(false); // Se il bottone di arrendersi è attivo o no
+  const [threefoldRepetition, setThreefoldRepetition] = useState(false); // Se il bottone di arrendersi è attivo o no
+  
+
   /**
    * Funzione che gestisce tutto quello che è interente al game,
    * usando i dati che vengono ritornati da "api/kriegspiel/getGame/:gameid"
@@ -161,14 +167,15 @@ function Kriegspiel() {
       if (length > 0) {
         let history = response.game.chess._history;
         let lastMove = history[length - 1];
-        
         if (lastMove.move.captured !== undefined) {
           let piecePosition = response.game.lastMoveTargetSquare;
-          if(!(lastMove.move.flags.includes('e'))){
+          if(!(lastMove.move.flags == 8)){
             setEnPassant(false)
           }
+          console.log('lastmove' + lastMove.move.flags + " type" + typeof lastMove.move.flags)
           // if there is no check then the umpire says "Piece gone on " + piecePosition
-          if(lastMove.move.flags.includes('e')){
+          // 8 is the corresponding flag for en passant
+          if(lastMove.move.flags == 8){
             if (lastMove.move.color == "b"){
               setUmpire("Black has taken en passant on " + piecePosition);
               setEnPassant(true);
@@ -195,26 +202,35 @@ function Kriegspiel() {
           }
         }
       }
-      // Gestione nel caso di gameover
+      // Gestione nel caso di draw
+      checkDraw();
+
       if (response.game.gameOver.isGameOver) {
+        console.log('isgameover')
+        if(threefoldRepetition || fiftyMoveRule){
+          console.log('isdrawbuttonclicked')
+          setWinner("Nessuno");
+          if(threefoldRepetition){
+            setUmpire(" threefold repetition");
+          } else if(fiftyMoveRule){
+            setUmpire(" 50 move rule");
+          }
+          setModalIsOpen(true);
+          return;
+        }
+        console.log('cantgoverhere')
         setWinner(response.game.gameOver.winner == "p1" ? player1 : player2);
-        if(response.game.gameOver.reason === "checkmate" || response.game.chess.isCheckmate()){
+        if(response.game.gameOver.reason === "checkmate"){
           setUmpire("Checkmate");
         }
-        else if(response.gameOver.reason === "stalemate" || response.game.chess.isStalemate()){
+        else if(response.game.gameOver.reason === "stalemate"){
           setUmpire("Stalemate");
         }
-        else if(response.gameOver.reason === "timeout"){
+        else if(response.game.gameOver.reason === "timeout"){
           setUmpire("Timeout");
         }
-        else if(response.gameOver.reason === "threefold_repetition" || response.game.chess.isThreefoldRepetition()){
-          setUmpire("Draw by Repetition");
-        }
-        else if(response.gameOver.reason === "insufficient_material" || response.game.chess.isInsufficientMaterial()){
+        else if(response.game.gameOver.reason === "insufficient_material"){
           setUmpire("Draw by insufficient force");
-        }
-        else if(response.gameOver.reason === "50_move_rule"|| (response.game.chess.isDraw() && !(response.game.chess.isInsufficientMaterial()))){
-          setUmpire("50-move draw");
         }
         setModalIsOpen(true);
       }
@@ -375,6 +391,38 @@ function Kriegspiel() {
     }
   };
 
+  function checkDraw () {
+    console.log('checkdraw')
+    fetch(`/api/kriegspiel/isDrawable/${gameId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Cookies.get("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          console.log('checkdraw success' + data.message)
+          if(data.message === "Fifty move rule"){
+            setFiftyMoveRule(true);
+            setIsDrawButtonActive(true);
+          } else if(data.message === "Threefold repetition"){
+            console.log('checkdraw success' + data.message)
+            setThreefoldRepetition(true);
+            console.log('threefold' + threefoldRepetition)
+            setIsDrawButtonActive(true);
+          }
+        } else {
+          setIsDrawButtonActive(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setIsDrawButtonActive(false);
+      });
+  };
+
   // Gestore delle mosse possibili
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
@@ -516,6 +564,58 @@ function Kriegspiel() {
 
   };
 
+  const handleDrawButtonClick = () => {
+    console.log("im in ma prima")
+    if(isDrawButtonActive){
+      console.log("im in")
+      console.log("threefolds" + threefoldRepetition)
+      console.log("fifty" + fiftyMoveRule)
+      if(fiftyMoveRule){
+        console.log('salvess')
+        setUmpire("Draw by 50 move rule");
+        fetch(`/api/kriegspiel/draw/${gameId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    setWinner("Nessuno");
+                    setModalIsOpen(true);
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                  setIsDrawButtonActive(false);
+                });
+            } else if(threefoldRepetition){
+        console.log('salve')
+        setUmpire("Draw by threefold repetition");
+        fetch(`/api/kriegspiel/draw/${gameId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    setModalIsOpen(true);
+                    setWinner("Nessuno");
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                  setIsDrawButtonActive(false);
+                });
+      }
+    }
+  }
+
   if (isTokenLoading || loginStatus === undefined || !gameGottenOnce) {
     return (
       <Box
@@ -623,7 +723,7 @@ function Kriegspiel() {
                 style={{ margin: "auto" }}
               >
                 {winner === "Nessuno"
-                  ? "Partita finita."
+                  ? `Draw per ${umpire}!`
                   : `${winner} ha vinto per ${umpire}!`}
               </Typography>
               <Button
@@ -703,6 +803,14 @@ function Kriegspiel() {
         </div>
         <Box sx={GameStyles.boxControlButtons}>
           <Button onClick={handleNavigateToPlay}>Esci</Button>
+          <Button 
+            variant="contained" 
+            disabled={!isDrawButtonActive} 
+            onClick={handleDrawButtonClick}
+            style={{ backgroundColor: isDrawButtonActive ? undefined : 'grey' }}
+        >
+            Ask for Draw
+        </Button>
           <Button
             variant="contained"
             color="primary"

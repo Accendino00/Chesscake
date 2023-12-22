@@ -209,7 +209,7 @@ module.exports = {
    * @param {string} move
    * @returns true se la mossa è stata aggiunta, false altrimenti
    */
-
+  
   /**
    *
    * @param {string} game  game id univoco della partita
@@ -223,9 +223,10 @@ module.exports = {
     if (game.player2.interval !== null) clearInterval(game.player2.interval);
 
     // Impostiamo il game over
-    game.gameOver.isGameOver = true;
-    game.gameOver.winner = winner;
-    game.gameOver.reason = reason;
+    
+      game.gameOver.isGameOver = true;
+      game.gameOver.winner = winner;
+      game.gameOver.reason = reason;
 
     let returnValue = false;
 
@@ -255,6 +256,40 @@ module.exports = {
     }, 1000 * 60 * 10);
 
     return returnValue;
+  },
+  checkThreefoldRepetition: function checkThreefoldRepetition(history) {
+    let fenCounts = {};
+    const fenRegex = /^([^\s]+ [wb] [KQkq-]+) /; // Regular expression to accurately capture piece positions, active color, and castling availability
+
+    for (const move of history) {
+        // Extract the relevant part of the FEN string
+        const match = fenRegex.exec(move.before);
+        if (match) {
+            let fenKey = match[1]; // match[1] contains the specific matched string
+
+            // Count occurrences of each FEN string
+            fenCounts[fenKey] = (fenCounts[fenKey] || 0) + 1;
+
+            // Check for threefold repetition
+            if (fenCounts[fenKey] >= 3) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+  },
+  checkFiftyMoveRule: function checkFiftyMoveRule(history) {
+    let fiftyMoveRule = false;
+    if(history.length < 50) return false;
+    for (let i = 0; i < history.length; i++) {
+      if (history[i].flags === 2 || history[i].piece === "p") {
+        fiftyMoveRule = false;
+      } else {
+        fiftyMoveRule = true;
+      }
+    }
+    return fiftyMoveRule;
   },
 
   /**
@@ -314,15 +349,13 @@ module.exports = {
       let currentPlayerTurn =
         game.chess._turn === game.player1.side ? "p2" : "p1";
       // Controlla se c'è uno scacco matto
+      console.log(this.checkThreefoldRepetition(game.chess.history({verbose: true})));
       if (game.chess.isCheckmate()) {
         this.handleGameOver(game, currentPlayerTurn, "checkmate");
-      } else if (
-        game.chess.isStalemate() ||
-        game.chess.isThreefoldRepetition() ||
-        game.chess.isInsufficientMaterial()
-      ) {
-        // Controlla se c'è stallo, pareggio o materiale insufficiente
-        this.handleGameOver(game, currentPlayerTurn, "stall");
+      } else if (game.chess.isStalemate()){
+        this.handleGameOver(game, currentPlayerTurn, "stalemate");
+      } else if(game.chess.isInsufficientMaterial()){
+        this.handleGameOver(game, currentPlayerTurn, "insufficient_material");
       } else {
         // Aggiorna il timer per interrompere l'ultimo intervallo
         // e avviare l'intervallo per il giocatore che deve muovere
