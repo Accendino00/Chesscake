@@ -37,6 +37,10 @@ const Replay = () => {
       console.log(sanMove); // log the new SAN move to the console
       // Check if the move is valid
       const validMoves = chess.moves();
+      console.log("sanMove: " + sanMove);
+      console.log("validMoves: ", validMoves);
+      console.log("fen: " + fen);
+      console.log(chess.ascii());
       if (validMoves.includes(sanMove)) {
         chess.move(sanMove);
         setFen(chess.fen());
@@ -69,7 +73,7 @@ const Replay = () => {
       }}
     >
       <div style={ChessGameStyles.divChessBoard}>
-        <Chessboard position={fen} width={"50vh"} />
+        <Chessboard position={fen} width={"50vh"} draggable={false} />
       </div>
       <div
         style={{
