@@ -1,6 +1,6 @@
 const request = require("supertest");
-const {app} = require("../code/backend/server.js"); // Adjust the path as needed
-let {server} = require("../code/backend/server.js"); // Adjust the path as needed
+const {app} = require("../code/backend/server.js");
+let {server} = require("../code/backend/server.js");
 
 describe("API Tests for /api/leaderboard", () => {
 

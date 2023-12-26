@@ -17,11 +17,11 @@ function registerUser(username, password) {
                 .then((existingUser) => {
                     if (existingUser) {
                         // User already exists, reject the promise
-                        reject(new Error({ 
+                        reject({ 
                             message: "User already exists", 
-                            status: 400, returnBody: 
-                            { success: false, reason: "Username already exists" } 
-                        }));
+                            status: 400, 
+                            returnBody:  { success: false, reason: "Username already exists" } 
+                        });
                         /*reject({ 
                             message: "User already exists", 
                             status: 400, 
@@ -45,11 +45,11 @@ function registerUser(username, password) {
                                 returnBody: { success: true }
                             });
                         }).catch((insertError) => {
-                            reject(new Error({
+                            reject({
                                 message: insertError, 
                                 status: 500, 
                                 returnBody: { success: false }
-                            }));
+                            });
                             // reject({ 
                             //     message: insertError, 
                             //     status: 500, 
@@ -58,25 +58,25 @@ function registerUser(username, password) {
                         });
                     }
                 }).catch((findError) => {
-                    reject(new Error({ 
+                    reject({ 
                         message: findError, 
                         status: 500, 
                         returnBody: { success: false }
-                    }));
+                    });
                 });
             }).catch((error) => {
-                reject(new Error({ 
+                reject({ 
                     message: error, 
                     status: 500, 
                     returnBody: { success: false }
-                }));
+                });
             });
         } catch (error) {
-            reject(new Error({ 
+            reject({ 
                 message: error, 
                 status: 500, 
                 returnBody: { success: false }
-            }));
+            });
         }
     });
 }

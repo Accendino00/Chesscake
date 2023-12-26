@@ -1,5 +1,5 @@
-import {Chess} from 'chess.js';
-import {
+let {Chess} = require('chess.js');
+let {
   generateBoard,
   findChessPiecesWithRank,
   getRandomPieceValue,
@@ -15,7 +15,7 @@ import {
   calculateRanks,
   seededRandom,
   getPiecePosition,
-} from './../code/frontend/src/pages/chessboard/boardFunctions';
+} = require('./../code/frontend/src/pages/chessboard/boardFunctions');
 
 describe('generateBoard', () => {
   test('should generate a new Chess board', () => {
