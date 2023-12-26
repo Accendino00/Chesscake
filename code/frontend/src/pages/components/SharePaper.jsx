@@ -1,7 +1,6 @@
 import React from "react";
-import { Modal, Paper, TextField } from "@mui/material";
+import { Modal, Paper, Typography} from "@mui/material";
 import ShareAppList from "./ShareAppList";
-import { Typography } from "@mui/material";
 
 const SharePaper = ({ text, onClose, url }) => {
   return (

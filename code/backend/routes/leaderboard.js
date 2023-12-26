@@ -1,9 +1,9 @@
-var express = require("express");
-var config = require("../config");
-var router = express.Router();
+let express = require("express");
+let config = require("../config");
+let router = express.Router();
 
-var { clientMDB } = require("../utils/dbmanagement");
-var {
+let { clientMDB } = require("../utils/dbmanagement");
+let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
 } = require("../middleware/authorization");

@@ -11,7 +11,7 @@ const useTokenChecker = () => {
         return new Promise((resolve, reject) => {
             const token = Cookies.get('token');
             if (token) {
-                const response = fetch('/api/tokenTest', {
+                fetch('/api/tokenTest', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -27,18 +27,18 @@ const useTokenChecker = () => {
                         } else {
                             Cookies.remove('token');
                             setLoginStatus(false);
-                            reject();
+                            reject(new Error('Token validation failed'));
                         }
                     })
                     .catch((err) => {
                         console.error('Error during token validation: ', err);
                         Cookies.remove('token');
                         setLoginStatus(false);
-                        reject();
+                        reject(new Error('Token validation failed'));
                     });
             } else {
                 setLoginStatus(false);
-                reject();
+                reject(new Error('Token validation failed'));
             }
         });
     };

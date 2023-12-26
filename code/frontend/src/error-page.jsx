@@ -1,10 +1,9 @@
 import React from 'react';
-import { useRouteError } from "react-router-dom";
+import { useRouteError, useNavigate } from "react-router-dom";
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
 
 export default function ErrorPage() {
   const error = useRouteError();

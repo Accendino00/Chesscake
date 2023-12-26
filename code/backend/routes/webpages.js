@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
-var path = require('path')
-var config = require("../config")
+let express = require('express');
+let router = express.Router();
+let path = require('path')
+let config = require("../config")
 
 // Serve i file statici dalla directory dist di React
 router.use(express.static(config.FRONTEND_DIST_PATH));

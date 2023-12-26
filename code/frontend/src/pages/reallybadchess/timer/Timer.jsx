@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Icon, Box } from '@mui/material';
+import { Paper, Typography, Icon} from '@mui/material';
 import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import PauseCircleOutlineIcon from '@mui/icons-material/PauseCircleOutline';
 
@@ -13,7 +13,8 @@ function Timer({ time, setTime, shouldRun, setHasEnded, playerColor, justForDisp
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
         const seconds = time % 60;
-        return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+        const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+        return `${minutes}:${formattedSeconds}`;
     };
 
     React.useEffect(() => {

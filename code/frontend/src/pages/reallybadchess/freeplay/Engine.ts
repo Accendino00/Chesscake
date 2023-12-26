@@ -7,9 +7,6 @@
  * Description of the universal chess interface (UCI)  https://gist.github.com/aliostad/f4470274f39d29b788c1b09519e67372/
  */
 
-// WIP
-// const { Worker } = require('worker_threads');
-
 const stockfish = new Worker("/stockfish.js");
  
 type EngineMessage = {

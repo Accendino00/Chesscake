@@ -50,7 +50,7 @@ function ProfileComponent({ username }) {
           setIsLoading(false);
         });
       return;
-    } else {
+    }
       fetch("/api/account/getAccountData", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
@@ -68,7 +68,6 @@ function ProfileComponent({ username }) {
           }
           setIsLoading(false);
         });
-    }
   }, []);
 
   if (isLoading) {

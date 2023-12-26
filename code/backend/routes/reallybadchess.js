@@ -1,16 +1,16 @@
-var chessGames = require("../utils/chess/chessgames");
+let chessGames = require("../utils/chess/chessgames");
 
-var express = require("express");
-var config = require("../config");
-var { clientMDB } = require("../utils/dbmanagement");
-var {
+let express = require("express");
+let config = require("../config");
+let { clientMDB } = require("../utils/dbmanagement");
+let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
 } = require("../middleware/authorization");
 const path = require("path");
 const { randomBytes } = require("crypto");
 
-var router = express.Router();
+let router = express.Router();
 
 function resizeGame (game) {
   return {
@@ -347,11 +347,11 @@ router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
     winnerSide = "p1";
   }
 
-  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "surrender");
+  //let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "surrender");
 
   // Ritorniamo il game
   res.send({
-    success: returnOfGameOver,
+    success: chessGames.handleGameOver(game, winnerSide, "surrender"),
     game: resizeGame(game)
   });
 });  

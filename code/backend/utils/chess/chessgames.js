@@ -1,17 +1,17 @@
-var { Chess } = require("chess.js");
-var {
+let { Chess } = require("chess.js");
+let {
   generateBoard,
   findChessPiecesWithRank,
   calculateRanks,
   getPiecePosition,
   cloneChessBoard,
   generateBoardWithSeed,
-  rng,
 } = require("./boardFunctions");
-var { clientMDB } = require("../dbmanagement");
-var { findBestMove } = require("./movesFunctions");
-
-var chessGames = [];
+let { clientMDB } = require("../dbmanagement");
+let { findBestMove } = require("./movesFunctions");
+const seedrandom = require('seedrandom');
+let rng = null;
+let chessGames = [];
 
 module.exports = {
   chessGames,
@@ -45,27 +45,31 @@ module.exports = {
     let sidePlayer1 = Math.random() < 0.5 ? "w" : "b";
 
     // Se è la daily challenge, allora impostiamo lo stesso rank per tutti
-    if (settings.mode == "dailyChallenge") {
-      values = generateBoardWithSeed("dailyChallenge", 0, 50);
-      sidePlayer1 = "w";
-    } else if (settings.mode == "playerVsPlayerOnline") {
-      values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
-    } else if (settings.mode == "kriegspiel") {
-      values = { board: new Chess(), seed: "nonrandom" };
-      values.board.fen();
-      values.board._header.FEN = values.board.fen();
-    } else {
-      // In caso contrario lo generiamo in modo casuale
-      values = generateBoardWithSeed(null, 0, settings.rank);
-      sidePlayer1 = "w";
+    switch (settings.mode) {
+      case "dailyChallenge":
+        values = generateBoardWithSeed("dailyChallenge", 0, 50);
+        sidePlayer1 = "w";
+        break;
+      case "playerVsPlayerOnline":
+        console.log("playerVsPlayerOnline");
+        values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
+        break;
+      case "kriegspiel":
+        values = { board: new Chess(), seed: "nonrandom" };
+        values.board.fen();
+        values.board._header.FEN = values.board.fen();
+        break;
+      default:
+        values = generateBoardWithSeed(null, 0, settings.rank);
+        sidePlayer1 = "w";
     }
 
     board = values.board;
     seed = values.seed;
-
-    // Prendi l'elo dei giocatori dal backend
     let eloPlayer1 = 0;
     let eloPlayer2 = 0;
+
+    // Prendi l'elo dei giocatori dal backend
     if (
       settings.mode === "playerVsPlayerOnline" ||
       settings.mode === "kriegspiel"
@@ -156,7 +160,7 @@ module.exports = {
 
   joinGame: async function (gameId, player2) {
     // Cerca la partita di scacchi
-    var game = chessGames.find((game) => game.gameId == gameId);
+    let game = chessGames.find((game) => game.gameId == gameId);
 
     // Aggiungiamo il giocatore 2
     game.player2.username = player2;
@@ -189,13 +193,13 @@ module.exports = {
    */
   getGame: function (gameId) {
     // Cerca la partita di scacchi
-    var game = chessGames.find((game) => game.gameId == gameId);
+    let game = chessGames.find((game) => game.gameId == gameId);
     // Ritorna la board
     return game;
   },
 
   getEmptyGames: function () {
-    var emptyGames = [];
+    let emptyGames = [];
     chessGames.forEach((game) => {
       if (
         game.player2.username == null &&
@@ -247,38 +251,32 @@ module.exports = {
     game.gameOver.winner = winner;
     game.gameOver.reason = reason;
 
-    let returnValue = false;
-
     if (!game.gameSaved) {
       game.gameSaved = true;
       if (game.gameSettings.mode === "dailyChallenge") {
-        returnValue = this.saveGame(game.gameId);
+        // #TODO Se funziona correttamente, allora togliere l'if
       } else if (game.gameSettings.mode === "playerVsPlayerOnline") {
-        returnValue = this.changeElo(game.player1, game.player2, winner);
-        returnValue = this.saveGame(game.gameId);
+        this.changeElo(game.player1, game.player2, winner);
       } else if (game.gameSettings.mode === "playerVsComputer") {
-        returnValue = this.changeRank(
+        this.changeRank(
           game.player1,
           game.gameSettings.rank,
           winner
         );
-        returnValue = this.saveGame(game.gameId);
       } else if (game.gameSettings.mode === "kriegspiel") {
-        returnValue = this.changeEloKriegspiel(
+        this.changeEloKriegspiel(
           game.player1,
           game.player2,
           winner
         );
-        returnValue = this.saveGame(game.gameId);
       }
+      setTimeout(() => {
+        chessGames.splice(chessGames.indexOf(game), 1);
+      }, 1000 * 60 * 10);
+      return this.saveGame(game.gameId);
     }
 
-    // Imposto un timer che cancella questo game dopo 10 minuti
-    setTimeout(() => {
-      chessGames.splice(chessGames.indexOf(game), 1);
-    }, 1000 * 60 * 10);
-
-    return returnValue;
+    return false;
   },
   checkThreefoldRepetition: function checkThreefoldRepetition(history) {
     let fenCounts = {};
@@ -302,18 +300,32 @@ module.exports = {
 
     return false;
   },
+  // checkFiftyMoveRule: function checkFiftyMoveRule(history) {
+  //   let fiftyMoveRule = false;
+  //   if (history.length < 50) return false;
+  //   for (let i = 0; i < history.length; i++) {
+  //     if (history[i].flags === 2 || history[i].piece === "p") {
+  //       fiftyMoveRule = false;
+  //     } else {
+  //       fiftyMoveRule = true;
+  //     }
+  //   }
+  //   return fiftyMoveRule;
+  // },
+
   checkFiftyMoveRule: function checkFiftyMoveRule(history) {
-    let fiftyMoveRule = false;
     if (history.length < 50) return false;
-    for (let i = 0; i < history.length; i++) {
-      if (history[i].flags === 2 || history[i].piece === "p") {
+  
+    let fiftyMoveRule = true; // Assume true until proven false
+    for (const move of history.slice(-50)) {
+      if (move.flags === 2 || move.piece === "p") {
         fiftyMoveRule = false;
-      } else {
-        fiftyMoveRule = true;
+        break;
       }
     }
     return fiftyMoveRule;
   },
+  
 
   /**
    *
@@ -327,10 +339,8 @@ module.exports = {
     let game = chessGames.find((game) => game.gameId == gameId);
     // Catch nel caso la mossa risulti non valida
     let check = null;
-    let chessMove = null;
+    let chessMove = new Chess(game.chess.fen());
     try {
-      chessMove = new Chess(game.chess.fen());
-
       //Riporto tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
       chessMove._kings = game.chess._kings;
       chessMove._turn = game.chess._turn;
@@ -342,137 +352,141 @@ module.exports = {
 
       // Effettua la mossa
       check = chessMove.move(mossa);
-      game.chess = new Chess();
-      game.chess = chessMove;
-      //Riporto indietro tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
-      game.chess._header.FEN = chessMove.fen();
-      game.chess._kings = chessMove._kings;
-      game.chess._castling = chessMove._castling;
-      game.chess._en_passant = chessMove._en_passant;
-      game.chess._half_moves = chessMove._half_moves;
-      game.chess._move_number = chessMove._move_number;
-      game.chess._history = chessMove._history;
-      game.chess._turn = chessMove._turn;
-      game.chess._board = chessMove._board;
-
-      game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
-      game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
-      game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
-
-      // Visto che è stata fatta una mossa con successo, possiamo fare l'undo
-      // Solo se siamo oltre il numero minimo di mosse
-      if (game.chess.history().length >= game.lastUndoMove) {
-        game.undoEnabled = true;
-      }
-    } catch (error) {
+    } 
+    catch (error) {
       return false;
     }
-    // Se la mossa è valida
-    if (check !== null) {
-      let currentPlayerTurn =
-        game.chess._turn === game.player1.side ? "p1" : "p2";
-      let possibleWinnerTurn = currentPlayerTurn === "p1"  ? "p2" : "p1";
-      
-      // Controlla se c'è uno scacco matto
-      if (game.chess.isCheckmate()) {
-        this.handleGameOver(game, possibleWinnerTurn, "checkmate");
-      } else if (game.chess.isStalemate()) {
-        this.handleGameOver(game, possibleWinnerTurn, "stalemate");
-      } else if (game.chess.isInsufficientMaterial()) {
-        this.handleGameOver(game, possibleWinnerTurn, "insufficient_material");
-      } else {
-        // Se non ci sono gameover
-        // Se sono in una modalità PvE, allora creo un timer che fa muovere il computer
-        // dopo 2 secondi, solo nel caso in cui il computer non abbia già mosso
-        if (
-          (game.gameSettings.mode === "playerVsComputer" ||
-            game.gameSettings.mode === "dailyChallenge") &&
-          // Check che non sia il turno del computer, ma che sia il turno del giocatore
-          (game.player1.username === "Computer"
-            ? // Se il computer è il player 1
-              currentPlayerTurn === "p1"
-            : // Se il computer è il player 2
-              currentPlayerTurn === "p2")
-        ) {
-          setTimeout(() => {
-            let chosenMove = game.chess.moves({ verbose: true })[
-              Math.floor(Math.random() * game.chess.moves().length)
-            ];
-            if (game.gameSettings.mode === "playerVsComputer") {
-              findBestMove(game.chess.fen(), 1, 0)
-                .then((Move) => {
-                    this.movePiece(game.gameId, {
-                      from: Move.slice(0, 2),
-                      to: Move.slice(2, 4),
-                      promotion: "q",
-                    });
-                })
-                .catch((err) => {
-                  console.log(err);
-                    this.movePiece(game.gameId, {
-                      from: chosenMove.from,
-                      to: chosenMove.to,
-                      promotion: "q",
-                    });
-                });
-            } else {
-              if (rng != null)
-                chosenMove = game.chess.moves({ verbose: true })[
-                  Math.floor(rng() * chess.moves().length)
-                ];
-                this.movePiece(game.gameId, {
-                  from: chosenMove.from,
-                  to: chosenMove.to,
-                  promotion: "q",
-                });
-            }
-          }, 3000);
-        }
 
-        // Aggiorna il timer per interrompere l'ultimo intervallo
-        // e avviare l'intervallo per il giocatore che deve muovere
-        // Se sono definiti
-        if (game.player1.interval !== null)
-          clearInterval(game.player1.interval);
-        if (game.player2.interval !== null)
-          clearInterval(game.player2.interval);
+    game.chess = new Chess();
+    game.chess = chessMove;
 
-        if (currentPlayerTurn === "p1") {
-          game.player1.interval = setInterval(() => {
-            game.player1.timer--;
+    //Riporto indietro tutti i dati della partita, poiché chess.js non ha nessun metodo di clonazione
+    game.chess._header.FEN = chessMove.fen();
+    game.chess._kings = chessMove._kings;
+    game.chess._castling = chessMove._castling;
+    game.chess._en_passant = chessMove._en_passant;
+    game.chess._half_moves = chessMove._half_moves;
+    game.chess._move_number = chessMove._move_number;
+    game.chess._history = chessMove._history;
+    game.chess._turn = chessMove._turn;
+    game.chess._board = chessMove._board;
 
-            // Controlla se il tempo del giocatore 1 è scaduto
-            if (game.player1.timer <= 0) {
-              clearInterval(game.player1.interval);
+    game.lastMove = game.chess.turn() === "w" ? "b" : "w"; // Aggiorna di chi è il turno
+    game.lastMoveTargetSquare = mossa.to; // Aggiorna la casella di arrivo dell'ultima mossa
+    game.lastMoveChessPiece = mossa.piece; // Aggiorna il pezzo che è stato mosso per ultimo
 
-              // Gestisci il timeout del giocatore 1 (sconfitta)
-              if (!game.gameOver.isGameOver) {
-                this.handleGameOver(game, "p1", "timeout");
-              }
-            }
-          }, 1000);
-        } else {
-          game.player2.interval = setInterval(() => {
-            game.player2.timer--;
-
-            // Controlla se il tempo del giocatore 2 è scaduto
-            if (game.player2.timer <= 0) {
-              clearInterval(game.player2.interval);
-
-              // Gestisci il timeout del giocatore 2 (sconfitta)
-              if (!game.gameOver.isGameOver) {
-                this.handleGameOver(game, "p2", "timeout");
-              }
-            }
-          }, 1000);
-        }
-      }
-      chessGames = chessGames.filter((match) => match.gameId !== gameId);
-      chessGames.push(game);
-      return true; // Mossa riuscita
-    } else {
-      return false; // Mossa non valida"
+    // Visto che è stata fatta una mossa con successo, possiamo fare l'undo
+    // Solo se siamo oltre il numero minimo di mosse
+    if (game.chess.history().length >= game.lastUndoMove) {
+      game.undoEnabled = true;
     }
+
+    if (check === null) 
+      return false; // Mossa non valida
+
+    // Se la mossa è valida
+    let currentPlayerTurn =
+      game.chess._turn === game.player1.side ? "p1" : "p2";
+    let possibleWinnerTurn = currentPlayerTurn === "p1"  ? "p2" : "p1";
+    
+    // Controlla se c'è uno scacco matto
+    switch (true) {
+      case game.chess.isCheckmate():
+        console.log("a");
+        this.handleGameOver(game, possibleWinnerTurn, "checkmate");
+        break;
+      case game.chess.isStalemate():
+        console.log("b");
+        this.handleGameOver(game, possibleWinnerTurn, "stalemate");
+        break;
+      case game.chess.isInsufficientMaterial():
+        console.log("c");
+        this.handleGameOver(game, possibleWinnerTurn, "insufficient_material");
+        break;
+      default:
+        console.log("d");
+      // Se non ci sono gameover
+      // Se sono in una modalità PvE, allora creo un timer che fa muovere il computer
+      // dopo 2 secondi, solo nel caso in cui il computer non abbia già mosso
+      const isComputerTurn =
+        (game.player1.username === "Computer" && currentPlayerTurn === "p1") ||
+        (game.player2.username === "Computer" && currentPlayerTurn === "p2");
+
+        if ((game.gameSettings.mode === "playerVsComputer" || 
+            game.gameSettings.mode === "dailyChallenge") 
+            && isComputerTurn) {
+            rng = seedrandom(game.matches.seed);
+        setTimeout(() => {
+          let chosenMove = game.chess.moves({ verbose: true })[
+            Math.floor(rng() * game.chess.moves().length)
+          ];
+          if (game.gameSettings.mode === "playerVsComputer") {
+            findBestMove(game.chess.fen(), 1, 0)
+              .then((Move) => {
+                  this.movePiece(game.gameId, {
+                    from: Move.slice(0, 2),
+                    to: Move.slice(2, 4),
+                    promotion: "q",
+                  });
+              })
+              .catch((err) => {
+                console.log(err);
+                  this.movePiece(game.gameId, {
+                    from: chosenMove.from,
+                    to: chosenMove.to,
+                    promotion: "q",
+                  });
+              });
+          } 
+          else {
+            this.movePiece(game.gameId, {
+              from: chosenMove.from,
+              to: chosenMove.to,
+              promotion: "q",
+            });
+          }
+        }, 3000);
+      }
+
+      // Aggiorna il timer per interrompere l'ultimo intervallo
+      // e avviare l'intervallo per il giocatore che deve muovere
+      // Se sono definiti
+      if (game.player1.interval !== null)
+        clearInterval(game.player1.interval);
+      if (game.player2.interval !== null)
+        clearInterval(game.player2.interval);
+
+      if (currentPlayerTurn === "p1") {
+        game.player1.interval = setInterval(() => {
+          game.player1.timer--;
+
+          // Controlla se il tempo del giocatore 1 è scaduto
+          if (game.player1.timer <= 0) {
+            clearInterval(game.player1.interval);
+            // Gestisci il timeout del giocatore 1 (sconfitta)
+            if (!game.gameOver.isGameOver) {
+              this.handleGameOver(game, "p1", "timeout");
+            }
+          }
+        }, 1000);
+      } else {
+        game.player2.interval = setInterval(() => {
+          game.player2.timer--;
+
+          // Controlla se il tempo del giocatore 2 è scaduto
+          if (game.player2.timer <= 0) {
+            clearInterval(game.player2.interval);
+            // Gestisci il timeout del giocatore 2 (sconfitta)
+            if (!game.gameOver.isGameOver) {
+              this.handleGameOver(game, "p2", "timeout");
+            }
+          }
+        }, 1000);
+      }
+    }
+    chessGames = chessGames.filter((match) => match.gameId !== gameId);
+    chessGames.push(game);
+    return true; // Mossa riuscita
   },
 
   undoMove(gameId) {
@@ -538,7 +552,7 @@ module.exports = {
 
   saveGame: function (gameId) {
     // Cerca la partita di scacchi
-    var game = chessGames.find((game) => game.gameId == gameId);
+    let game = chessGames.find((game) => game.gameId == gameId);
 
     // Salva i risultati
     const db = clientMDB.db("ChessCake");
@@ -711,7 +725,7 @@ module.exports = {
     // Il rank aumenta solo per il player1, il player2 sarà il computer
     // Il rank aumenta solo se il player1 vince, diminuisce se perde
     // L'aumento del rank è gradualmente più basso più il rank è alto
-    let nuovoRankPlayer1 = gameRank;
+    let nuovoRankPlayer1;
 
     // Capiamo se ha vinto ho perso
     if (outcome === "p1") {

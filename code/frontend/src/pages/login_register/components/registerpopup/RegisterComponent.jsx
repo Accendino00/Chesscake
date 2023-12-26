@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Box, IconButton, Paper } from '@mui/material';
+import { Button, Container, Typography, IconButton, Paper } from '@mui/material';
 import styles from './RegisterStyles'; // Register styles
 import CloseIcon from '@mui/icons-material/Close'; // Close icon
 import { formFields, formTitle } from './RegisterConfig'; // IRegister configurations
@@ -30,7 +30,6 @@ function RegisterComponent(props) {
     if (reason === 'clickaway') {
       return;
     }
-
     setErrorRegistration(false);
   };
 
@@ -40,7 +39,7 @@ function RegisterComponent(props) {
         event.preventDefault();
         // Se la registrazione è aperta, allora non faccio nulla
         if (!props.trigger) return;
-        else handleSubmit();
+        handleSubmit();
       }
     };
     document.addEventListener("keydown", listener);

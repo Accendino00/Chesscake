@@ -1,11 +1,12 @@
 /*
     Configurazione del server e dei dati utili.
 */
+require('dotenv').config();
 
 let configData = {
     // Dati per il server
     PORT : 8000,
-    DATABASE_URL : "mongodb+srv://ccadmin:0s6py9RJ1kCSztPW@cluster0.yu7ghd9.mongodb.net/?retryWrites=true&w=majority",
+    DATABASE_URL : process.env.DATABASE_URL,
     SECRET_KEY: "hC8iXaTkahRBqRfd0ExpEFLavwwlxGFH2Rz6WD15ZY71jUevqsprOcLXVYKTr8K", // Per JWT
     
     // Directory usate

@@ -5,13 +5,12 @@ import LoginComponent from './components/LoginComponent';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 
 
 export default function LoginPage() {  
-    const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const { loginStatus, isTokenLoading} = useTokenChecker();
     const navigate = useNavigate();
 
     if (isTokenLoading) {

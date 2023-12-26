@@ -8,7 +8,7 @@ import useTokenChecker from "../../utils/useTokenChecker.jsx";
 import CircularProgress from "@mui/material/CircularProgress";
 
 function HomePage() {
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
+  const { loginStatus, isTokenLoading} = useTokenChecker();
   const navigate = useNavigate();
 
   const buttonStyle = {

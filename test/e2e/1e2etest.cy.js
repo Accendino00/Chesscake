@@ -1,33 +1,29 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import LoginPage from './../../code/frontend/src/pages/login_register/LoginPage.jsx';
 import '@4tw/cypress-drag-drop'
 
 function performChessMoves(color) {
     cy.get(`[data-square="${generateStartSquare(color)}"] > div`).click({ force: true });
     cy.get(`[data-square="${generateMoveSquare()}"] > div`).click({ force: true }).then(() => {
-      // Controlla la presenza di due pulsanti "Esci"
-    cy.get('button:contains("Esci")').then(($buttons) => {
-        if ($buttons.length === 2) {
-            // Se ci sono due pulsanti "Esci", la partita è finita
-            cy.log('La partita è finita.');
-            cy.get('button:contains("Esci")').eq(1).click(); // Clicca sul secondo pulsante "Esci"
-        } else {
-            // Se non ci sono due pulsanti "Esci", la partita non è finita, continua a giocare
-            cy.wait(500);
-            cy.get('[data-cy=player-turn]').then(($turn) => {
-                if ($turn.text().includes('Bianco')) {
-                    performChessMoves('w');
-                } else {
-                    performChessMoves('b');
-                }
-            });
-        }
+        // Controlla la presenza di due pulsanti "Esci"
+        cy.get('button:contains("Esci")').then(($buttons) => {
+            if ($buttons.length === 2) {
+                // Se ci sono due pulsanti "Esci", la partita è finita
+                cy.log('La partita è finita.');
+                cy.get('button:contains("Esci")').eq(1).click(); // Clicca sul secondo pulsante "Esci"
+            } 
+            else {
+                // Se non ci sono due pulsanti "Esci", la partita non è finita, continua a giocare
+                cy.wait(500);
+                cy.get('[data-cy=player-turn]').then(($turn) => {
+                    if ($turn.text().includes('Bianco')) {
+                        performChessMoves('w');
+                    } else {
+                        performChessMoves('b');
+                    }
+                });
+            }
+        });
     });
-    });
-  }
-  
-  
-
+}
 function generateStartSquare(color) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranksWhite = ['1', '2'];
@@ -55,11 +51,7 @@ function generateMoveSquare() {
 describe('LoginPage', () => {
     it('should log in anonimously successfully', () => {
         cy.visit('/login');
-
-        // // Enter username and password
-        // cy.get('input[name="username"]').type('Player 100');
-        // cy.get('input[name="password"]').type('123');
-
+        
         // Submit the login form
         cy.get('button[type="submit"]').contains('Continua come anonimo').click();
 
@@ -68,11 +60,6 @@ describe('LoginPage', () => {
     });
     it('should see the leaderboards', () => {
         cy.visit('/login');
-
-        // // Enter username and password
-        // cy.get('input[name="username"]').type('Player 100');
-        // cy.get('input[name="password"]').type('123');
-
         // Submit the login form
         cy.get('button[type="submit"]').contains('Continua come anonimo').click();
 

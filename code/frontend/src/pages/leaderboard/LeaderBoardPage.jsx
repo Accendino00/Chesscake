@@ -1,8 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import PropTypes from 'prop-types';
-import Skeleton from '@mui/material/Skeleton';
-import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import styles from './LeaderBoardStyles.jsx';
 import Tabs from '@mui/material/Tabs';

@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Chessboard } from 'react-chessboard';
-import { Button, Box, Modal, Typography, Stack } from '@mui/material';
+import React, { useState} from 'react';
+import { useNavigate} from 'react-router-dom';
+import { Button, Box, Modal, Typography, Stack, 
+        Table, TableBody, TableCell, 
+        TableHead, Paper, TableRow 
+      } from '@mui/material';
 import GameStyles from './GameStyles';
-import { Chess } from 'chess.js';
-import { Paper } from '@mui/material';
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
 import { faker } from '@faker-js/faker';
-
-import CreateGameComponent from '../../components/CreateGameComponent';
 
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../../utils/useTokenChecker';
@@ -17,7 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 const RandomWordsGenerator = (usernameToHashForSeed) => {
   // Hash dell'username (https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript)
-  var hash = 0,
+  let hash = 0,
     i, chr;
   for (i = 0; i < usernameToHashForSeed.length; i++) {
     chr = usernameToHashForSeed.charCodeAt(i);
@@ -43,9 +40,7 @@ const RandomWordsGenerator = (usernameToHashForSeed) => {
 function Lobbies() {
   const navigate = useNavigate();
 
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
-
-  const [message, setMessage] = useState('');
+  const { loginStatus, isTokenLoading} = useTokenChecker();
   const [games, setGames] = useState([]);
 
   React.useEffect(() => {

@@ -1,9 +1,8 @@
 import React from 'react';
-import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
 import { styled } from '@mui/material/styles';
-import { tooltipClasses } from '@mui/material/Tooltip';
+import Tooltip, { tooltipClasses }  from '@mui/material/Tooltip';
 
 const LightTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -25,7 +24,7 @@ const InfoIconButton = ({ infoText, placement }) => {
                     <div dangerouslySetInnerHTML={{ __html: infoText }} />
                 </React.Fragment>
             }
-            placement={placement ? placement : "top"}>
+            placement={placement || "top"}>
             <IconButton>
                 <InfoIcon />
             </IconButton>

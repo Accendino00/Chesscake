@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
-import { Button, Box, Modal, Typography, Stack } from "@mui/material";
+import { Button, Box, Modal, Typography, Stack, CircularProgress } from "@mui/material";
 import ChessGameStyles from "../ChessGameStyles";
 import Timer from "../timer/Timer";
 import { Chess } from "chess.js";
-import {
-  generateBoard,
-  getPiecePosition,
-  cloneChessBoard,
-} from "./boardFunctions";
-import { findBestMove } from "./movesFunctions";
+import { getPiecePosition } from "./boardFunctions";
 import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
-import { CircularProgress } from "@mui/material";
 import ShareButton from "../../components/ShareButton";
-import seedrandom from "seedrandom";
 
 function ReallyBadChessOnline() {
   // Hook generali e utili
@@ -57,7 +50,6 @@ function ReallyBadChessOnline() {
   const [gameGottenOnce, setGameGottenOnce] = useState(false);
 
   //Funzione di random seedato
-  let rng = null;
 
   /**
    * Funzione che gestisce tutto quello che è interente al game,
@@ -68,109 +60,97 @@ function ReallyBadChessOnline() {
    */
   function handleGetGameResponse(response) {
     // Dobbiamo aggiornare i nuovi dati
-    if (response.success) {
-      setGameGottenOnce(true);
-      // Se non ci sono entrambi i player, allora non imposto nulla
-      if (!gameOver) {
-        if (
-          response.game.player1.username === null ||
-          response.game.player2.username === null
-        ) {
-          return;
-        } else {
-          setPlayer2Arrived(true);
-        }
-
-        // Gestione aggiornamento dati permanenti della partita
-        // Imposto i dati sugli utenti se sono diversi da quelli attuali
-        if (response.game.player1.username !== player1) {
-          setPlayer1(response.game.player1.username);
-        }
-        if (response.game.player2.username !== player2) {
-          setPlayer2(response.game.player2.username);
-        }
-        // Imposto il player side se è diverso da quello attuale
-        if (response.game.player1.username === username) {
-          if (response.game.player1.side !== playerSide) {
-            setPlayerSide(response.game.player1.side);
-          }
-        } else {
-          if (response.game.player2.side !== playerSide) {
-            setPlayerSide(response.game.player2.side);
-          }
-        }
-        if (rng == null) {
-          rng = seedrandom(response.game.matches.seed);
-        }
-        // Impostazione dei timer
-        if (response.game.player1.username === username) {
-          if (playerSide === "w") {
-            setTimeBianco(response.game.player1.timer);
-            setTimeNero(response.game.player2.timer);
-          } else {
-            setTimeBianco(response.game.player2.timer);
-            setTimeNero(response.game.player1.timer);
-          }
-        } else {
-          if (playerSide === "w") {
-            setTimeBianco(response.game.player2.timer);
-            setTimeNero(response.game.player1.timer);
-          } else {
-            setTimeBianco(response.game.player1.timer);
-            setTimeNero(response.game.player2.timer);
-          }
-        }
-
-        // Setta il gamedata con response.game
-        setGameData(response.game);
-        let chessTaken = new Chess();
-        chessTaken.load(response.game.chess._header.FEN);
-
-        // Gestione aggiornamento dati temporanei della partita
-        setChess(chessTaken);
-        if (chess) chess.load(chessTaken.fen());
-
-        // Setta il Fen di setFen con il fen del chess appena creato
-        setFen(chessTaken.fen());
-        checkCheck();
-        setCurrentTurn(response.game.chess._turn);
-
-        // Se l'undo è enabled e il turno e mio, imposto "undoEnabled" a true
-        if (response.game.chess._turn === playerSide) {
-          setUndoEnabled(response.game.undoEnabled);
-        }
-
-        console.log(response.game.chess._turn, playerSide, response.game.undoEnabled)
-
-        // Gestione nel caso di gameover
-        if (response.game.gameOver.isGameOver) {
-          setGameOver(true);
-          // if(response.game.gameOver.winner == "p1")
-          handleVictory().then((gameReturned) => {
-            if (
-              gameReturned &&
-              gameReturned.game &&
-              gameReturned.game.gameOver
-            ) {
-              console.log(JSON.stringify(gameReturned.game.gameOver));
-              const winner =
-                gameReturned.game.gameOver.winner === "p1"
-                  ? gameData.player1.username
-                  : gameData.player2.username;
-              setWinner(winner);
-              setModalIsOpen(true);
-            }
-          });
-        }
-      }
-    } else {
-      // Non dobbiamo aggiornare dati, dobbiamo ritornare un messaggio di errore
+    if (!response.success) {
       console.log("Errore nel fetch della partita: ", response.message);
       // Se lo status è 403 o 404 allora la partita non esiste più
-      if (response.status === 403 || response.status === 404) {
+      if (response.status === 403 || response.status === 404)
         navigate("/play");
+    }
+    setGameGottenOnce(true);
+    // Se non ci sono entrambi i player, allora non imposto nulla
+    if (gameOver)
+      return;
+
+    if (
+      response.game.player1.username === null ||
+      response.game.player2.username === null
+    ) {return;}
+
+    setPlayer2Arrived(true);
+    
+    // Gestione aggiornamento dati permanenti della partita
+    // Imposto i dati sugli utenti se sono diversi da quelli attuali
+    if (response.game.player1.username !== player1) {
+      setPlayer1(response.game.player1.username);
+    }
+    if (response.game.player2.username !== player2) {
+      setPlayer2(response.game.player2.username);
+    }
+
+    // Imposto il player side se è diverso da quello attuale
+    if (response.game.player1.username === username) {
+      if (response.game.player1.side !== playerSide) {
+        setPlayerSide(response.game.player1.side);
       }
     }
+    else if (response.game.player2.side !== playerSide) {
+      setPlayerSide(response.game.player2.side);
+    }
+    // Impostazione dei timer
+    if (response.game.player1.username === username) {
+      if (playerSide === "w") {
+        setTimeBianco(response.game.player1.timer);
+        setTimeNero(response.game.player2.timer);
+      } else {
+        setTimeBianco(response.game.player2.timer);
+        setTimeNero(response.game.player1.timer);
+      }
+    } 
+    else if (playerSide === "w") {
+      setTimeBianco(response.game.player2.timer);
+      setTimeNero(response.game.player1.timer);
+    } else {
+      setTimeBianco(response.game.player1.timer);
+      setTimeNero(response.game.player2.timer);
+    }
+
+    // Setta il gamedata con response.game
+    setGameData(response.game);
+    let chessTaken = new Chess();
+    chessTaken.load(response.game.chess._header.FEN);
+
+    // Gestione aggiornamento dati temporanei della partita
+    setChess(chessTaken);
+    if (chess) chess.load(chessTaken.fen());
+
+    // Setta il Fen di setFen con il fen del chess appena creato
+    setFen(chessTaken.fen());
+    checkCheck();
+    setCurrentTurn(response.game.chess._turn);
+
+    // Se l'undo è enabled e il turno e mio, imposto "undoEnabled" a true
+    if (response.game.chess._turn === playerSide) 
+      setUndoEnabled(response.game.undoEnabled);
+    
+    // Gestione nel caso di non gameOver
+    if (!response.game.gameOver.isGameOver)
+    return;
+
+    setGameOver(true);
+    handleVictory().then((gameReturned) => {
+      if (
+        gameReturned &&
+              gameReturned.game &&
+              gameReturned.game.gameOver
+      ){
+        const winner =
+        gameReturned.game.gameOver.winner === "p1"
+          ? gameData.player1.username
+          : gameData.player2.username;
+      setWinner(winner);
+      setModalIsOpen(true);
+      }
+    });
   }
 
   React.useEffect(() => {
@@ -239,44 +219,6 @@ function ReallyBadChessOnline() {
     return () => clearInterval(interval);
   }, [gameData, isTokenLoading, loginStatus, gameId, username]);
 
-  // useEffect(() => {
-  //   if (gameData != null) {
-  //     if (
-  //       gameData.gameSettings.mode === "dailyChallenge" ||
-  //       gameData.gameSettings.mode === "playerVsComputer"
-  //     ) {
-  //       if (
-  //         (gameData.chess._turn === gameData.player2.side &&
-  //           gameData.player2.username === "Computer") ||
-  //         (gameData.chess._turn === gameData.player1.side &&
-  //           gameData.player1.username === "Computer")
-  //       ) {
-  //         setTimeout(() => {
-  //           let chosenMove = chess.moves({ verbose: true })[
-  //             Math.floor(Math.random() * chess.moves().length)
-  //           ];
-  //           if (gameData.gameSettings.mode === "playerVsComputer") {
-  //             findBestMove(chess.fen(), 2, 0)
-  //               .then((Move) => {
-  //                 makeMove(Move.slice(0, 2), Move.slice(2, 4), player2);
-  //               })
-  //               .catch((err) => {
-  //                 console.log(err);
-  //                 makeMove(chosenMove.from, chosenMove.to, player2);
-  //               });
-  //           } else {
-  //             if (rng != null)
-  //               chosenMove = chess.moves({ verbose: true })[
-  //                 Math.floor(rng() * chess.moves().length)
-  //               ];
-  //             makeMove(chosenMove.from, chosenMove.to, player2);
-  //           }
-  //         }, 2000);
-  //       }
-  //     }
-  //   }
-  // }, [currentTurn != playerSide]);
-
   const handleUndo = async () => {
     if (undoEnabled) {
       setUndoEnabled(false);
@@ -327,13 +269,6 @@ function ReallyBadChessOnline() {
   const makeMove = async (sourceSquare, targetSquare, username) => {
     // Gestisco il fatto che non si possa muovere se non è il proprio turno
     // Questo evita richieste inutili
-    // if (
-    //   gameData.lastMove === playerSide ||
-    //   (gameData.lastMove == null && playerSide === "black")
-    // ) {
-    //if (gameData.lastMove === playerSide) {
-    //return;
-    //}
     await fetch(`/api/reallybadchess/movePiece/${gameId}`, {
       method: "POST",
       headers: {
@@ -356,7 +291,6 @@ function ReallyBadChessOnline() {
       .catch((err) => {
         console.log(err);
       });
-    // };
   };
 
   const handleVictory = async () => {
@@ -416,7 +350,6 @@ function ReallyBadChessOnline() {
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
-  const handleNavigatetoGame = () => navigate(`/play/reallybadchess/${gameId}`);
 
   if (isTokenLoading || loginStatus === undefined || !gameGottenOnce) {
     return (

@@ -3,19 +3,18 @@ import React, { useState, useEffect } from 'react';
 
 // Componenti nostre
 import styles from './LoginStyles'; // Import styles
-import { formFields, formTitle } from './LoginConfig'; // Import configurations
+import { formFields} from './LoginConfig'; // Import configurations
 import PasswordField from './fields/PasswordField'; // Import password field
 import UsernameField from './fields/UsernameField'; // Import username field
 import RegisterComponent from './registerpopup/RegisterComponent';
 
 // Material
 import Link from '@mui/material/Link';
-import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import LoginIcon from '@mui/icons-material/Login'; // Import login icon
-import { TextField, Button, Container, Typography, Box, Grid } from '@mui/material';
+import { Button, Typography, Box, Grid } from '@mui/material';
 
 // Gestione cookie
 import Cookies from 'js-cookie';
@@ -39,7 +38,6 @@ function LoginComponent(props) {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpenLoginError(false);
   };
 
@@ -47,7 +45,6 @@ function LoginComponent(props) {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpenRegisterSuccess(false);
   };
 
@@ -57,7 +54,7 @@ function LoginComponent(props) {
         event.preventDefault();
         // Se la registrazione è aperta, allora non faccio nulla
         if (buttonPopup) return;
-        else handleSubmitLogin();
+        handleSubmitLogin();
       }
     };
     document.addEventListener("keydown", listener);
@@ -98,8 +95,7 @@ function LoginComponent(props) {
       // Se i dati sono un json del tipo {"successo" : true},
       // allora passa a "/"
       if (data.success) {
-        //var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
-        var inTwoDays = new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000);
+        let inTwoDays = new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000);
         await Cookies.set('token', data.token, { expires: inTwoDays }); // Expires in 2 days
 
         setLoading(false);

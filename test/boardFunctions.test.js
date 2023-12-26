@@ -1,22 +1,3 @@
-// const { Chess } = require('chess.js');
-// const {
-//   generateBoard,
-//   findChessPiecesWithRank,
-//   getRandomPieceValue,
-//   calculateMedian,
-//   filterPieces,
-//   getDefaultFilteredPieces,
-//   handleSpecialCase,
-//   calculatePieceWeights,
-//   calculateTotalWeight,
-//   getRandomValue,
-//   selectPiece,
-//   weightFunction,
-//   calculateRanks,
-//   seededRandom,
-//   getPiecePosition,
-// } = require('./boardFunctions');
-
 import {Chess} from 'chess.js';
 import {
   generateBoard,

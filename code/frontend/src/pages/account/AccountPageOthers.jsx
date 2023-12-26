@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import ProfileComponent from './ProfileComponent.jsx';
 import LastGamesComponent from './LastGamesComponent.jsx';
 

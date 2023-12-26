@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
 import { Button, Box, Modal, Typography, Stack } from "@mui/material";
 import ChessGameStyles from "../ChessGameStyles";
-import ShareButton from "../../components/ShareButton";
 
 import {
   generateBoard,
@@ -73,14 +72,11 @@ function ReallyBadChessLocal() {
     );
   }
 
-  const [startingBoard, setStartingBoard] = useState(
-    generateBoard(gameData.mode, gameData.rank)
-  );
+  const [startingBoard, setStartingBoard] = useState(generateBoard(gameData.mode, gameData.rank));
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [pieceSelected, setPieceSelected] = useState([]);
-  const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
   const [selectedSquare, setSelectedSquare] = useState(null);
 
@@ -133,7 +129,6 @@ function ReallyBadChessLocal() {
   const handleRestart = () => {
     // Ricomincia la partita
     setWinner(null);
-    setMoves([]);
     setPieceSelected([]);
     setPossibleMoves([]);
     setChess(cloneChessBoard(startingBoard));
@@ -177,9 +172,9 @@ function ReallyBadChessLocal() {
   const handleMove = async (sourceSquare, targetSquare) => {
     try {
       if (chess.turn() === "w") {
-        handleWhiteTurn(sourceSquare, targetSquare);
+        handleTurn(sourceSquare, targetSquare);
       } else if (chess.turn() === "b") {
-        handleBlackTurn(sourceSquare, targetSquare);
+        handleTurn(sourceSquare, targetSquare);
       }
 
       // Cambio di chi deve andare avanti il timer
@@ -205,20 +200,7 @@ function ReallyBadChessLocal() {
     handleMouseOutSquare();
   };
 
-  const handleWhiteTurn = async (sourceSquare, targetSquare) => {
-    try {
-      if (
-        chess.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
-      ) {
-        setFen(chess.fen());
-        checkCheck();
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleBlackTurn = (sourceSquare, targetSquare) => {
+  const handleTurn = async (sourceSquare, targetSquare) => {
     try {
       if (
         chess.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
@@ -271,7 +253,7 @@ function ReallyBadChessLocal() {
       winner = "Nessuno";
     }
     setWinner(winner);
-    handleOpenModal(true);
+    handleOpenModal();
   };
 
   return (

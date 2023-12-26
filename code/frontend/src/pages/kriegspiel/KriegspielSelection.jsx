@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Button,
     Select,
@@ -7,23 +7,17 @@ import {
     InputLabel,
     Box,
     Typography,
-    Slider,
-    TextField,
     Paper,
     CircularProgress,
-    Grid,
     Accordion,
     AccordionDetails,
     AccordionSummary,
   } from "@mui/material";
   import { useNavigate, useLocation, Outlet } from "react-router-dom";
   import ArrowForwardIosSharpIcon from "@mui/icons-material/ExpandMore";
-  import InfoIconButton from "../../utils/infoIconButton";
   import useTokenChecker from "../../utils/useTokenChecker";
   import "./kriegspielAccordion.css";
   import CreateGameComponent from "../components/CreateGameComponent";
-  import { useState } from "react";
-  import Cookies from "js-cookie";
 
 function KriegspielSelection() {
       // Cose utili
@@ -36,8 +30,7 @@ function KriegspielSelection() {
   };
   const isChildRoute = /^\/play\/kriegspiel\/.+/.test(location.pathname);
 
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
-  const [loading, setLoading] = useState(false);
+  const { loginStatus, isTokenLoading} = useTokenChecker();
   
   React.useEffect(() => {
     if (!isTokenLoading) {

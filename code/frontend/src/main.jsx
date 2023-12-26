@@ -1,7 +1,6 @@
 import React from 'react'
 
 import ReactDOM from 'react-dom/client'
-import './index.css'
 
 import LoginPage from './pages/login_register/LoginPage.jsx'
 import ModeSelection from './pages/reallybadchess/ModeSelection.jsx'

@@ -1,10 +1,10 @@
-var express = require('express');
-var config = require("../config");
-var router = express.Router();
+let express = require('express');
+let config = require("../config");
+let router = express.Router();
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-var { clientMDB }  = require('../utils/dbmanagement');
+let { clientMDB }  = require('../utils/dbmanagement');
 
 function logUser(username, password) {
     return new Promise((resolve, reject) => {
@@ -15,12 +15,14 @@ function logUser(username, password) {
             usersCollection.findOne({ username: username })
             .then((user) => {
                 if (!user) {
+                    //reject(new Error({ message: "Utente non trovato", status: 403, returnBody: { success: false } }));
                     reject({ message: "Utente non trovato", status: 403, returnBody: { success: false } });
                 } else {
                     // Compare the provided password with the hashed password
                     bcrypt.compare(password, user.password).then(
                         (result) => {
                             if (!result) {
+                                //reject(new Error({ message: "Password errata", status: 403, returnBody: { success: false } }));
                                 reject({ message: "Password errata", status: 403, returnBody: { success: false } });
                             } else {
                                 const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '7d' });
@@ -28,14 +30,17 @@ function logUser(username, password) {
                             }
                         },
                         (error) => {
+                            //reject(new Error({ message: "Errore nella verifica della password", status: 500, returnBody: { success: false } }));
                             reject({ message: "Errore nella verifica della password", status: 500, returnBody: { success: false } });
                         }
                     );
                 }
             }).catch((error) => {
+                //reject(new Error({ message: "Errore interno 1", status: 500, returnBody: { success: false } }));
                 reject({ message: "Errore interno 1", status: 500, returnBody: { success: false }});
             });
         } catch (error) {
+            //reject(new Error({ message: "Errore interno 2", status: 500, returnBody: { success: false } }));
             reject({ message: "Errore interno 2", status: 500, returnBody: { success: false }});
         }
     });
@@ -62,8 +67,8 @@ router.post("/login", function (req, res) {
     // Cerchiamo nel req body se vi sono tutti i parametri non nulli, ovvero username e password
     if (req.body.username && req.body.password) {
         // Se sono presenti, li salviamo in due variabili
-        var username = req.body.username;
-        var password = req.body.password;
+        let username = req.body.username;
+        let password = req.body.password;
         
         // Eseguiamo il login
         logUser(username, password).then((result) => {
@@ -83,7 +88,7 @@ router.post("/login", function (req, res) {
             console.log(error.message);
             // e ritorniamo un errore 500
             res.status(error.status).send(error.returnBody);
-        });;
+        });
 
     } else {
         console.log("Non sono presenti tutti i parametri");

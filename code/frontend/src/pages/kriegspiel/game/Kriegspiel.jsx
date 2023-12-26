@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Chessboard } from "react-chessboard";
-import { Button, Box, Modal, Typography, Stack } from "@mui/material";
+import { Button, Box, Modal, Typography, Stack , CircularProgress} from "@mui/material";
 import GameStyles from "./GameStyles";
 import Timer from "../../reallybadchess/timer/Timer";
 import { Chess } from "chess.js";
 import {
-  generateBoard,
   getPiecePosition,
-  cloneChessBoard,
 } from "./boardFunctions";
 
 import Cookies from "js-cookie";
 import useTokenChecker from "../../../utils/useTokenChecker";
-import { CircularProgress } from "@mui/material";
 import ShareButton from "../../components/ShareButton";
-import { RemoveShoppingCartRounded } from "@mui/icons-material";
-import { TextField } from "@mui/material";
 
 function Kriegspiel() {
   // Hook generali e utili
@@ -35,11 +30,8 @@ function Kriegspiel() {
   const [pieceSelected, setPieceSelected] = useState([]); // La pedina selezionata
   const [fen, setFen] = useState(); // Il "fen" della partita
 
-  const [currentTurn, setCurrentTurn] = useState("white"); // Per indicare di chi è il turno attuale
-
   // Cose inerenti al gameOver
   const [winner, setWinner] = useState(null); // Il vincitore della partita
-  const [gameOver, setGameOver] = useState(false); // Se la partita è finita o no
   const [modalIsOpen, setModalIsOpen] = useState(false); // Se il modal di gameOver è aperto o no
   const [disableSurrender, setDisableSurrender] = useState(false); // Se il bottone di arrendersi è disabilitato o no
   // Nomi dei giocatori
@@ -60,7 +52,6 @@ function Kriegspiel() {
   const [umpireFlag, setUmpireFlag] = useState(false); // Se l'arbitro ha risposto Try! Devi provare una cattura col pedone
   const [umpireMove, setUmpireMove] = useState(""); // Se la tua mossa è valida o no
   const [lastMoveForCheck, setLastMoveTargetSquare] = useState(null); // L'ultima mossa per il check
-  const [lastMoveChessPiece, setLastMoveChessPiece] = useState(null); // L'ultima mossa per il check
   const [enPassant, setEnPassant] = useState(false);
 
   const [isDrawButtonActive, setIsDrawButtonActive] = useState(false); // Se il bottone di arrendersi è attivo o no
@@ -76,164 +67,134 @@ function Kriegspiel() {
    * @returns
    */
   async function handleGetGameResponse(response) {
-    // Dobbiamo aggiornare i nuovi dati
-    if (response.success) {
-      setGameGottenOnce(true);
-      // Se non ci sono entrambi i player, allora non imposto nulla
-      if (
-        response.game.player1.username === null ||
-        response.game.player2.username === null
-      ) {
-        return;
-      } else {
-        setPlayer2Arrived(true);
-      }
-
-      // Gestione aggiornamento dati permanenti della partita
-
-      // Imposto i dati sugli utenti se sono diversi da quelli attuali
-      if (response.game.player1.username !== player1) {
-        setPlayer1(response.game.player1.username);
-      }
-      if (response.game.player2.username !== player2) {
-        setPlayer2(response.game.player2.username);
-      }
-      // Imposto il player side se è diverso da quello attuale
-      if (response.game.player1.username === username) {
-        if (response.game.player1.side !== playerSide) {
-          setPlayerSide(response.game.player1.side);
-        }
-      } else {
-        if (response.game.player2.side !== playerSide) {
-          setPlayerSide(response.game.player2.side);
-        }
-      }
-
-      // Gestione aggiornamento dati temporanei della partita
-
-      setGameData(response.game);
-      let newChess = new Chess();
-      newChess.load(response.game.chess._header.FEN);
-      
-      setFen(response.game.chess._header.FEN);
-      
-      newChess.load(newChess.fen());
-      setChess(newChess);
-      // informazioni utili soprattutto per checkCheck()
-      setLastMoveTargetSquare(response.game.lastMoveTargetSquare);
-      setLastMoveChessPiece(response.game.lastMoveChessPiece);
-      
-      if (checkCheck()) {
-        console.log('checkcheck' + checkCheck())
-        setUmpire(checkCheck());
-      };
-
-      if (response.game.lastMove !== null) {
-        console.log('lastmove' + response.game.lastMove)
-        if (response.game.lastMove === 'w' && !checkCheck()) {
-          setUmpire("Black to move");
-        } else if (response.game.lastMove === 'b' && !checkCheck()) {
-          setUmpire("White to move");
-        }
-      }
-
-      // Impostazione dei timer
-      if (response.game.player1.username === username) {
-        if (playerSide === "w") {
-          setTimeBianco(response.game.player1.timer);
-          setTimeNero(response.game.player2.timer);
-        } else {
-          setTimeBianco(response.game.player2.timer);
-          setTimeNero(response.game.player1.timer);
-        }
-      } else {
-        if (playerSide === "w") {
-          setTimeBianco(response.game.player2.timer);
-          setTimeNero(response.game.player1.timer);
-        } else {
-          setTimeBianco(response.game.player1.timer);
-          setTimeNero(response.game.player2.timer);
-        }
-      }
-      
-      let length = response.game.chess._history.length;
-      if (length > 0) {
-        let history = response.game.chess._history;
-        let lastMove = history[length - 1];
-        if (lastMove.move.captured !== undefined) {
-          let piecePosition = response.game.lastMoveTargetSquare;
-          if(!(lastMove.move.flags == 8)){
-            setEnPassant(false)
-          }
-          console.log('lastmove' + lastMove.move.flags + " type" + typeof lastMove.move.flags)
-          // if there is no check then the umpire says "Piece gone on " + piecePosition
-          // 8 is the corresponding flag for en passant
-          if(lastMove.move.flags == 8){
-            if (lastMove.move.color == "b"){
-              setUmpire("Black has taken en passant on " + piecePosition);
-              setEnPassant(true);
-            } else if(lastMove.move.color == "w"){
-              setUmpire("White has taken en passant on " + piecePosition);
-              setEnPassant(true);
-            }
-          } else { 
-            // if there is check then the umpire says "Piece gone on " + piecePosition + " and " + checkCheck()
-          // since its important to know where the piece was captured and what kind of check it is
-            if (lastMove.move.captured === 'p' && !checkCheck() && !enPassant) {
-              setUmpire("Pawn gone on " + piecePosition);
-            } else if (lastMove.move.captured !== 'p' && !checkCheck() && !enPassant){
-              setUmpire("Piece gone on " + piecePosition);
-            } else if (lastMove.move.captured === 'p' && checkCheck() && !enPassant) {
-              setUmpire("Pawn gone on " + piecePosition + " and " + checkCheck());
-            } else if (lastMove.move.captured !== 'p' && checkCheck() && !enPassant){
-              setUmpire("Piece gone on " + piecePosition + " and " + checkCheck());
-            } else if (lastMove.move.captured !== 'p' && checkCheck() && enPassant == false && enPassant && lastMove.move.color == 'b'){
-              setUmpire("Black has taken en passant on " + piecePosition + " and " + checkCheck());
-            } else if (lastMove.move.captured !== 'p' && checkCheck() && enPassant == false && enPassant && lastMove.move.color == 'w'){
-              setUmpire("White has taken en passant on " + piecePosition + " and " + checkCheck());
-            }
-          }
-        }
-      }
-      // Gestione nel caso di draw
-      checkDraw();
-
-      if (response.game.gameOver.isGameOver) {
-        console.log('isgameover')
-        if(threefoldRepetition || fiftyMoveRule){
-          console.log('isdrawbuttonclicked')
-          setWinner("Nessuno");
-          if(threefoldRepetition){
-            setUmpire(" threefold repetition");
-          } else if(fiftyMoveRule){
-            setUmpire(" 50 move rule");
-          }
-          setModalIsOpen(true);
-          return;
-        }
-        console.log('cantgoverhere')
-        setWinner(response.game.gameOver.winner == "p1" ? player1 : player2);
-        if(response.game.gameOver.reason === "checkmate"){
-          setUmpire("Checkmate");
-        }
-        else if(response.game.gameOver.reason === "stalemate"){
-          setUmpire("Stalemate");
-        }
-        else if(response.game.gameOver.reason === "timeout"){
-          setUmpire("Timeout");
-        }
-        else if(response.game.gameOver.reason === "insufficient_material"){
-          setUmpire("Draw by insufficient force");
-        }
-        setModalIsOpen(true);
-      }
-    } else {
-      // Non dobbiamo aggiornare dati, dobbiamo ritornare un messaggio di errore
+    if (!response.success) {
       console.log("Errore nel fetch della partita: ", response.message);
-      // Se lo status è 403 o 404 allora la partita non esiste più
       if (response.status === 403 || response.status === 404) {
         navigate("/play");
       }
+      return;
+    }
+
+    setGameGottenOnce(true);
+    const { game } = response;
+
+    if (
+      game.player1.username === null ||
+      game.player2.username === null
+    ) {
+      return;
+    }
+
+    setPlayer2Arrived(true);
+
+    if (game.player1.username !== player1) {
+      setPlayer1(game.player1.username);
+    }
+    if (game.player2.username !== player2) {
+      setPlayer2(game.player2.username);
+    }
+
+    const currentPlayer = game.player1.username === username ? game.player1 : game.player2;
+    if (currentPlayer.side !== playerSide) {
+      setPlayerSide(currentPlayer.side);
+    }
+
+    setGameData(game);
+    const newChess = new Chess();
+    newChess.load(game.chess._header.FEN);
+    setFen(game.chess._header.FEN);
+    setChess(newChess);
+    setLastMoveTargetSquare(game.lastMoveTargetSquare);
+
+    if (checkCheck()) {
+      setUmpire(checkCheck());
+    }
+
+    if (game.lastMove !== null) {
+      if (game.lastMove === 'w' && !checkCheck()) {
+        setUmpire("Black to move");
+      } else if (game.lastMove === 'b' && !checkCheck()) {
+        setUmpire("White to move");
+      }
+    }
+
+    if (currentPlayer.username === username) {
+      if (playerSide === "w") {
+        setTimeBianco(currentPlayer.timer);
+        setTimeNero(game.player2.timer);
+      } else {
+        setTimeBianco(game.player2.timer);
+        setTimeNero(currentPlayer.timer);
+      }
+    } else {
+      if (playerSide === "w") {
+        setTimeBianco(game.player2.timer);
+        setTimeNero(currentPlayer.timer);
+      } else {
+        setTimeBianco(currentPlayer.timer);
+        setTimeNero(game.player2.timer);
+      }
+    }
+
+    const length = game.chess._history.length;
+    if (length > 0) {
+      const history = game.chess._history;
+      const lastMove = history[length - 1];
+      if (lastMove.move.captured !== undefined) {
+        const piecePosition = game.lastMoveTargetSquare;
+        if (lastMove.move.flags != 8) {
+          setEnPassant(false);
+          if (lastMove.move.captured === 'p' && !checkCheck() && !enPassant) {
+            setUmpire("Pawn gone on " + piecePosition);
+          } else if (lastMove.move.captured !== 'p' && !checkCheck() && !enPassant) {
+            setUmpire("Piece gone on " + piecePosition);
+          } else if (lastMove.move.captured === 'p' && checkCheck() && !enPassant) {
+            setUmpire("Pawn gone on " + piecePosition + " and " + checkCheck());
+          } else if (lastMove.move.captured !== 'p' && checkCheck() && !enPassant) {
+            setUmpire("Piece gone on " + piecePosition + " and " + checkCheck());
+          } else if (lastMove.move.captured !== 'p' && checkCheck() && !enPassant && enPassant && lastMove.move.color == 'b') {
+            setUmpire("Black has taken en passant on " + piecePosition + " and " + checkCheck());
+          } else if (lastMove.move.captured !== 'p' && checkCheck() && !enPassant && enPassant && lastMove.move.color == 'w') {
+            setUmpire("White has taken en passant on " + piecePosition + " and " + checkCheck());
+          }
+        }
+        if (lastMove.move.flags == 8) {
+          if (lastMove.move.color == "b") {
+            setUmpire("Black has taken en passant on " + piecePosition);
+            setEnPassant(true);
+          } else if (lastMove.move.color == "w") {
+            setUmpire("White has taken en passant on " + piecePosition);
+            setEnPassant(true);
+          }
+        }
+      }
+    }
+
+    checkDraw();
+
+    if (game.gameOver.isGameOver) {
+      if (threefoldRepetition || fiftyMoveRule) {
+        setWinner("Nessuno");
+        if (threefoldRepetition) {
+          setUmpire(" threefold repetition");
+        } else if (fiftyMoveRule) {
+          setUmpire(" 50 move rule");
+        }
+        setModalIsOpen(true);
+        return;
+      }
+
+      setWinner(game.gameOver.winner == "p1" ? player1 : player2);
+      if (game.gameOver.reason === "checkmate") {
+        setUmpire("Checkmate");
+      } else if (game.gameOver.reason === "stalemate") {
+        setUmpire("Stalemate");
+      } else if (game.gameOver.reason === "timeout") {
+        setUmpire("Timeout");
+      } else if (game.gameOver.reason === "insufficient_material") {
+        setUmpire("Draw by insufficient force");
+      }
+      setModalIsOpen(true);
     }
   }
 
@@ -308,22 +269,22 @@ function Kriegspiel() {
     if (
       (gameData.lastMove === playerSide ||
         (gameData.lastMove == null && playerSide === "black"))
-    ) {
-      return;
-    }
+    )
+    return;
+
     // se l'umpire ha risposto Try! e il giocatore non ha provato una mossa col pedone
     // allora non si può muovere
-    else if ((chess.get(sourceSquare).type != 'p' && umpireFlag)) {
+    if ((chess.get(sourceSquare).type != 'p' && umpireFlag)) 
       return;
-    }
+
     // se il giocatore sta muovendo il pedone in avanti senza tentare la cattura
     // e l'umpire ha risposto Try! allora non si può muovere
-    else if (chess.get(sourceSquare).type == 'p' && umpireFlag && sourceSquare.split("")[0] == targetSquare.split("")[0]) {
+    if (chess.get(sourceSquare).type == 'p' && umpireFlag && sourceSquare.split("")[0] == targetSquare.split("")[0])
       return;
-    }
+
     // se l'umpire ha risposto Try! e il giocatore ha provato una mossa col pedone
     // allora si può muovere
-    else if (chess.get(sourceSquare).type == 'p' && umpireFlag) {
+    if (chess.get(sourceSquare).type == 'p' && umpireFlag){
       setUmpireFlag(false);
 
       fetch(`/api/kriegspiel/movePiece/${gameId}`, {
@@ -416,23 +377,23 @@ function Kriegspiel() {
       });
   };
 
-  // Gestore delle mosse possibili
-  const handleMouseOverSquare = (square) => {
-    const moves = chess.moves({ square, verbose: true });
+  // Gestore delle mosse possibili  #TODO Forse si deve cancellare
+  // const handleMouseOverSquare = (square) => {
+  //   const moves = chess.moves({ square, verbose: true });
 
-    // Se il turno non è del giocatore attuale allora non lo mostro
-    if (
-      gameData.lastMove === playerSide ||
-      (gameData.lastMove === null && playerSide === "black")
-    ) {
-      return;
-    }
+  //   // Se il turno non è del giocatore attuale allora non lo mostro
+  //   if (
+  //     gameData.lastMove === playerSide ||
+  //     (gameData.lastMove === null && playerSide === "black")
+  //   ) {
+  //     return;
+  //   }
 
-    // Imposto le mosse disponibile
-    if (!umpireFlag) {
-      setPossibleMoves(moves.map((move) => move.to));
-    }
-  };
+  //   // Imposto le mosse disponibile
+  //   if (!umpireFlag) {
+  //     setPossibleMoves(moves.map((move) => move.to));
+  //   }
+  // };
 
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
@@ -507,7 +468,7 @@ function Kriegspiel() {
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
-  const handleNavigatetoGame = () => navigate(`/play/kriegspiel/${gameId}`);
+  // const handleNavigatetoGame = () => navigate(`/play/kriegspiel/${gameId}`);  #TODO da rimuovere credo
 
 
 

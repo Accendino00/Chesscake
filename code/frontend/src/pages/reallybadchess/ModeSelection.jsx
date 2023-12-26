@@ -41,7 +41,7 @@ const ModeSelection = () => {
   const location = useLocation();
   const isChildRoute = /^\/play\/reallybadchess\/.+/.test(location.pathname);
 
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
+  const { loginStatus, isTokenLoading} = useTokenChecker();
   const [loading, setLoading] = useState(false);
 
   /**
@@ -89,87 +89,77 @@ const ModeSelection = () => {
 
     // se giochiamo playerVsPlayer, allora devo passare i dati al componente "ChessGameLocal"
     // e navigare a "/play/reallybadchess/local"
-    if (mode === "playerVsPlayer") {
-      // Se player 1 e player 2 non sono stati impostati, allora imposto i loro nomi di default
-
-      const gameData = JSON.stringify({
-        player1: player1 === "" ? "Player 1" : player1,
-        player2: player2 === "" ? "Player 2" : player2,
-        rank: rank,
-        duration: duration,
-        mode: mode,
-      });
-      navigate(
-        `/play/reallybadchess/local?data=${encodeURIComponent(gameData)}`
-      );
-    } else if (mode == "practiceVsComputer") {
-      const gameData = JSON.stringify({
-        player1: player1 === "" ? "Player 1" : player1,
-        player2: player2 === "" ? "Computer" : player2,
-        rank: rank,
-        mode: mode,
-        difficulty: difficulty,
-      });
-      navigate(
-        `/play/reallybadchess/freeplay?data=${encodeURIComponent(gameData)}`
-      );
-    } else if (mode === "playerVsPlayerOnline") {
-      navigate(`/play/reallybadchess/lobby`);
-    }
-
-    // Se giochiamo in tutte le altre modalità, si tratta di una partita online
-    // e quindi devo navigare a "/play/reallybadchess/:gameId"
-    else {
-      // Il GameID mi viene ritornato dalla richiesta di fetch che faccio al server
-      // per creare una nuova partita. La richiesta la faccio ad /api/reallybadchess/newGame
-      // e il server mi ritorna il GameID e una chiave nel caso io non abbia un token con il
-      // quale ho eseguito la richiesta messa in Authorization Bearer
-      const gameData = {
-        settings: {
-          mode: mode,
+    switch (mode) {
+      case "playerVsPlayer":
+        // Se player 1 e player 2 non sono stati impostati, allora imposto i loro nomi di default
+        const player1Name = player1 === "" ? "Player 1" : player1;
+        const player2Name = player2 === "" ? "Player 2" : player2;
+        const playerVsPlayerData = JSON.stringify({
+          player1: player1Name,
+          player2: player2Name,
+          rank: rank,
           duration: duration,
-        },
-      };
-
-      if (mode === "practiceVsComputer") {
-        gameData.settings.rank = rank;
-      }
-
-      let token = Cookies.get("token");
-
-      let headers = {};
-
-      if (token) {
-        headers = {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token || "",
-        };
-      } else {
-        headers = {
-          "Content-Type": "application/json",
-        };
-      }
-
-      fetch("/api/reallybadchess/newGame", {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(gameData),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          // Assumendo che 'data' contenga un campo 'gameId'
-          navigate(`/play/reallybadchess/${data.gameId}`);
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
+          mode: mode,
         });
+        navigate(`/play/reallybadchess/local?data=${encodeURIComponent(playerVsPlayerData)}`);
+        break;
+    
+      case "practiceVsComputer":
+        const practiceVsComputerData = JSON.stringify({
+          player1: player1 === "" ? "Player 1" : player1,
+          player2: player2 === "" ? "Computer" : player2,
+          rank: rank,
+          mode: mode,
+          difficulty: difficulty,
+        });
+        navigate(`/play/reallybadchess/freeplay?data=${encodeURIComponent(practiceVsComputerData)}`);
+        break;
+    
+      case "playerVsPlayerOnline":
+        navigate(`/play/reallybadchess/lobby`);
+        break;
+        // Se giochiamo in tutte le altre modalità, si tratta di una partita online
+        // e quindi devo navigare a "/play/reallybadchess/:gameId"
+      default:
+        // Il GameID mi viene ritornato dalla richiesta di fetch che faccio al server
+        // per creare una nuova partita. La richiesta la faccio ad /api/reallybadchess/newGame
+        // e il server mi ritorna il GameID e una chiave nel caso io non abbia un token con il
+        // quale ho eseguito la richiesta messa in Authorization Bearer
+        const onlineGameData = {
+          settings: {
+            mode: mode,
+            duration: duration,
+          },
+        };
+        console.log("SN QUI");
+        if (mode === "practiceVsComputer") {
+          onlineGameData.settings.rank = rank;
+        }
+    
+        const token = Cookies.get("token");
+        const onlineGameHeaders = token
+          ? { "Content-Type": "application/json", Authorization: "Bearer " + token }
+          : { "Content-Type": "application/json" };
+    
+        fetch("/api/reallybadchess/newGame", {
+          method: "POST",
+          headers: onlineGameHeaders,
+          body: JSON.stringify(onlineGameData),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            navigate(`/play/reallybadchess/${data.gameId}`);
+          })
+          .catch((error) => {
+            console.error("There was a problem with the fetch operation:", error);
+          });
+        break;
     }
-
     setLoading(false);
   };
 

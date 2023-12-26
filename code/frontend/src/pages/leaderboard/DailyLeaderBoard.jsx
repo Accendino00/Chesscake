@@ -35,87 +35,86 @@ function DailyLeaderBoard() {
 
     return (
         <Box>
-            {
-                token ? (
+            {token && (
+                <Typography variant="h6" sx={{
+                fontSize: "15px",
+                fontWeight: "bold",
+                color: "#1976d2",
+                marginTop: "20px",
+                marginBottom: "10px"
+                }}>
+                Classifica Generale
+                </Typography>
+            )}
+
+            {loading ? (
+                <>
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                </>
+            ) : (
+                <>
+                {leaderboardData.leaderboard.length === 0 ? (
                     <Typography variant="h6" sx={{
-                        fontSize: "15px",
-                        fontWeight: "bold",
-                        color: "#1976d2",
-                        marginTop: "20px",
-                        marginBottom: "10px"
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    color: "#1976d2",
+                    marginTop: "20px",
+                    marginBottom: "10px"
                     }}>
-                        Classifica Generale
+                    Nessun record da mostrare
                     </Typography>
-                ) : (<Box sx={{height: "15px"}}/>)
-            }
-
-            {
-                loading ? (<>
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                </>) : (
-
-                    leaderboardData.leaderboard.length === 0 ? (
-                        <Typography variant="h6" sx={{
-                            fontSize: "15px",
-                            fontWeight: "bold",
-                            color: "#1976d2",
-                            marginTop: "20px",
-                            marginBottom: "10px"
-                        }}>
-                            Nessun record da mostrare
-                        </Typography>
-                    ) :
+                ) : (
                     <>
-                        {leaderboardData.leaderboard.map((record, index, array) => {
-                            return (
-                                <React.Fragment key={"score" + (index + 1)}>
-                                    <LeaderBoardRecord rank={index + 1} username={record.username} value={record.moves} />
-                                    {array.length - 1 !== index && <Divider />}
-                                </React.Fragment>
-                            );
-                        })}
-                    </>)
-            }
+                    {leaderboardData.leaderboard.map((record, index, array) => {
+                        return (
+                        <React.Fragment key={"score" + (index + 1)}>
+                            <LeaderBoardRecord rank={index + 1} username={record.username} value={record.moves} />
+                            {array.length - 1 !== index && <Divider />}
+                        </React.Fragment>
+                        );
+                    })}
+                    </>
+                )}
+                </>
+            )}
 
-            {/* Se e solo se c'è il token, vado a renderizzare questa parte */}
             {token && (
                 <>
-                    <Typography variant="h6" style={{
-                        fontSize: "15px",
-                        fontWeight: "bold",
-                        color: "#1976d2",
-                        marginTop: "20px",
-                        marginBottom: "10px",
-                    }}>
-                        Il tuo profilo
-                        <ShareButton 
-                            width="20px"
-                            height="20px"
-                            text={"Ho battuto la daily challenge di Really Bad Chess di oggi con " + (loading ? "" : leaderboardData.userPlace.moves) + "! Provalo anche tu sul sito di Chess Cake!"}
-                            style={{
-                                marginLeft: "10px",
-                                width: "30px",
-                                minWidth: "30px",
-                                height: "30px",
-                            }}
-
-                            disabled={loading}
-                        />
-                    </Typography>
-                    {loading ? (
-                        <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
-                    ) : (
-                        <LeaderBoardRecord rank={leaderboardData.userPlace.place} username={leaderboardData.userPlace.username} value={leaderboardData.userPlace.moves} />
-                    )}
+                <Typography variant="h6" style={{
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    color: "#1976d2",
+                    marginTop: "20px",
+                    marginBottom: "10px",
+                }}>
+                    Il tuo profilo
+                    <ShareButton
+                    width="20px"
+                    height="20px"
+                    text={"Ho battuto la daily challenge di Really Bad Chess di oggi con " + (loading ? "" : leaderboardData.userPlace.moves) + "! Provalo anche tu sul sito di Chess Cake!"}
+                    style={{
+                        marginLeft: "10px",
+                        width: "30px",
+                        minWidth: "30px",
+                        height: "30px",
+                    }}
+                    disabled={loading}
+                    />
+                </Typography>
+                {loading ? (
+                    <Skeleton variant="rounded" width={700} height={35} sx={{ margin: "4px" }} />
+                ) : (
+                    <LeaderBoardRecord rank={leaderboardData.userPlace.place} username={leaderboardData.userPlace.username} value={leaderboardData.userPlace.moves} />
+                )}
                 </>
             )}
         </Box>

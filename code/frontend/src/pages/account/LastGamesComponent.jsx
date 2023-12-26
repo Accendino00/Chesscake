@@ -11,16 +11,12 @@ import {
 import {
   CheckCircle,
   Error,
-  Computer,
-  Event,
-  SportsKabaddi,
   Replay,
   VisibilityOff,
 } from "@mui/icons-material";
 import styles from "./AccountPageStyles";
 import ReplayComponent from "../replay/Replay.jsx";
 
-import LanguageIcon from "@mui/icons-material/Language";
 import {
   PlayerVsPlayerIcon,
   PlayerVsComputerIcon,
@@ -37,8 +33,7 @@ function LastGamesComponent({ username }) {
   const [lastGamesData, setLastGamesData] = React.useState(null);
   const [playerRequesting, setPlayerRequesting] = React.useState(null); // Username dell'utente di chi è la pagina
   const [isLoading, setIsLoading] = React.useState(true);
-  const [accountFound, setAccountFound] = React.useState(false);
-  const [replayGameIndex, setReplayGameIndex] = useState(null);
+  const [replayGameIndex, setReplayGameIndex] = useState(null);  //TODO : Ma usiamo sta variabile?
   const [gameHistory, setGameHistory] = useState(null);
   const [initialState, setInitialState] = useState(null);
   const navigate = useNavigate();
@@ -62,7 +57,6 @@ function LastGamesComponent({ username }) {
           if (data.success) {
             setLastGamesData(data.lastGames);
             setPlayerRequesting(data.playerRequesting);
-            setAccountFound(true);
           }
           setIsLoading(false);
         });
@@ -77,7 +71,6 @@ function LastGamesComponent({ username }) {
           if (data.success) {
             setLastGamesData(data.lastGames);
             setPlayerRequesting(data.playerRequesting);
-            setAccountFound(true);
           }
           setIsLoading(false);
         });

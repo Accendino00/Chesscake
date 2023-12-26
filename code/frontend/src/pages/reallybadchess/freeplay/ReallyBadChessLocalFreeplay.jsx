@@ -64,7 +64,6 @@ function ReallyBadChessLocalFreeplay() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [possibleMoves, setPossibleMoves] = useState([]);
   const [pieceSelected, setPieceSelected] = useState([]);
-  const [moves, setMoves] = useState([]);
   const [winner, setWinner] = useState(null);
 
   const [chess, setChess] = useState(cloneChessBoard(startingBoard));
@@ -101,7 +100,6 @@ function ReallyBadChessLocalFreeplay() {
   const handleRestart = () => {
     // Ricomincia la partita
     setWinner(null);
-    setMoves([]);
     setPieceSelected([]);
     setPossibleMoves([]);
     setChess(cloneChessBoard(startingBoard));
@@ -122,83 +120,10 @@ function ReallyBadChessLocalFreeplay() {
     setPossibleMoves([]);
   };
 
-
-// const sumWhitePieceValues = () => {
-//   const fen = chess.fen();
-//   const fenParts = fen.split(' ');
-//   const boardFen = fenParts[0];
-//   const whitePieces = boardFen.replace(/\//g, '').replace(/\d/g, '').replace(/[^PNBRQK]/g, '');
-//   let sum = 0;
-//   for (let i = 0; i < whitePieces.length; i++) {
-//     const piece = whitePieces[i];
-//     switch (piece) {
-//       case 'P':
-//         sum += 1;
-//         break;
-//       case 'N':
-//         sum += 3;
-//         break;
-//       case 'B':
-//         sum += 3;
-//         break;
-//       case 'R':
-//         sum += 5;
-//         break;
-//       case 'Q':
-//         sum += 9;
-//         break;
-//       case 'K':
-//         sum += 0; // King's value is not counted
-//         break;
-//     }
-//   }
-//   return sum;
-// };
-
-// const sumBlackPieceValues = () => {
-//   const fen = chess.fen();
-//   const fenParts = fen.split(' ');
-//   const boardFen = fenParts[0];
-//   const blackPieces = boardFen.replace(/\//g, '').replace(/\d/g, '').replace(/[^pnbrqk]/g, '');
-//   let sum = 0;
-//   for (let i = 0; i < blackPieces.length; i++) {
-//     const piece = blackPieces[i];
-//     switch (piece) {
-//       case 'P':
-//       case 'p':
-//         sum += 1;
-//         break;
-//       case 'N':
-//       case 'n':
-//         sum += 3;
-//         break;
-//       case 'B':
-//       case 'b':
-//         sum += 3;
-//         break;
-//       case 'R':
-//       case 'r':
-//         sum += 5;
-//         break;
-//       case 'Q':
-//       case 'q':
-//         sum += 9;
-//         break;
-//       case 'K':
-//       case 'k':
-//         sum += 0; // King's value is not counted
-//         break;
-//     }
-//   }
-//   return sum;
-// };
-
   const handleMove = async (sourceSquare, targetSquare) => {
     try {
       if (chess.turn() === 'w') {
         await handleWhiteTurn(sourceSquare, targetSquare);
-      } else if (chess.turn() === 'b') {
-        //handleBlackTurn(sourceSquare, targetSquare);
       }
 
       // Riabilito l'undo solo se e' la seconda mossa
@@ -211,7 +136,6 @@ function ReallyBadChessLocalFreeplay() {
       console.log(error);
     }
     handleMouseOutSquare();
-    // console.log(sumWhitePieceValues() - sumBlackPieceValues());
   };
 
   const computerMoveBlack = async () => {
@@ -254,13 +178,6 @@ function ReallyBadChessLocalFreeplay() {
       checkCheck();
       handleCheckmateAndDraw();
       await computerMoveBlack();
-    }
-  };
-
-  const handleBlackTurn = (sourceSquare, targetSquare) => {
-    if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
-      setFen(chess.fen());
-      checkCheck();
     }
   };
 

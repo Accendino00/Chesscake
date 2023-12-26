@@ -1,24 +1,22 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import LoginPage from '../../code/frontend/src/pages/login_register/LoginPage.jsx';
 import '@4tw/cypress-drag-drop'
 
 function performChessMoves(color) {
     cy.get(`[data-square="${generateStartSquare(color)}"] > div`).click({ force: true });
     cy.get(`[data-square="${generateMoveSquare()}"] > div`).click({ force: true }).then(() => {
       // Controlla la presenza di due pulsanti "Esci"
-    cy.get('button:contains("Esci")').then(($buttons) => {
-        if ($buttons.length === 2) {
-            // Se ci sono due pulsanti "Esci", la partita è finita
-            cy.log('La partita è finita.');
-            cy.get('button:contains("Esci")').eq(1).click(); // Clicca sul secondo pulsante "Esci"
-        } else {
-            // Se non ci sono due pulsanti "Esci", la partita non è finita, continua a giocare
-            cy.wait(500);
-            performChessMoves(color);
+        cy.get('button:contains("Esci")').then(($buttons) => {
+            if ($buttons.length === 2) {
+                // Se ci sono due pulsanti "Esci", la partita è finita
+                cy.log('La partita è finita.');
+                cy.get('button:contains("Esci")').eq(1).click(); // Clicca sul secondo pulsante "Esci"
+            } else {
+                // Se non ci sono due pulsanti "Esci", la partita non è finita, continua a giocare
+                cy.wait(500);
+                performChessMoves(color);
             };
         });
     });
-  }
+}
 
 function generateStartSquare(color) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];

@@ -8,7 +8,7 @@ import HomePage from './Homepage.jsx';
 import NavPagesBackground from './NavPagesBackground.jsx';
 
 function NavPage() {
-    const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const { loginStatus, isTokenLoading} = useTokenChecker();
 
     const location = useLocation();
     const isChildRoute = /^\/play\/.+/.test(location.pathname);

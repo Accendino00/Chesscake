@@ -1,6 +1,6 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
 import ProfileComponent from './ProfileComponent.jsx';
@@ -9,7 +9,6 @@ import LastGamesComponent from './LastGamesComponent.jsx';
 function AccountPage() {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const navigate = useNavigate();
-    // const { username } = useParams();
     React.useEffect(() => {
         if (!isTokenLoading) {
             if (!loginStatus) {

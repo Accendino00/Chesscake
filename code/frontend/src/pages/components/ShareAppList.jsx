@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   FacebookShareButton,
   TwitterShareButton,
   XIcon,
   RedditShareButton,
 } from "react-share";
-import { Button, Box } from "@mui/material/";
+import { Box } from "@mui/material/";
 import { Facebook, Reddit } from "@mui/icons-material/";
 
 const ShareAppList = ({ sharedText, url }) => {

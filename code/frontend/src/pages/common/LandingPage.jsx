@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
 function LandingPage() {
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
+  const { loginStatus, isTokenLoading} = useTokenChecker();
   const navigate = useNavigate();
 
   React.useEffect(() => {

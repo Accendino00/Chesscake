@@ -1,16 +1,16 @@
-var chessGames = require("../utils/chess/chessgames");
+let chessGames = require("../utils/chess/chessgames");
 const { Chess } = require("chess.js");
-var express = require("express");
-var config = require("../config");
-var { clientMDB } = require("../utils/dbmanagement");
-var {
+let express = require("express");
+let config = require("../config");
+let { clientMDB } = require("../utils/dbmanagement");
+let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
 } = require("../middleware/authorization");
 const path = require("path");
 const { randomBytes } = require("crypto");
 
-var router = express.Router();
+let router = express.Router();
 
 function resizeGame (game) {
   return {
@@ -207,7 +207,8 @@ router.post("/movePiece/:gameId", authenticateJWT, async (req, res) => {
           currentFile += fileStep;
           currentRank += rankStep;
         }
-      } if(blocked){
+      }
+      if(blocked){
         res.status(200).send({
           success: false,
           game: resizeGame(game),

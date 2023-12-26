@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
-var path = require('path')
-var config = require("../config")
-var bcrypt = require('bcryptjs');
-var { clientMDB }  = require('../utils/dbmanagement');
+let express = require('express');
+let router = express.Router();
+let path = require('path')
+let config = require("../config")
+let bcrypt = require('bcryptjs');
+let { clientMDB }  = require('../utils/dbmanagement');
 
 
 function registerUser(username, password) {
@@ -12,17 +12,21 @@ function registerUser(username, password) {
             bcrypt.hash(password, 8)
             .then((hashedPassword) => {
                 const usersCollection = clientMDB.db("ChessCake").collection("Users");
-
                 // Check if a user with the same username already exists
                 usersCollection.findOne({ username: username })
                 .then((existingUser) => {
                     if (existingUser) {
                         // User already exists, reject the promise
-                        reject({ 
+                        reject(new Error({ 
+                            message: "User already exists", 
+                            status: 400, returnBody: 
+                            { success: false, reason: "Username already exists" } 
+                        }));
+                        /*reject({ 
                             message: "User already exists", 
                             status: 400, 
                             returnBody: { success: false, reason: "Username already exists" }
-                        });
+                        });*/
                     } else {
                         // Create a new user
                         const newUser = { 
@@ -41,33 +45,38 @@ function registerUser(username, password) {
                                 returnBody: { success: true }
                             });
                         }).catch((insertError) => {
-                            reject({ 
+                            reject(new Error({
                                 message: insertError, 
                                 status: 500, 
                                 returnBody: { success: false }
-                            });
+                            }));
+                            // reject({ 
+                            //     message: insertError, 
+                            //     status: 500, 
+                            //     returnBody: { success: false }
+                            // });
                         });
                     }
                 }).catch((findError) => {
-                    reject({ 
+                    reject(new Error({ 
                         message: findError, 
                         status: 500, 
                         returnBody: { success: false }
-                    });
+                    }));
                 });
             }).catch((error) => {
-                reject({ 
+                reject(new Error({ 
                     message: error, 
                     status: 500, 
                     returnBody: { success: false }
-                });
+                }));
             });
         } catch (error) {
-            reject({ 
+            reject(new Error({ 
                 message: error, 
                 status: 500, 
                 returnBody: { success: false }
-            });
+            }));
         }
     });
 }
@@ -92,8 +101,8 @@ router.post("/register", function (req, res) {
     // Cerchiamo nel req body se vi sono tutti i parametri non nulli, ovvero username e password
     if (req.body.username && req.body.password) {
         // Se sono presenti, li salviamo in due variabili
-        var username = req.body.username;
-        var password = req.body.password;
+        let username = req.body.username;
+        let password = req.body.password;
         // Creiamo un nuovo utente con i parametri appena ricevuti
 
         // Registriamo l'utente
