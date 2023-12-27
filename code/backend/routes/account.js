@@ -23,7 +23,6 @@ var {
 router.get("/getAccountData", authenticateJWT, function (req, res) {
   // req.user dovrebbe essere impostato con il nome utente che dobbiamo cercare nel DB
   const username = req.user.username;
-
   // Se username non è definito allo ritorniamo 403 e un messaggio di errore
   if (!username) {
     res.status(403).send({
@@ -38,7 +37,6 @@ router.get("/getAccountData", authenticateJWT, function (req, res) {
 // Questa è la versione che va a ricercare gli account dal db dato l'username
 router.get("/getAccountData/:username", function (req, res) {
   let username = req.params.username;
-
   // Se username non è definito allo ritorniamo 403 e un messaggio di errore
   if (!username) {
     res.status(403).send({
