@@ -11,7 +11,7 @@
   "version": "1.0.0",
   "main": "chessgame.test.js",
   "scripts": {
-    "test": "jest --runInBand --coverage --detectOpenHandles"
+    "test": "jest --runInBand --coverage --detectOpenHandles && node changepathoflcov.js"
   },
   "keywords": [],
   "author": "",
