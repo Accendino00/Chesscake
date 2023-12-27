@@ -41,7 +41,7 @@ function resizeGame (game) {
 router.get("/stockfish.js", (req, res) => {
   const stockfishPath = path.join(
     __dirname,
-    "../../frontend/src/pages/chessboard/stockfish.js"
+    "..//utils/chess/stockfish.js"
   );
   res.sendFile(stockfishPath);
 });
