@@ -4,16 +4,13 @@
  */
 
 // Librerie di MongoDB
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const config = require('../config'); // Contiene variabili utili per il server
-const e = require('express');
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const config = require("../config"); // Contiene variabili utili per il server
+const e = require("express");
 
 let dbs = ["ChessCake"];
 let collections = {
-  "ChessCake": [
-    "Users", 
-    "Games",
-  ]
+  ChessCake: ["Users", "Games"],
 };
 
 // Client per MongoDB
@@ -39,12 +36,15 @@ async function connectToDatabase() {
     console.error("Connessione a MongoDB fallita:", error);
 
     // Riproviamo a connetterci dopo 5 secondi
-    setTimeout(connectToDatabase, 5000);
+    setTimeout(() => {
+      connectToDatabase.catch((error) =>
+        console.error("Errore nell riconessione: ", error)
+      );
+    }, 5000);
   }
 }
 
-
-// Funzione che gestisce la disconnessione dal database 
+// Funzione che gestisce la disconnessione dal database
 async function disconnectFromDatabase() {
   try {
     await clientMDB.close();
@@ -55,16 +55,20 @@ async function disconnectFromDatabase() {
 }
 
 // In caso di disconnessione, proviamo a riconnetterci
-clientMDB.on('disconnected', () => {
+clientMDB.on("disconnected", () => {
   console.log("Disconnesso da MongoDB");
-  // Riproviamo a connetterci dopo 5 secondi
-  setTimeout(connectToDatabase, 5000);
-});
 
+  // Riproviamo a connetterci dopo 5 secondi
+  setTimeout(() => {
+    connectToDatabase.catch((error) =>
+      console.error("Errore nell riconessione: ", error)
+    );
+  }, 5000);
+});
 
 /**
  * Assicurarsi che il dabatase e le collezioni esistano
- * 
+ *
  * @param {string[]} dbs - Array dei nomi dei database da creare
  * @param {Object} collections - Array delle collezioni da controllare.
  */
@@ -72,18 +76,20 @@ async function ensureDbAndCollectionsExist(dbs, collections) {
   try {
     for (const dbName of dbs) {
       const db = clientMDB.db(dbName);
-      
+
       // Check if the database exists by listing its collections
-      const existingCollections = await db.listCollections({}, { nameOnly: true }).toArray();
+      const existingCollections = await db
+        .listCollections({}, { nameOnly: true })
+        .toArray();
 
       if (existingCollections.length === 0) {
         // If no collections exist, create and then drop a dummy collection to ensure the database is created
-        await db.createCollection('dummyCollection');
-        await db.collection('dummyCollection').drop();
+        await db.createCollection("dummyCollection");
+        await db.collection("dummyCollection").drop();
       }
 
       // Create specified collections if they don't exist
-      const existingCollectionNames = existingCollections.map(c => c.name);
+      const existingCollectionNames = existingCollections.map((c) => c.name);
       if (collections[dbName]) {
         for (const collectionName of collections[dbName]) {
           if (!existingCollectionNames.includes(collectionName)) {
@@ -94,7 +100,10 @@ async function ensureDbAndCollectionsExist(dbs, collections) {
       }
     }
   } catch (error) {
-    console.error("Errore nell'assicurarsi che tutti i DB e le collezioni esistano:", error);
+    console.error(
+      "Errore nell'assicurarsi che tutti i DB e le collezioni esistano:",
+      error
+    );
   }
 
   console.log("DB e collezioni confermati tutti esistenti");
@@ -132,11 +141,10 @@ async function checkAndCreateComputerUser() {
   }
 }
 
-
 /** MODULE EXPORTS **/
 
 module.exports = {
-    clientMDB,
-    connectToDatabase,
-    disconnectFromDatabase,
+  clientMDB,
+  connectToDatabase,
+  disconnectFromDatabase,
 };
