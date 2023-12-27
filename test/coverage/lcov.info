@@ -1,5 +1,5 @@
 TN:
-SF:..\code\backend\config.js
+SF:./code/backend/config.js
 FNF:0
 FNH:0
 DA:1,1
@@ -31,7 +31,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:..\code\backend\server.js
+SF:./code/backend/server.js
 FN:82,startServer
 FN:96,handleShutdown
 FNF:2
@@ -157,7 +157,7 @@ BRF:3
 BRH:2
 end_of_record
 TN:
-SF:..\code\backend\middleware\authorization.js
+SF:./code/backend/middleware/authorization.js
 FN:5,authenticateJWT
 FN:30,nonBlockingAutheticateJWT
 FNF:2
@@ -237,7 +237,7 @@ BRF:11
 BRH:10
 end_of_record
 TN:
-SF:..\code\backend\routes\account.js
+SF:./code/backend/routes/account.js
 FN:52,getAccountData
 FNF:1
 FNH:1
@@ -493,7 +493,7 @@ BRF:20
 BRH:10
 end_of_record
 TN:
-SF:..\code\backend\routes\diagnostic.js
+SF:./code/backend/routes/diagnostic.js
 FNF:0
 FNH:0
 DA:1,1
@@ -519,7 +519,7 @@ BRF:2
 BRH:1
 end_of_record
 TN:
-SF:..\code\backend\routes\kriegspiel.js
+SF:./code/backend/routes/kriegspiel.js
 FN:15,resizeGame
 FNF:1
 FNH:1
@@ -960,7 +960,7 @@ BRF:35
 BRH:11
 end_of_record
 TN:
-SF:..\code\backend\routes\leaderboard.js
+SF:./code/backend/routes/leaderboard.js
 FNF:0
 FNH:0
 DA:1,1
@@ -1205,7 +1205,7 @@ BRF:16
 BRH:7
 end_of_record
 TN:
-SF:..\code\backend\routes\login.js
+SF:./code/backend/routes/login.js
 FN:9,logUser
 FN:23,bcrypt.compare.then.reject.message
 FNF:2
@@ -1333,7 +1333,7 @@ BRF:14
 BRH:12
 end_of_record
 TN:
-SF:..\code\backend\routes\reallybadchess.js
+SF:./code/backend/routes/reallybadchess.js
 FN:15,resizeGame
 FNF:1
 FNH:1
@@ -1818,7 +1818,7 @@ BRF:47
 BRH:23
 end_of_record
 TN:
-SF:..\code\backend\routes\registration.js
+SF:./code/backend/routes/registration.js
 FN:9,registerUser
 FNF:1
 FNH:1
@@ -1977,7 +1977,7 @@ BRF:11
 BRH:9
 end_of_record
 TN:
-SF:..\code\backend\routes\webpages.js
+SF:./code/backend/routes/webpages.js
 FNF:0
 FNH:0
 DA:1,1
@@ -2003,7 +2003,7 @@ BRF:1
 BRH:1
 end_of_record
 TN:
-SF:..\code\backend\utils\dbmanagement.js
+SF:./code/backend/utils/dbmanagement.js
 FN:26,connectToDatabase
 FN:48,disconnectFromDatabase
 FN:75,ensureDbAndCollectionsExist
@@ -2182,7 +2182,7 @@ BRF:12
 BRH:6
 end_of_record
 TN:
-SF:..\code\backend\utils\chess\boardFunctions.js
+SF:./code/backend/utils/chess/boardFunctions.js
 FN:19,findChessPiecesWithRank
 FN:106,getRandomPieceValue
 FN:114,calculateMedian
@@ -2880,7 +2880,7 @@ BRF:98
 BRH:88
 end_of_record
 TN:
-SF:..\code\backend\utils\chess\chessgames.js
+SF:./code/backend/utils/chess/chessgames.js
 FN:27,createNewGameWithSettings
 FN:160,joinGame
 FN:193,getGame
@@ -3751,7 +3751,7 @@ BRF:94
 BRH:73
 end_of_record
 TN:
-SF:..\code\backend\utils\chess\movesFunctions.js
+SF:./code/backend/utils/chess/movesFunctions.js
 FN:5,findBestMove
 FN:11,stockfish.onmessage
 FNF:2
