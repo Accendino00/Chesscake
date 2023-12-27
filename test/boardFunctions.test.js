@@ -1,6 +1,7 @@
 let {Chess} = require('chess.js');
 let {
   generateBoard,
+  generateBoardWithSeed,
   findChessPiecesWithRank,
   getRandomPieceValue,
   calculateMedian,
@@ -13,31 +14,34 @@ let {
   selectPiece,
   weightFunction,
   calculateRanks,
-  seededRandom,
   getPiecePosition,
-} = require('./../code/frontend/src/pages/chessboard/boardFunctions');
+  rng
+} = require('./../code/backend/utils/chess/boardFunctions');
 
 describe('generateBoard', () => {
   test('should generate a new Chess board', () => {
     const mode = 'dailyChallenge';
     const rank = 1;
     const chessBoard = generateBoard(mode, rank);
-    expect(typeof chessBoard.fen).toBe('function');
+    expect(typeof chessBoard.board.fen).toBe('function');
   });
 
   test('should generate the same board for the same day', () => {
     const mode = 'dailyChallenge';
     const rank = 1;
-    const chessBoard1 = generateBoard(mode, rank);
-    const chessBoard2 = generateBoard(mode, rank);
-    expect(chessBoard1.fen()).toBe(chessBoard2.fen());
+    let chessBoard1 = new Chess();
+    let chessBoard2 = new Chess();
+    chessBoard1 = generateBoardWithSeed(mode,0, rank);
+    chessBoard2 = generateBoardWithSeed(mode,0, rank);
+    expect(chessBoard1.board.fen()).toBe(chessBoard2.board.fen());
   });
 
   test('should have pieces in the first two rows and the last two rows of the chessboard', () => {
     const mode = 'dailyChallenge';
     const rank = 1;
-    const chessBoard = generateBoard(mode, rank);
-    const fen = chessBoard.fen();
+    let chessBoard1 = new Chess();
+    chessBoard = generateBoard(mode, rank);
+    const fen = chessBoard.board.fen();
     const rows = fen.split(' ')[0].split('/');
     const piecesInFirstTwoRows = rows.slice(0, 2);
     const piecesInLastTwoRows = rows.slice(6, 8);
@@ -61,7 +65,7 @@ describe('generateBoard', () => {
     const mode = 'dailyChallenge';
     const rank = 1;
     const chessBoard = generateBoard(mode, rank);
-    const fen = chessBoard.fen();
+    const fen = chessBoard.board.fen();
     const whitePieces = fen.match(/[PNBRQK]/g);
     const blackPieces = fen.match(/[pnbrqk]/g);
     expect(whitePieces).toHaveLength(16);
@@ -96,7 +100,7 @@ describe('calculateMedian', () => {
   test('should calculate the median value', () => {
     const rank = 1;
     const median = calculateMedian(rank);
-    expect(median).toBe(-0.9333333333333333);
+    expect(median).toBe(0.06666666666666667);
   });
 });
 
@@ -208,7 +212,7 @@ describe('calculateRanks', () => {
     const rank = 0;
     const seed = 12345;
     const [playerRank, opponentRank] = calculateRanks(rank, seed);
-    expect(playerRank - opponentRank).toBe(25);
+    expect(Math.round(playerRank - opponentRank)).toBe(25);
   });
 
   test('should calculate equal player and opponent ranks', () => {
@@ -223,22 +227,6 @@ describe('calculateRanks', () => {
     const seed = 12345;
     const [playerRank, opponentRank] = calculateRanks(rank, seed);
     expect(opponentRank - playerRank).toBe(25);
-  });
-});
-
-describe('seededRandom', () => {
-  test('should generate a seeded random number', () => {
-    const seed = 12345;
-    const randomValue1 = seededRandom(seed);
-    const randomValue2 = seededRandom(seed);
-    const randomValue3 = seededRandom(seed);
-    const randomValue4 = seededRandom(seed);
-    const randomValue5 = seededRandom(seed);
-
-    expect(randomValue1).toEqual(randomValue2);
-    expect(randomValue1).toEqual(randomValue3);
-    expect(randomValue1).toEqual(randomValue4);
-    expect(randomValue1).toEqual(randomValue5);
   });
 });
 

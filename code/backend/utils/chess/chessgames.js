@@ -51,7 +51,6 @@ module.exports = {
         sidePlayer1 = "w";
         break;
       case "playerVsPlayerOnline":
-        console.log("playerVsPlayerOnline");
         values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
         break;
       case "kriegspiel":
@@ -300,18 +299,6 @@ module.exports = {
 
     return false;
   },
-  // checkFiftyMoveRule: function checkFiftyMoveRule(history) {
-  //   let fiftyMoveRule = false;
-  //   if (history.length < 50) return false;
-  //   for (let i = 0; i < history.length; i++) {
-  //     if (history[i].flags === 2 || history[i].piece === "p") {
-  //       fiftyMoveRule = false;
-  //     } else {
-  //       fiftyMoveRule = true;
-  //     }
-  //   }
-  //   return fiftyMoveRule;
-  // },
 
   checkFiftyMoveRule: function checkFiftyMoveRule(history) {
     if (history.length < 50) return false;
@@ -354,6 +341,7 @@ module.exports = {
       check = chessMove.move(mossa);
     } 
     catch (error) {
+      console.log(error);
       return false;
     }
 
@@ -392,19 +380,15 @@ module.exports = {
     // Controlla se c'è uno scacco matto
     switch (true) {
       case game.chess.isCheckmate():
-        console.log("a");
         this.handleGameOver(game, possibleWinnerTurn, "checkmate");
         break;
       case game.chess.isStalemate():
-        console.log("b");
         this.handleGameOver(game, possibleWinnerTurn, "stalemate");
         break;
       case game.chess.isInsufficientMaterial():
-        console.log("c");
         this.handleGameOver(game, possibleWinnerTurn, "insufficient_material");
         break;
       default:
-        console.log("d");
       // Se non ci sono gameover
       // Se sono in una modalità PvE, allora creo un timer che fa muovere il computer
       // dopo 2 secondi, solo nel caso in cui il computer non abbia già mosso

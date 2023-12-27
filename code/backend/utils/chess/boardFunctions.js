@@ -11,6 +11,7 @@ let pieces = [
 
 function findChessPiecesWithRank(rank, seed) {
   const selectedPieces = [];
+  rng = seedrandom(seed);
   let overallValue = getRandomPieceValue(seed);
   const median = calculateMedian(rank);
 
@@ -148,7 +149,7 @@ function selectPiece(filteredPieces, pieceWeights, randomValue) {
   let cumulativeWeight = 0;
   let selected = filteredPieces[filteredPieces.length - 1]; // Initialize with the last piece
 
-  if (selected.name === "q") {
+  if (selected.name === "q" && filteredPieces.length > 1) {
     selected = filteredPieces[filteredPieces.length - 2]; // Select the penultimate piece
   }
 
@@ -265,7 +266,7 @@ function generateBoard(mode, rank) {
   //Aggiungi il resto nelle due file
   while (whiteSquares.length > 0) {
     const randomIndex = Math.floor(
-      (seed === 0 ? Math.random() : seededRandom(seed)) * whiteSquares.length
+      Math.random() * whiteSquares.length
     );
     newChess.put(
       { type: whitePieces.pop().name, color: "w" },
@@ -308,7 +309,7 @@ function generateBoard(mode, rank) {
   //Aggiungi il resto nelle due file
   while (blackSquares.length > 0) {
     const randomIndex = Math.floor(
-      (seed === 0 ? Math.random() : seededRandom(seed)) * blackSquares.length
+      Math.random() * blackSquares.length
     );
     newChess.put(
       { type: blackPieces.pop().name, color: "b" },

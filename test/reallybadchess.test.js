@@ -65,7 +65,11 @@ describe("API Tests for /api/reallybadchess", () => {
     const randomMove = chess.moves({verbose: true, square: "d2"})[0];
     const response = await request(app)
       .post("/api/reallybadchess/movePiece/" + gameID)
-      .send({move: randomMove })
+      .send({
+        from: randomMove.from,
+        to: randomMove.to,
+        promotion: "q",
+      })
       .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
