@@ -10,8 +10,8 @@ let {
 
 router.get("/elo", nonBlockingAutheticateJWT, async function (req, res) {
     try {
-        const db = clientMDB.db("ChessCake"); // Replace with your database name
-        const collection = db.collection("Users"); // Replace with your collection name
+        const db = clientMDB.db("ChessCake");
+        const collection = db.collection("Users");
 
         // Retrieve the top 10 players by ELO
         const leaderboard = await collection.find({ username: { $ne: "Computer" } })
@@ -52,8 +52,8 @@ router.get("/elo", nonBlockingAutheticateJWT, async function (req, res) {
 
 router.get("/eloKriegspiel", nonBlockingAutheticateJWT, async function (req, res) {
     try {
-        const db = clientMDB.db("ChessCake"); // Replace with your database name
-        const collection = db.collection("Users"); // Replace with your collection name
+        const db = clientMDB.db("ChessCake");
+        const collection = db.collection("Users");
 
         // Retrieve the top 10 players by ELO
         const leaderboard = await collection.find({ username: { $ne: "Computer" } })
@@ -95,8 +95,8 @@ router.get("/eloKriegspiel", nonBlockingAutheticateJWT, async function (req, res
 
 router.get("/rank", nonBlockingAutheticateJWT, async function (req, res) {
     try {
-        const db = clientMDB.db("ChessCake"); // Replace with your database name
-        const collection = db.collection("Users"); // Replace with your collection name
+        const db = clientMDB.db("ChessCake");
+        const collection = db.collection("Users");
 
         // Retrieve the top 10 players by Rank
         const leaderboard = await collection.find({ username: { $ne: "Computer" } })
@@ -138,12 +138,12 @@ router.get("/rank", nonBlockingAutheticateJWT, async function (req, res) {
 
 router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
     try {
-        const db = clientMDB.db("ChessCake"); // Replace with your database name
-        const collection = db.collection("Games"); // Replace with your collection name for daily challenges
+        const db = clientMDB.db("ChessCake"); 
+        const collection = db.collection("Games");
         
         const startOfDay = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 0, 0, 0)).toISOString();
         const endOfDay = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate(), 23, 59, 59, 999)).toISOString();
-        // Retrieve the top 10 players by the number of moves in the daily challenge
+        // Prende i top 10 giocatori per numero minimo di turni
         const leaderboard = await collection.aggregate([
             {
                 $match: {
@@ -172,22 +172,21 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
 
 
         let userPlace = null
-        
+        //Se c'è un utente con una daily valida
         if (req.user) {
-            // Find the user's position in the daily challenge leaderboard
             const userRanking = leaderboard;
             const userIndex = userRanking.findIndex(user => user.username === req.user.username);
             userPlace = userRanking[userIndex];
             if (userPlace) {
-                userPlace.place = userIndex + 1; // Adding 1 because array indices start at 0
-                // Keep only the necessary values (username, moves, and place)
+                userPlace.place = userIndex + 1; // Aggiungiamo 1 perché gli indici dell'array partono da 0
+                // Manteniamo soltanto i valori essenziali
                 userPlace = {
                     username: userPlace.username,
                     moves: userPlace.moves,
                     place: userPlace.place,
                 }
             }
-            else
+            else  //Caso utente non presente nella leaderboard
             {
                 userPlace = {
                     username: req.user.username,
@@ -196,6 +195,7 @@ router.get("/daily", nonBlockingAutheticateJWT, async function (req, res) {
                 }
             }
         }
+        //Se la leaderboard è vuota
         if (leaderboard.length === 0) {
             res.status(201).json({
                 success: true,

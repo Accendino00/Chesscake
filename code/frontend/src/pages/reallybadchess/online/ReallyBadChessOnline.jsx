@@ -137,12 +137,15 @@ function ReallyBadChessOnline() {
     return;
 
     setGameOver(true);
+
+    // Gestione nel caso di gameOver
     handleVictory().then((gameReturned) => {
       if (
         gameReturned &&
-              gameReturned.game &&
-              gameReturned.game.gameOver
+        gameReturned.game &&
+        gameReturned.game.gameOver
       ){
+        //Imposto il vincitore
         const winner =
         gameReturned.game.gameOver.winner === "p1"
           ? gameData.player1.username
@@ -188,6 +191,9 @@ function ReallyBadChessOnline() {
     }
   }, [loginStatus, isTokenLoading]);
 
+  /**
+   * Fetch per ottenere la partita iniziale, attraverso getGame
+   */
   useEffect(() => {
     // Guardia per evitare di iniziare il fetch se non abbiamo ancora i dati della partita
     if (isTokenLoading || !loginStatus) {
@@ -219,6 +225,10 @@ function ReallyBadChessOnline() {
     return () => clearInterval(interval);
   }, [gameData, isTokenLoading, loginStatus, gameId, username]);
 
+  /**
+   * Gestisce la chiamata API per fare l'undo nella partita
+   * 
+   */
   const handleUndo = async () => {
     if (undoEnabled) {
       setUndoEnabled(false);
@@ -242,6 +252,11 @@ function ReallyBadChessOnline() {
     }
   };
 
+
+  /**
+   * Gestisce il click sulla casella, che farà una mossa se è possibile
+   * @param {string} square - La casella cliccata
+   */
   const handleSquareClick = (square) => {
     if (!selectedSquare) {
       // Seleziona il pezzo sulla casella cliccata
@@ -255,6 +270,12 @@ function ReallyBadChessOnline() {
     }
   };
 
+  /**
+   * Richiede di fare la mossa al backend
+   *
+   * @param {string} sourceSquare - Square di partenza della mossa.
+   * @param {string} targetSquare - Square di arrivo della mossa.
+   */
   const handleMove = async (sourceSquare, targetSquare) => {
     await makeMove(sourceSquare, targetSquare, username);
   };
@@ -293,6 +314,9 @@ function ReallyBadChessOnline() {
       });
   };
 
+  /**
+   * Salva la partita nel database
+   */
   const handleVictory = async () => {
     try {
       const response = await fetch(`/api/reallybadchess/saveGame/${gameId}`, {
@@ -313,7 +337,10 @@ function ReallyBadChessOnline() {
     }
   };
 
-  // Gestore delle mosse possibili
+  /**
+   * Gestisce il mouse over della casella
+   * @param {string} square - La casella su cui è il mouse
+   */
   const handleMouseOverSquare = (square) => {
     const moves = chess.moves({ square, verbose: true });
 
@@ -329,10 +356,16 @@ function ReallyBadChessOnline() {
     setPossibleMoves(moves.map((move) => move.to));
   };
 
+  /**
+   * Gestisce il mouse out della casella
+  */
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
   };
 
+  /**
+   * Controlla se c'è scacco da parte di un giocatore, e se c'è, allora evidenzia il re
+  */
   function checkCheck() {
     if (chess != null) {
       if (chess.isCheck()) {
@@ -348,6 +381,7 @@ function ReallyBadChessOnline() {
     }
   }
 
+  // Funzione che gestisce la chiusura del modal
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
 

@@ -120,6 +120,11 @@ function ReallyBadChessLocalFreeplay() {
     setPossibleMoves([]);
   };
 
+  /**
+   * Funzione che fa partire quella del bianco, e gestisce eventuali undo
+   * @param {String} sourceSquare 
+   * @param {String} targetSquare 
+   */
   const handleMove = async (sourceSquare, targetSquare) => {
     try {
       if (chess.turn() === 'w') {
@@ -138,15 +143,20 @@ function ReallyBadChessLocalFreeplay() {
     handleMouseOutSquare();
   };
 
+  /**
+   * Funzione che gestisce la mossa del nero
+   */
   const computerMoveBlack = async () => {
     setUndoEnabled(false);
 
     // Mossa dell'avversario di risposta
     if (gameData.mode !== 'playerVsPlayer') {
       chess.fen();
+      //Scelgo la mossa causalmente tra quelle possibili
       let chosenMove = chess.moves()[Math.floor(Math.random() * chess.moves().length)];
       if (chess.moves().length > 0) {
         let bestMove = chosenMove;
+        //Se posso, cerco la mossa migliore con la difficoltà adatta
         switch (gameData.difficulty) {
           case 0:
             break;
@@ -172,6 +182,11 @@ function ReallyBadChessLocalFreeplay() {
     }
   }
 
+  /**
+   * Funzione che gestisce la mossa del bianco, e fa partire quella del nero
+   * @param {String} sourceSquare  La casella di partenza
+   * @param {String} targetSquare La casella di arrivo
+   */
   const handleWhiteTurn = async (sourceSquare, targetSquare) => {
     if (chess.move({ from: sourceSquare, to: targetSquare, promotion: 'q' })) {
       setFen(chess.fen());
@@ -181,7 +196,9 @@ function ReallyBadChessLocalFreeplay() {
     }
   };
 
-  // Funzione per controllare se c'è scacco, ed evidenziare chi
+  /**
+   * Funzione che controlla se c'è scacco e in caso aprire il popup
+   */
   function checkCheck() {
     if (chess.isCheck()) {
       setPieceSelected(getPiecePosition(chess, { type: 'k', color: chess.turn() === 'b' ? 'b' : 'w' }));
@@ -190,7 +207,9 @@ function ReallyBadChessLocalFreeplay() {
     }
   }
 
-  // Funzione per controllare se c'è un vincitore
+  /**
+   * Funzione che controlla se c'è scacco matto o patta, e in caso aprire il popup
+   */
   function handleCheckmateAndDraw() {
     if (chess.isCheckmate()) {
       const winner = chess.turn() === 'w' ? 'Nero' : 'Bianco';
@@ -258,6 +277,7 @@ function ReallyBadChessLocalFreeplay() {
             onMouseOverSquare={(gameData.mode === 'playerVsComputer' && chess.turn() === 'w')
               || gameData.mode !== 'playerVsComputer' ? handleMouseOverSquare : undefined}
             onMouseOutSquare={handleMouseOutSquare}
+            //Mostra le mosse possibili
             customSquareStyles={{
               ...possibleMoves.reduce((a, c) => ({ ...a, [c]: { background: "radial-gradient(rgba(0, 0, 0, 0.5) 20%, transparent 25%)" } }), {}),
               ...pieceSelected.reduce((a, c) => ({ ...a, [c]: { background: "radial-gradient(rgba(255, 255, 0, 0.5) 70%, transparent 75%)" } }), {})

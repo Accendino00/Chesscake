@@ -1,6 +1,8 @@
 let { Chess } = require("chess.js");
 const seedrandom = require('seedrandom');
 let rng = null;
+
+//Pezzi standard
 let pieces = [
   { name: "p", value: 1 },
   { name: "n", value: 3 },
@@ -8,13 +10,21 @@ let pieces = [
   { name: "r", value: 5 },
   { name: "q", value: 9 },
 ];
-
+/**
+ * Genera una lista di pezzi di scacchi con un valore totale approssimativo
+ * @param {int} rank Il rank della partita, influenzando la somma dei valori dei pezzi per ognuno dei lati.
+ * @param {int} seed  Il seme per la generazione dei pezzi
+ * @returns  {Array} Un array di oggetti pezzo con nome e valore
+ */
 function findChessPiecesWithRank(rank, seed) {
   const selectedPieces = [];
   rng = seedrandom(seed);
+
+  //Prendo il valore del pezzo in base al seed
   let overallValue = getRandomPieceValue(seed);
   const median = calculateMedian(rank);
 
+  //Ciclo per la fila dietro, senza pedoni
   pieces = [
     { name: "n", value: 3 },
     { name: "b", value: 3 },
@@ -23,22 +33,29 @@ function findChessPiecesWithRank(rank, seed) {
   ];
 
   for (let i = 0; i < 8; i++) {
+    //Filtro i pezzi in base al valore
     let filteredPieces = filterPieces(pieces, overallValue, median, i);
 
+    //Se non ci sono pezzi con quel valore, prendo il pezzo più vicino
     if (filteredPieces.length === 0) {
       filteredPieces = getDefaultFilteredPieces(overallValue, median, i);
     }
 
+    //Gestione pezzi randomici per alternare alfiere e cavallo
     filteredPieces = handleSpecialCase(filteredPieces, seed, i);
 
+    //Calcolo il peso individuale del pezzo
     const pieceWeights = calculatePieceWeights(
       filteredPieces,
       overallValue,
       median,
       i
     );
+    //Calcolo il peso totale dei pezzi
     const totalWeight = calculateTotalWeight(pieceWeights);
     const randomValue = seed === 0 ? Math.random() : rng() * totalWeight;
+
+    //Seleziono il pezzo più adatto al peso che abbiamo richiesto
     const selected = selectPiece(filteredPieces, pieceWeights, randomValue);
 
     overallValue +=
@@ -47,6 +64,8 @@ function findChessPiecesWithRank(rank, seed) {
         : -selected.value * 0.7;
     selectedPieces.push(selected);
   }
+
+  // Ciclo per la fila davanti, senza regine
   pieces = [
     { name: "p", value: 1 },
     { name: "n", value: 3 },
@@ -73,14 +92,6 @@ function findChessPiecesWithRank(rank, seed) {
     const randomValue = seed === 0 ? Math.random() : rng() * totalWeight;
     const selected = selectPiece(filteredPieces, pieceWeights, randomValue);
 
-    pieces = [
-      { name: "p", value: 1 },
-      { name: "n", value: 3 },
-      { name: "b", value: 3 },
-      { name: "r", value: 5 },
-      { name: "q", value: 9 },
-    ];
-
     overallValue +=
       overallValue / (i + 1) < median
         ? selected.value * 0.7
@@ -91,6 +102,7 @@ function findChessPiecesWithRank(rank, seed) {
   return selectedPieces;
 }
 
+// Funzione per ottenere il valore del pezzo
 function getRandomPieceValue(seed) {
   return pieces[
     Math.floor(
@@ -103,6 +115,7 @@ function calculateMedian(rank) {
   return rank / 15;
 }
 
+//Funzione per filtrare i pezzi in base alla mediana
 function filterPieces(pieces, overallValue, median, i) {
   return pieces.filter((piece) =>
     Math.floor(overallValue / (i + 1)) < median
@@ -116,7 +129,7 @@ function getDefaultFilteredPieces(overallValue, median, i) {
     ? [pieces[pieces.length - 1]]
     : [pieces[0]];
 }
-
+// Funzione per gestire la randomicità di alfiere e cavallo attraverso lo shift decimale del seed
 function handleSpecialCase(filteredPieces, seed, i) {
   if (filteredPieces.some((piece) => piece.value === 3)) {
     filteredPieces = filteredPieces.filter((piece) => piece.value !== 3);
@@ -130,21 +143,25 @@ function handleSpecialCase(filteredPieces, seed, i) {
   return filteredPieces;
 }
 
+// Funzione per calcolare il peso del pezzo
 function calculatePieceWeights(filteredPieces, overallValue, median, i) {
   return filteredPieces.map((piece) =>
     weightFunction(piece.value, overallValue / (i + 1), median, 4)
   );
 }
 
+// Funzione per calcolare il peso totale
 function calculateTotalWeight(pieceWeights) {
   return pieceWeights.reduce((acc, weight) => acc + weight, 0);
 }
 
+// Funzione per generare un numero casuale
 function getRandomValue(seed) {
   const rng = seedrandom(seed);
   return seed === 0 ? Math.random() : rng();
 }
 
+// Funzione per selezionare il pezzo in base al suo peso
 function selectPiece(filteredPieces, pieceWeights, randomValue) {
   let cumulativeWeight = 0;
   let selected = filteredPieces[filteredPieces.length - 1]; // Initialize with the last piece
@@ -182,9 +199,6 @@ function weightFunction(value, overallValue, median, scale = 1) {
  *                      Rank < 50 corrisponde a vantaggio per bianco, rank > 50 corrisponde a vantaggio per nero.
  * @returns {Object} Un'istanza della classe Chess rappresentante la scacchiera inizializzata.
  */
-
-
-// #todo: forse non serve
 function generateBoard(mode, rank) {
   const newChess = new Chess();
 
@@ -323,6 +337,13 @@ function generateBoard(mode, rank) {
   return { board : newChess, seed: seed };
 }
 
+/**
+ * Genera una scacchiera personalizzata basata sulla modalità e il seme forniti.
+ * @param {string} mode La modalità di gioco, influenzando la generazione del seme.
+ * @param {int} seedPassed Il seme per la generazione dei pezzi, se è 0 viene generato un seme casuale.
+ * @param {int} rank Il rank della partita, influenzando la somma dei valori dei pezzi per ognuno dei lati.
+ * @returns 
+ */
 function generateBoardWithSeed(mode, seedPassed, rank) {
   const newChess = new Chess();
   newChess.clear();
@@ -373,9 +394,6 @@ function generateBoardWithSeed(mode, seedPassed, rank) {
   ];
 
   // Metti i pezzi disponibili in modo casuale nella fila 2
-  
-  // Chiamata per le regine bianche
-  //placePiecesByType(newChess, whitePieces, whiteSquares, "1", "w", "q", seed);
   whitePieces
     .filter((piece) => piece.name === "q")
     .forEach((piece) => {
@@ -405,8 +423,6 @@ function generateBoardWithSeed(mode, seedPassed, rank) {
         whiteSquares.splice(whiteSquares.indexOf(square), 1);
       }
     });
-  // Chiamata per i pedoni bianchi
-  //placePiecesByType(newChess, whitePieces, whiteSquares, "2", "w", "p", seed);
 
   //Aggiungi il resto nelle due file
   while (whiteSquares.length > 0) {
@@ -421,10 +437,6 @@ function generateBoardWithSeed(mode, seedPassed, rank) {
   }
   newChess.put({ type: "k", color: "w" }, "e1");
 
-  // Chiamata per le regine nere
-  //placePiecesByType(newChess, blackPieces, blackSquares, "8", "b", "q", seed);
-  // Chiamata per i pedoni neri
-  //placePiecesByType(newChess, blackPieces, blackSquares, "7", "b", "p", seed);
   blackPieces
   .filter((piece) => piece.name === "q")
   .forEach((piece) => {
@@ -488,25 +500,6 @@ function generateSeed(mode)
       0x7fff;
     }
   return Math.floor(Math.random() * 1000000);
-}
-
-//Funzione generale per posizionare pezzi particolarmente
-function placePiecesByType(newChess, pieces, squares, color, row, type, seed) {
-  pieces
-    .filter(piece => piece.name === type)
-    .forEach(piece => {
-      const validSquares = squares.filter(square => square[1] === row);
-      if (validSquares.length > 0 || piece.name === "q") {
-        const randomIndex = Math.floor(seed === 0 ? Math.random() : rng() * validSquares.length);
-        const square = validSquares.splice(randomIndex, 1)[0];
-        newChess.put({ type: piece.name, color }, square);
-        pieces.splice(
-          pieces.findIndex(p => p === piece),
-          1
-        );
-        squares.splice(squares.indexOf(square), 1);
-      }
-    });
 }
 
 // Funzione per calcolare il rank
