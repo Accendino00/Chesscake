@@ -377,24 +377,6 @@ function Kriegspiel() {
       });
   };
 
-  // Gestore delle mosse possibili  #TODO Forse si deve cancellare
-  // const handleMouseOverSquare = (square) => {
-  //   const moves = chess.moves({ square, verbose: true });
-
-  //   // Se il turno non è del giocatore attuale allora non lo mostro
-  //   if (
-  //     gameData.lastMove === playerSide ||
-  //     (gameData.lastMove === null && playerSide === "black")
-  //   ) {
-  //     return;
-  //   }
-
-  //   // Imposto le mosse disponibile
-  //   if (!umpireFlag) {
-  //     setPossibleMoves(moves.map((move) => move.to));
-  //   }
-  // };
-
   const handleMouseOutSquare = () => {
     setPossibleMoves([]);
   };
@@ -468,7 +450,6 @@ function Kriegspiel() {
 
   const handleCloseModal = () => setModalIsOpen(false);
   const handleNavigateToPlay = () => navigate("/play/");
-  // const handleNavigatetoGame = () => navigate(`/play/kriegspiel/${gameId}`);  #TODO da rimuovere credo
 
 
 

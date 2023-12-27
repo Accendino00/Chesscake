@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# coverage useless files
+coverage/clover.xml
+coverage/coverage-final.json
+coverage/lcov-report/*

@@ -18,6 +18,7 @@ function performChessMoves(color) {
     });
 }
 
+//Genera le caselle di partenza per il bianco o nero
 function generateStartSquare(color) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranksWhite = ['1', '2'];
@@ -32,6 +33,8 @@ function generateStartSquare(color) {
         }
     return randomFile + randomRankBlack;
 }
+
+//Genera le caselle di arrivo per il bianco o nero
 function generateMoveSquare() {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = [3, 4, 5, 6];
@@ -50,25 +53,24 @@ describe('Simulazione di due utenti', () => {
         cy.get('[labelId="passwordRegisterField"]').should('exist').type('testPassword');
         cy.get('button[type="submit"]').contains('Login').click();
 
-        // Assert that the login was successful
+        // Controlliamo che il login sia andato a buon fine
         cy.url().should('include', '/play');
         cy.get('button:contains("Gioca Really Bad Chess")').click();
         cy.url().should('include', '/play');
 
-        // Choose "PlayerVsPlayer Locale" from the dropdown menu
+        // Scegliamo PvPOnline
         cy.get('[aria-labelledby="mode-label"]').click();
-
-        // Select an option (e.g., "Player vs Player online")
         cy.contains('Player vs Player (online)').click();
 
-        // Select '1 minute' from the Duration selector
+        // Scegliamo il tempo
         cy.get('[aria-labelledby="duration-label"]').click();
         cy.contains('1 minute').click();
         
+        //Partiamo e aspettiamo che entri il secondo test
         cy.get('button:contains("Create Game")').click();
         cy.wait(13000);
         cy.url().should('include', '/play/reallybadchess/').then(() => {
-            // Perform some chess moves
+            // Giochiamo
             performChessMoves('b');
         });
     });

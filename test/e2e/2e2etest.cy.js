@@ -24,6 +24,7 @@ function performChessMoves(color) {
     });
 }
 
+//Genera le caselle di partenza per il bianco o nero
 function generateStartSquare(color) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranksWhite = ['1', '2'];
@@ -38,6 +39,8 @@ function generateStartSquare(color) {
         }
     return randomFile + randomRankBlack;
 }
+
+//Genera le caselle di arrivo per il bianco o nero
 function generateMoveSquare() {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = [3, 4, 5, 6];
@@ -55,6 +58,7 @@ describe('RegisterComponent', () => {
     });
   
     it('should display error message when passwords do not match', () => {
+        //Inseriamo i dati con password di conferma errata
         cy.get('[labelId="usernameRegisterField"]').eq(1).should('exist').type('testuser');
         cy.get('[labelId="passwordRegisterField"]').eq(1).should('exist').type('password123');
         cy.get('[labelId="confirmPasswordRegisterField"]').should('exist').type('password456');
@@ -64,6 +68,7 @@ describe('RegisterComponent', () => {
     });
   
     it('should display error message when registration fails', () => {
+        //Inseriamo i dati con username già esistente
         cy.get('[labelId="usernameRegisterField"]').eq(1).should('exist').type('testUser');
         cy.get('[labelId="passwordRegisterField"]').eq(1).should('exist').type('testPassword');
         cy.get('[labelId="confirmPasswordRegisterField"]').type('testPassword');
@@ -72,6 +77,7 @@ describe('RegisterComponent', () => {
     });
   
     it('should display success message when registration is successful', () => {
+        //Inseriamo i dati con username non esistente
         cy.get('[labelId="usernameRegisterField"]').eq(1).should('exist').type('testUserNew');
         cy.get('[labelId="passwordRegisterField"]').eq(1).should('exist').type('testPassword');
         cy.get('[labelId="confirmPasswordRegisterField"]').type('testPassword');
@@ -84,39 +90,35 @@ describe('RegisterComponent', () => {
 describe('LoginPage', () => {
     it('should log in anonymously successfully', () => {
         cy.visit('/login');
-        // Submit the login form
         cy.get('input[name="username"]').first().type('testUserNew');
         cy.get('input[name="password"]').first().type('testPassword');
         cy.get('button[type="submit"]').contains('Login').click();
 
-        // Assert that the login was successful
         cy.url().should('include', '/play');
         cy.get('button:contains("Gioca Really Bad Chess")').click();
         cy.url().should('include', '/play');
 
-        // Choose "PlayerVsPlayer Locale" from the dropdown menu
+        // Sceglie la modalità di gioco PvPLocale
         cy.get('[aria-labelledby="mode-label"]').click();
-
-        // Select an option (e.g., "Player vs Player")
         cy.contains('Player vs Player (locale)').click();
         // Verifica che la modalità sia stata selezionata correttamente
         
-        // Select '1 minute' from the Duration selector
+        // Seleziona una partita di 1 minuto
         cy.get('[aria-labelledby="duration-label"]').click();
         cy.contains('1 minute').click();
 
-        // Enter player names
+        // Inseriamo i nomi dei giocatori
         cy.get('[labelId="player1"]').type('BiancoUser');
         cy.get('[labelId="player2"]').type('NeroUser');
 
-        // Click on the leftmost end of the slider
+        // Scegliamo un svantaggio per l'avversario
         cy.get('.MuiSlider-root').click({ force: true, position: 'left'});
 
+        //Iniziamo il gioco
         cy.get('button:contains("Start Game")').click();
-
-        // Assert that the game has started      
+        
         cy.url().should('include', '/play/reallybadchess/').then(() => {
-            // Perform some chess moves
+            // Facciamo le mosse
             performChessMoves('w');
         });
     });

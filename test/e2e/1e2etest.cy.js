@@ -24,6 +24,7 @@ function performChessMoves(color) {
         });
     });
 }
+//Genera le caselle di partenza per il bianco o nero
 function generateStartSquare(color) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranksWhite = ['1', '2'];
@@ -38,6 +39,8 @@ function generateStartSquare(color) {
         }
     return randomFile + randomRankBlack;
 }
+
+//Genera le caselle di arrivo per il bianco o nero
 function generateMoveSquare() {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = [3, 4, 5, 6];
@@ -52,66 +55,60 @@ describe('LoginPage', () => {
     it('should log in anonimously successfully', () => {
         cy.visit('/login');
         
-        // Submit the login form
+        // Facciamo il login
         cy.get('button[type="submit"]').contains('Continua come anonimo').click();
 
-        // Assert that the login was successful
+        // Verifica che il login sia avvenuto con successo
         cy.url().should('include', '/play');
     });
     it('should see the leaderboards', () => {
         cy.visit('/login');
-        // Submit the login form
         cy.get('button[type="submit"]').contains('Continua come anonimo').click();
 
-        // Assert that the login was successful
         cy.url().should('include', '/play');
+
+        // Clicchiamo sul pulsante "Leaderboard"
         cy.get('button:contains("Leaderboard")').click();
 
         cy.url().should('include', '/leaderboard');
-        // Click the ELO button
+        // Verifica che ci siano i pulsanti per cambiare la modalità
         cy.get('button:contains("ELO")').click();
         cy.wait(1000);
-        // Click the RANK button
         cy.get('button:contains("Rank")').click();
         cy.wait(1000);
-        // Click the Daily button
         cy.get('button:contains("Daily")').click();
         cy.wait(1000);
     });
     it('should do a local play', () => {
         cy.visit('/login');
 
-        // Submit the login form
         cy.get('button[type="submit"]').contains('Continua come anonimo').click();
 
-        // Assert that the login was successful
         cy.url().should('include', '/play');
         cy.get('button:contains("Gioca Really Bad Chess")').click();
         cy.url().should('include', '/play');
 
-        // Choose "PlayerVsPlayer Locale" from the dropdown menu
+        // Scegliamo la modalità "Player vs Player"
         cy.get('[aria-labelledby="mode-label"]').click();
-
-        // Select an option (e.g., "Player vs Player")
         cy.contains('Player vs Player (locale)').click();
         // Verifica che la modalità sia stata selezionata correttamente
         
-        // Select '1 minute' from the Duration selector
+        // Scegliamo la durata della partita
         cy.get('[aria-labelledby="duration-label"]').click();
         cy.contains('1 minute').click();
 
-        // Enter player names
+        // Scegliamo il nome dei giocatori
         cy.get('[labelId="player1"]').type('BiancoUser');
         cy.get('[labelId="player2"]').type('NeroUser');
 
-        // Click on the leftmost end of the slider
+        // Scegliamo un svantaggio per l'avversario
         cy.get('.MuiSlider-root').click({ force: true, position: 'left'});
 
         cy.get('button:contains("Start Game")').click();
 
-        // Assert that the game has started      
+        // Verifica che la partita sia iniziata      
         cy.url().should('include', '/play/reallybadchess/').then(() => {
-            // Perform some chess moves
+            // Facciamo qualche mossa
             performChessMoves('w');
         });
     });

@@ -51,7 +51,6 @@ module.exports = {
         sidePlayer1 = "w";
         break;
       case "playerVsPlayerOnline":
-        console.log("playerVsPlayerOnline");
         values = generateBoardWithSeed("playerVsPlayerOnline", 0, 50);
         break;
       case "kriegspiel":
@@ -198,6 +197,10 @@ module.exports = {
     return game;
   },
 
+  /**
+   * Funzione che ritorna tutte le partite vuote
+   * @returns Array di partite vuote
+   */
   getEmptyGames: function () {
     let emptyGames = [];
     chessGames.forEach((game) => {
@@ -225,13 +228,7 @@ module.exports = {
 
     return emptyGames;
   },
-  /**
-   * Funzione che aggiunge una mossa al gioco con id gameId
-   *
-   * @param {string} gameId
-   * @param {string} move
-   * @returns true se la mossa è stata aggiunta, false altrimenti
-   */
+  
 
   /**
    *
@@ -252,10 +249,8 @@ module.exports = {
     game.gameOver.reason = reason;
 
     if (!game.gameSaved) {
-      game.gameSaved = true;
-      if (game.gameSettings.mode === "dailyChallenge") {
-        // #TODO Se funziona correttamente, allora togliere l'if
-      } else if (game.gameSettings.mode === "playerVsPlayerOnline") {
+      game.gameSaved = true; 
+      if (game.gameSettings.mode === "playerVsPlayerOnline") {
         this.changeElo(game.player1, game.player2, winner);
       } else if (game.gameSettings.mode === "playerVsComputer") {
         this.changeRank(
@@ -300,18 +295,6 @@ module.exports = {
 
     return false;
   },
-  // checkFiftyMoveRule: function checkFiftyMoveRule(history) {
-  //   let fiftyMoveRule = false;
-  //   if (history.length < 50) return false;
-  //   for (let i = 0; i < history.length; i++) {
-  //     if (history[i].flags === 2 || history[i].piece === "p") {
-  //       fiftyMoveRule = false;
-  //     } else {
-  //       fiftyMoveRule = true;
-  //     }
-  //   }
-  //   return fiftyMoveRule;
-  // },
 
   checkFiftyMoveRule: function checkFiftyMoveRule(history) {
     if (history.length < 50) return false;
@@ -328,12 +311,11 @@ module.exports = {
   
 
   /**
-   *
-   * @param {string} gameId  id della partita
-   * @param {string} mossa mosssa da effettuare
-   * @returns se la mossa è valida
+   * Funzione che aggiunge una mossa al gioco con id gameId, e controlla lo stato di gameover
+   * @param {string} gameId
+   * @param {string} move
+   * @returns true se la mossa è stata aggiunta, false altrimenti
    */
-  // Funzione movePiece che gestisce le mosse e controlla che c'è uno stato di game over
   movePiece: function (gameId, mossa) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
@@ -354,6 +336,7 @@ module.exports = {
       check = chessMove.move(mossa);
     } 
     catch (error) {
+      console.log(error);
       return false;
     }
 
@@ -386,41 +369,38 @@ module.exports = {
 
     // Se la mossa è valida
     let currentPlayerTurn =
-      game.chess._turn === game.player1.side ? "p1" : "p2";
-    let possibleWinnerTurn = currentPlayerTurn === "p1"  ? "p2" : "p1";
+      game.chess._turn === game.player1.side ? "p1" : "p2";  //Controlliamo il turno attuale
+    let possibleWinnerTurn = currentPlayerTurn === "p1"  ? "p2" : "p1";  //Controlliamo il turno del possibile vincitore
     
     // Controlla se c'è uno scacco matto
     switch (true) {
       case game.chess.isCheckmate():
-        console.log("a");
         this.handleGameOver(game, possibleWinnerTurn, "checkmate");
         break;
       case game.chess.isStalemate():
-        console.log("b");
         this.handleGameOver(game, possibleWinnerTurn, "stalemate");
         break;
       case game.chess.isInsufficientMaterial():
-        console.log("c");
         this.handleGameOver(game, possibleWinnerTurn, "insufficient_material");
         break;
       default:
-        console.log("d");
       // Se non ci sono gameover
       // Se sono in una modalità PvE, allora creo un timer che fa muovere il computer
       // dopo 2 secondi, solo nel caso in cui il computer non abbia già mosso
       const isComputerTurn =
         (game.player1.username === "Computer" && currentPlayerTurn === "p1") ||
         (game.player2.username === "Computer" && currentPlayerTurn === "p2");
-
         if ((game.gameSettings.mode === "playerVsComputer" || 
             game.gameSettings.mode === "dailyChallenge") 
             && isComputerTurn) {
             rng = seedrandom(game.matches.seed);
         setTimeout(() => {
+          //Sceglie una mossa casuale
           let chosenMove = game.chess.moves({ verbose: true })[
             Math.floor(rng() * game.chess.moves().length)
           ];
           if (game.gameSettings.mode === "playerVsComputer") {
+            //Se è il turno del computer, allora sceglie la mossa migliore
             findBestMove(game.chess.fen(), 1, 0)
               .then((Move) => {
                   this.movePiece(game.gameId, {
@@ -430,6 +410,7 @@ module.exports = {
                   });
               })
               .catch((err) => {
+                //In caso di timeout o errori, sceglie la mossa causale
                 console.log(err);
                   this.movePiece(game.gameId, {
                     from: chosenMove.from,
@@ -459,7 +440,6 @@ module.exports = {
       if (currentPlayerTurn === "p1") {
         game.player1.interval = setInterval(() => {
           game.player1.timer--;
-
           // Controlla se il tempo del giocatore 1 è scaduto
           if (game.player1.timer <= 0) {
             clearInterval(game.player1.interval);
@@ -472,7 +452,6 @@ module.exports = {
       } else {
         game.player2.interval = setInterval(() => {
           game.player2.timer--;
-
           // Controlla se il tempo del giocatore 2 è scaduto
           if (game.player2.timer <= 0) {
             clearInterval(game.player2.interval);
@@ -484,11 +463,18 @@ module.exports = {
         }, 1000);
       }
     }
+
+    //Aggiorno il game
     chessGames = chessGames.filter((match) => match.gameId !== gameId);
     chessGames.push(game);
     return true; // Mossa riuscita
   },
 
+  /**
+   * Funzione che fa l'undo delle mosse del giocatore richiedente
+   * @param {String} gameId  id della partita
+   * @returns true se l'undo è stato fatto, false altrimenti
+   */
   undoMove(gameId) {
     // Trova la partita di scacchi
     let game = chessGames.find((game) => game.gameId == gameId);
