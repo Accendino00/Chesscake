@@ -347,8 +347,6 @@ router.post("/surrender/:gameId", authenticateJWT, (req, res) => {
     winnerSide = "p1";
   }
 
-  //let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "surrender");
-
   // Ritorniamo il game
   res.send({
     success: chessGames.handleGameOver(game, winnerSide, "surrender"),
@@ -389,11 +387,6 @@ router.post(
       message: "Unauthorized",
     });
   }
-
-  // Imposto il "side" del giocatore che sta cercando di fare la mossa
-  let winnerSide = game.gameOver.winner;
-
-  let returnOfGameOver = chessGames.handleGameOver(game, winnerSide, "checkmate");
 
   // Ritorniamo il game
   res.send({
