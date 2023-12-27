@@ -583,6 +583,7 @@ module.exports = {
         },
       },
     });
+    return true;
   },
 
   /**

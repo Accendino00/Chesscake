@@ -96,5 +96,4 @@ describe('Chess Module Tests', () => {
     const expectedScorePlayer1 = 1 / (1 + 10 ** ((eloPlayer2 - eloPlayer1) / 400));
     expect(expectedScorePlayer1).toBeCloseTo(0.240253, 6);
   });
-  
 });

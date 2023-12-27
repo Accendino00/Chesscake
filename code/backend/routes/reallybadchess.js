@@ -397,45 +397,6 @@ router.post(
   }
 );
 
-router.post("/setBoard/:gameId", authenticateJWT, (req, res) => {
-  // Prendiamo il gameId
-  const { gameId } = req.params;
-
-  // Prendiamo il game dal database
-  const game = chessGames.getGame(gameId);
-
-  // Se il game non esiste, allora ritorniamo un errore
-  if (!game) {
-    return res.status(404).send({
-      success: false,
-      message: "Game not found",
-    });
-  }
-
-  // Controlliamo che l'utenza sia corretta
-  if (
-    req.user &&
-    req.user.username !== game.player1.username &&
-    req.user.username !== game.player2.username
-  ) {
-    return res.status(403).send({
-      success: false,
-      message: "Unauthorized",
-    });
-  }
-
-  // Prendiamo la board
-  const { board } = req.body;
-
-  // Settiamo la board
-  chessGames.setBoard(gameId, board);
-
-  // Ritorniamo il game
-  res.send({
-    success: true,
-    game: resizeGame(game),
-  });
-});
 
 // Richiesta che ritorna tutte le partite che sono in attesa del secondo giocatore
 router.get("/getEmptyGames", authenticateJWT, async (req, res) => {
