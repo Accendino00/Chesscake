@@ -614,7 +614,7 @@ module.exports = {
     const eloAdjustment = kFactor * (actualScorePlayer1 - expectedScorePlayer1);
 
     // Calcolo del nuovo Elo del giocatore 1
-    const newEloPlayer1 = eloPlayer1 + eloAdjustment;
+    const newEloPlayer1 = Math.max((eloPlayer1 + eloAdjustment),0);
 
     return newEloPlayer1;
   },
@@ -707,10 +707,10 @@ module.exports = {
     // Capiamo se ha vinto ho perso
     if (outcome === "p1") {
       // Aumentiamo il rank di un valore compreso tra 15 e 5, in base al rank ()
-      nuovoRankPlayer1 = gameRank + calculateRankDiff(gameRank, true);
+      nuovoRankPlayer1 = Math.max((gameRank + calculateRankDiff(gameRank, true)),0);
     } else {
       // Diminuiamo il rank
-      nuovoRankPlayer1 = gameRank + calculateRankDiff(gameRank, false);
+      nuovoRankPlayer1 = Math.max((gameRank + calculateRankDiff(gameRank, false)),0);
     }
 
     // Aggiorniamo i valori nel database

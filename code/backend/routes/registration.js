@@ -22,11 +22,6 @@ function registerUser(username, password) {
                             status: 400, 
                             returnBody:  { success: false, reason: "Username already exists" } 
                         });
-                        /*reject({ 
-                            message: "User already exists", 
-                            status: 400, 
-                            returnBody: { success: false, reason: "Username already exists" }
-                        });*/
                     } else {
                         // Create a new user
                         const newUser = { 
@@ -50,11 +45,6 @@ function registerUser(username, password) {
                                 status: 500, 
                                 returnBody: { success: false }
                             });
-                            // reject({ 
-                            //     message: insertError, 
-                            //     status: 500, 
-                            //     returnBody: { success: false }
-                            // });
                         });
                     }
                 }).catch((findError) => {

@@ -1,9 +1,9 @@
-var express = require("express");
-var config = require("../config");
-var router = express.Router();
+let express = require("express");
+let config = require("../config");
+let router = express.Router();
 
-var { clientMDB } = require("../utils/dbmanagement");
-var {
+let { clientMDB } = require("../utils/dbmanagement");
+let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
 } = require("../middleware/authorization");
@@ -184,7 +184,6 @@ function getAccountData(username, res) {
 }
 
 router.get("/getLastGames/:username", async function (req, res) {
-  const { ObjectId } = require("mongodb");
   const users = clientMDB.db("ChessCake").collection("Users");
   const games = clientMDB.db("ChessCake").collection("Games");
   // Get the username from the URL

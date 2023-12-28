@@ -22,7 +22,6 @@ function logUser(username, password) {
                     bcrypt.compare(password, user.password).then(
                         (result) => {
                             if (!result) {
-                                //reject(new Error({ message: "Password errata", status: 403, returnBody: { success: false } }));
                                 reject({ message: "Password errata", status: 403, returnBody: { success: false } });
                             } else {
                                 const token = jwt.sign({ username: user.username }, config.SECRET_KEY, { expiresIn: '7d' });
@@ -30,17 +29,14 @@ function logUser(username, password) {
                             }
                         },
                         (error) => {
-                            //reject(new Error({ message: "Errore nella verifica della password", status: 500, returnBody: { success: false } }));
                             reject({ message: "Errore nella verifica della password", status: 500, returnBody: { success: false } });
                         }
                     );
                 }
             }).catch((error) => {
-                //reject(new Error({ message: "Errore interno 1", status: 500, returnBody: { success: false } }));
                 reject({ message: "Errore interno 1", status: 500, returnBody: { success: false }});
             });
         } catch (error) {
-            //reject(new Error({ message: "Errore interno 2", status: 500, returnBody: { success: false } }));
             reject({ message: "Errore interno 2", status: 500, returnBody: { success: false }});
         }
     });
