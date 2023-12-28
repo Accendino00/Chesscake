@@ -698,16 +698,6 @@ module.exports = {
     );
   },
 
-  calculateRankDiff(rank, increase) {
-    if (increase) {
-      return Math.round(Math.exp(-0.01 * rank + 2.31) + 5);
-    } else if (rank - Math.exp(-0.01 * rank + 2.31) + 5 > 0) {
-      return Math.round(-(Math.exp(-0.01 * rank + 2.31) + 5));
-    } else {
-      return 0;
-    }
-  },
-
   changeRank: function (player1, gameRank, outcome) {
     // Il rank aumenta solo per il player1, il player2 sarà il computer
     // Il rank aumenta solo se il player1 vince, diminuisce se perde
@@ -717,10 +707,10 @@ module.exports = {
     // Capiamo se ha vinto ho perso
     if (outcome === "p1") {
       // Aumentiamo il rank di un valore compreso tra 15 e 5, in base al rank ()
-      nuovoRankPlayer1 = gameRank + this.calculateRankDiff(gameRank, true);
+      nuovoRankPlayer1 = gameRank + calculateRankDiff(gameRank, true);
     } else {
       // Diminuiamo il rank
-      nuovoRankPlayer1 = gameRank + this.calculateRankDiff(gameRank, false);
+      nuovoRankPlayer1 = gameRank + calculateRankDiff(gameRank, false);
     }
 
     // Aggiorniamo i valori nel database
@@ -733,4 +723,14 @@ module.exports = {
       { $set: { rbcCurrentRank: nuovoRankPlayer1 } }
     );
   },
+};
+
+function calculateRankDiff (rank, increase) {
+  if (increase) {
+    return Math.round(Math.exp(-0.01 * rank + 2.31) + 5);
+  } else if (rank - Math.exp(-0.01 * rank + 2.31) + 5 > 0) {
+    return Math.round(-(Math.exp(-0.01 * rank + 2.31) + 5));
+  } else {
+    return 0;
+  }
 };

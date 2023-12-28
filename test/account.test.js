@@ -25,6 +25,14 @@ describe("API Tests for /api/account", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeDefined();
   });
+  test("should return account data for existing user", async () => {
+    const response = await request(app)
+      .get("/api/account/getAccountData/testerUsername")
+      .set("Authorization", `Bearer ${token}`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toBeDefined();
+  });
+
   test("should return the last games for existing user", async () => {
     const response = await request(app)
       .get("/api/account/getLastGames/testerUsername")
@@ -33,4 +41,5 @@ describe("API Tests for /api/account", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeDefined();
   });
+
 });

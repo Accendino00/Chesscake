@@ -9,6 +9,8 @@ const {
   getEmptyGames,
   checkThreefoldRepetition,
   checkFiftyMoveRule,
+  calculateRankDiff,
+  changeRank,
 } = require("../code/backend/utils/chess/chessgames");
 
 describe('Chess Module Tests', () => {
@@ -95,5 +97,17 @@ describe('Chess Module Tests', () => {
     const eloPlayer2 = 2000;
     const expectedScorePlayer1 = 1 / (1 + 10 ** ((eloPlayer2 - eloPlayer1) / 400));
     expect(expectedScorePlayer1).toBeCloseTo(0.240253, 6);
+  });
+
+  test("Check if you can do the FiftyMoveRule", () => {
+    const chess = new Chess();
+    chess.move('e2e4');
+    chess.move('e7e5');
+    chess.move('g1f3');
+    chess.move('b8c6');
+    expect(checkFiftyMoveRule(chess.history())).toBe(false);
+  });
+  test("Should try to change the rank", () => {
+    changeRank("testRunner", 100, "p1");
   });
 });

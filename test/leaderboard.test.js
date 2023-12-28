@@ -8,12 +8,22 @@ describe("API Tests for /api/leaderboard", () => {
   afterAll(async () => {
     await server.close();        
   });
+  beforeAll(async () => {
+    const loginResponse = await request(app)
+        .post("/api/login")
+        .send({ username: "testerUsername", password: "test" });
+  
+      expect(loginResponse.statusCode).toBe(200);
+      expect(loginResponse.body).toHaveProperty("token");
+      // Salviamo il token
+      token = loginResponse.body.token;
+    });
 
   // Ritorna la leaderboard standard utilizzata per le altre
   test("should return leaderboard data", async () => {
     const response = await request(app)
       .get("/api/leaderboard")
-      .set("Content-Type", "application/json");
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeDefined();
@@ -24,7 +34,7 @@ describe("API Tests for /api/leaderboard", () => {
   test("should return leaderboard data for elo", async () => {
     const response = await request(app)
       .get("/api/leaderboard/elo")
-      .set("Content-Type", "application/json");
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeDefined();
@@ -37,7 +47,7 @@ describe("API Tests for /api/leaderboard", () => {
   test("should return leaderboard data for rank", async () => {
     const response = await request(app)
       .get("/api/leaderboard/rank")
-      .set("Content-Type", "application/json");
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toBeDefined();
@@ -50,7 +60,7 @@ describe("API Tests for /api/leaderboard", () => {
   test("should return leaderboard data for daily", async () => {
     const response = await request(app)
       .get("/api/leaderboard/daily")
-      .set("Content-Type", "application/json");
+      .set("Authorization", `Bearer ${token}`);
 
     expect([200, 201]).toContain(response.statusCode);
     expect(response.body.success).toBe(true);
@@ -64,7 +74,7 @@ describe("API Tests for /api/leaderboard", () => {
   test("should return leaderboard data for kriegspiel", async () => {
     const response = await request(app)
       .get("/api/leaderboard/eloKriegspiel")
-      .set("Content-Type", "application/json");
+      .set("Authorization", `Bearer ${token}`);
 
     expect([200, 201]).toContain(response.statusCode);
     expect(response.body.success).toBe(true);
